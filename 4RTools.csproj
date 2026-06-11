@@ -480,6 +480,7 @@
     <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="gamedata.json" />
     <Content Include="gamedata.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

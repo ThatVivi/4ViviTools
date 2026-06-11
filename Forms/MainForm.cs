@@ -68,9 +68,14 @@ namespace _4rVivi.Forms
             AddPage("Macros", BuildMacrosPage());
             AddPage("Database", BuildDatabasePage());
             AddPage("Scanner", BuildScannerPage());
+            AddPage("Bot / Farm", BuildBotFarmPage());
+            AddPage("Stats", BuildStatsPage());
+            AddPage("Settings", BuildSettingsPage());
 
             InitSelections();
             if (_navButtons.Count > 0) ShowPage(_navButtons[0].Text.Trim());
+
+            Theme.ApplyDark(this);   // dark + readable across the whole shell (incl. embedded forms)
         }
 
         // ---------------- server / process / profile wiring ----------------
@@ -308,6 +313,58 @@ namespace _4rVivi.Forms
             var it = new ListViewItem(id == 0 ? "" : id.ToString());
             it.SubItems.Add(name ?? ""); it.SubItems.Add(info ?? "");
             lv.Items.Add(it);
+        }
+
+
+        private Control BuildBotFarmPage()
+        {
+            var p = new Panel();
+            p.Controls.Add(new Label { Text = "Bot / Farm", Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
+            p.Controls.Add(new Label { Text = "Experimental: auto-attack / mob-search / autoloot / anti-stuck. Needs entity offsets (Scanner) + botting allowed on your server.", Top = 44, Left = 12, AutoSize = true, MaximumSize = new Size(700, 0) });
+
+            p.Controls.Add(new Label { Text = "Target mob IDs (comma)", Top = 96, Left = 12, AutoSize = true });
+            p.Controls.Add(new TextBox { Left = 210, Top = 92, Width = 220 });
+            p.Controls.Add(new Label { Text = "Flee at HP %", Top = 130, Left = 12, AutoSize = true });
+            p.Controls.Add(new NumericUpDown { Left = 210, Top = 126, Width = 60, Minimum = 1, Maximum = 99, Value = 25 });
+            p.Controls.Add(new Label { Text = "Attack key", Top = 164, Left = 12, AutoSize = true });
+            p.Controls.Add(new TextBox { Left = 210, Top = 160, Width = 90, Text = "Space" });
+            p.Controls.Add(new Label { Text = "Loot key", Top = 198, Left = 12, AutoSize = true });
+            p.Controls.Add(new TextBox { Left = 210, Top = 194, Width = 90, Text = "F11" });
+            p.Controls.Add(new CheckBox { Text = "Stop if a GM is detected (anti-GM)", Top = 230, Left = 12, AutoSize = true, Checked = true });
+            p.Controls.Add(new CheckBox { Text = "Humanized timing (anti-detection)", Top = 258, Left = 12, AutoSize = true, Checked = true });
+            var start = new Button { Text = "Start farming", Left = 12, Top = 296, Width = 130, Height = 32 };
+            start.Click += (s, e) => MessageBox.Show(
+                "The farming bot needs the actor-table offsets (found with the Scanner) and a one-time cell->screen calibration before it can run. This panel stores your settings; per-server activation is wired in BotEngine / FarmModules.",
+                "Bot / Farm - setup required");
+            p.Controls.Add(start);
+            return p;
+        }
+
+        private Control BuildStatsPage()
+        {
+            var p = new Panel();
+            p.Controls.Add(new Label { Text = "Session stats", Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
+            string[] rows = { "Session time", "Kills", "Kills / hour", "EXP / hour", "Zeny / hour", "Drops logged" };
+            int y = 52;
+            foreach (var r in rows)
+            {
+                p.Controls.Add(new Label { Text = r, Top = y, Left = 12, AutoSize = true });
+                p.Controls.Add(new Label { Text = "-", Top = y, Left = 220, AutoSize = true });
+                y += 30;
+            }
+            p.Controls.Add(new Label { Text = "Populates while the bot / memory tracking is active (reads EXP & Zeny deltas from memory).", Top = y + 8, Left = 12, AutoSize = true, MaximumSize = new Size(700, 0) });
+            return p;
+        }
+
+        private Control BuildSettingsPage()
+        {
+            var p = new Panel();
+            p.Controls.Add(new Label { Text = "Settings", Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
+            p.Controls.Add(new CheckBox { Text = "Humanize timing (jitter / anti-detection)", Top = 52, Left = 12, AutoSize = true, Checked = true });
+            p.Controls.Add(new CheckBox { Text = "Run as Administrator reminder", Top = 82, Left = 12, AutoSize = true, Checked = true });
+            p.Controls.Add(new Label { Text = "Panic key: F12 turns everything OFF.", Top = 120, Left = 12, AutoSize = true });
+            p.Controls.Add(new Label { Text = "Bind reconnect / auto-sell / auto-storage recordings in the Macros tab (see TriggeredMacros).", Top = 148, Left = 12, AutoSize = true, MaximumSize = new Size(700, 0) });
+            return p;
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
