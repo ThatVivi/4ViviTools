@@ -53,17 +53,17 @@ namespace _4rVivi.Forms
             BuildContent();
 
             // ---- real 4RTools feature forms ----
-            AddFormPage("Autopot", new AutopotForm(subject, false));
-            AddFormPage("Autopot Ygg", new AutopotForm(subject, true));
-            AddFormPage("Buff Skills", new SkillAutoBuffForm(subject));
-            AddFormPage("Buff Items", new StuffAutoBuffForm(subject));
-            AddFormPage("Debuff Cure", new DebuffRecoveryForm(subject));
-            AddFormPage("Spammer", new AHKForm(subject));
-            AddFormPage("Switcher", new MacroSwitchForm(subject));
-            AddFormPage("Songs", new MacroSongForm(subject));
-            AddFormPage("ATK / DEF", new ATKDEFForm(subject));
-            AddFormPage("Skill Timer", new SkillTimerForm(subject));
-            AddFormPage("Servers", new ServersForm(subject));
+            AddFormPage("Autopot", () => new AutopotForm(subject, false));
+            AddFormPage("Autopot Ygg", () => new AutopotForm(subject, true));
+            AddFormPage("Buff Skills", () => new SkillAutoBuffForm(subject));
+            AddFormPage("Buff Items", () => new StuffAutoBuffForm(subject));
+            AddFormPage("Debuff Cure", () => new DebuffRecoveryForm(subject));
+            AddFormPage("Spammer", () => new AHKForm(subject));
+            AddFormPage("Switcher", () => new MacroSwitchForm(subject));
+            AddFormPage("Songs", () => new MacroSongForm(subject));
+            AddFormPage("ATK / DEF", () => new ATKDEFForm(subject));
+            AddFormPage("Skill Timer", () => new SkillTimerForm(subject));
+            AddFormPage("Servers", () => new ServersForm(subject));
             // ---- 4rVivi-only pages ----
             AddPage("Macros", BuildMacrosPage());
             AddPage("Database", BuildDatabasePage());
@@ -75,7 +75,7 @@ namespace _4rVivi.Forms
             InitSelections();
             if (_navButtons.Count > 0) ShowPage(_navButtons[0].Text.Trim());
 
-            Theme.ApplyDark(this);   // dark + readable across the whole shell (incl. embedded forms)
+            try { Theme.ApplyDark(this); } catch { }   // theming must never crash startup
         }
 
         // ---------------- server / process / profile wiring ----------------
@@ -208,16 +208,24 @@ namespace _4rVivi.Forms
             AddNav(name);
         }
 
-        private void AddFormPage(string name, Form f)
+        private void AddFormPage(string name, Func<Form> make)
         {
-            var host = new Panel { Dock = DockStyle.Fill, Visible = false, AutoScroll = true, BackColor = Color.White };
-            f.TopLevel = false;
-            f.FormBorderStyle = FormBorderStyle.None;
-            f.Dock = DockStyle.Fill;
-            host.Controls.Add(f);
+            var host = new Panel { Dock = DockStyle.Fill, Visible = false, AutoScroll = true };
+            try
+            {
+                Form f = make();
+                f.TopLevel = false;
+                f.FormBorderStyle = FormBorderStyle.None;
+                f.Dock = DockStyle.Fill;
+                host.Controls.Add(f);
+                f.Show();
+            }
+            catch (Exception ex)
+            {
+                host.Controls.Add(new Label { Text = "Could not load " + name + ":\n" + ex.Message, AutoSize = true, Top = 12, Left = 12 });
+            }
             _content.Controls.Add(host);
             _pages[name] = host;
-            f.Show();
             AddNav(name);
         }
 
