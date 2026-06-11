@@ -54,36 +54,15 @@ jobs:
           Write-Error "Build failed - see 'Show build errors' above or the build-log artifact."
           exit 1
 
-      - name: Package output
-        shell: pwsh
-        run: |
-          $relDir = $null
-          if (Test-Path "bin\Release") { $relDir = (Resolve-Path "bin\Release").Path }
-          if (-not $relDir) {
-            $d = Get-ChildItem -Recurse -Directory | Where-Object { $_.FullName -match '\\bin\\.*Release$' } | Select-Object -First 1
-            if ($d) { $relDir = $d.FullName }
-          }
-          if (-not $relDir) {
-            Write-Host "No Release folder. exe files found:"
-            Get-ChildItem -Recurse -Filter *.exe | ForEach-Object { $_.FullName }
-            throw "no Release output folder found"
-          }
-          Write-Host "Output folder: $relDir"
-          Get-ChildItem $relDir | ForEach-Object { $_.Name }
-          if (Test-Path gamedata.json) { Copy-Item gamedata.json $relDir -Force }
-          New-Item -ItemType Directory -Force -Path dist | Out-Null
-          Compress-Archive -Path (Join-Path $relDir '*') -DestinationPath dist\4rVivi.zip -Force
-          Write-Host "Packaged OK from $relDir"
-
-      - name: Upload 4rVivi
+      - name: Upload 4rVivi exe
         uses: actions/upload-artifact@v4
         with:
           name: 4rVivi
-          path: dist/4rVivi.zip
+          path: '**/bin/Release/4rVivi.exe'
 
       - name: Attach to release (on a v* tag)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/4rVivi.zip
+          files: '**/bin/Release/4rVivi.exe'
           generate_release_notes: true
