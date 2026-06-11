@@ -58,11 +58,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: 4rVivi
-          path: '**/bin/Release/4rVivi.exe'
+          if-no-files-found: error
+          path: |
+            bin/Release/4rVivi.exe
+            bin/Release/4rVivi.exe.config
 
       - name: Attach to release (on a v* tag)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: '**/bin/Release/4rVivi.exe'
+          files: bin/Release/4rVivi.exe
           generate_release_notes: true
