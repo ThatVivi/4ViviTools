@@ -1,0 +1,89 @@
+name: Build 4rVivi
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore packages
+        run: nuget restore 4RTools.sln
+
+      - name: Build (Release, x86)
+        id: build
+        continue-on-error: true
+        run: msbuild 4RTools.sln /p:Configuration=Release /p:PlatformTarget=x86 /m /flp:logfile=build.log;verbosity=normal /clp:Summary
+
+      - name: Show build errors
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path build.log) {
+            Write-Host "===== error lines ====="
+            Select-String -Path build.log -Pattern ': error' | ForEach-Object { $_.Line }
+            Write-Host "===== last 40 lines ====="
+            Get-Content build.log -Tail 40
+          } else { Write-Host "no build.log" }
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+
+      - name: Fail if build failed
+        if: steps.build.outcome == 'failure'
+        shell: pwsh
+        run: |
+          Write-Error "Build failed - see 'Show build errors' above or the build-log artifact."
+          exit 1
+
+      - name: Package output
+        shell: pwsh
+        run: |
+          $relDir = $null
+          if (Test-Path "bin\Release") { $relDir = (Resolve-Path "bin\Release").Path }
+          if (-not $relDir) {
+            $d = Get-ChildItem -Recurse -Directory | Where-Object { $_.FullName -match '\\bin\\.*Release$' } | Select-Object -First 1
+            if ($d) { $relDir = $d.FullName }
+          }
+          if (-not $relDir) {
+            Write-Host "No Release folder. exe files found:"
+            Get-ChildItem -Recurse -Filter *.exe | ForEach-Object { $_.FullName }
+            throw "no Release output folder found"
+          }
+          Write-Host "Output folder: $relDir"
+          Get-ChildItem $relDir | ForEach-Object { $_.Name }
+          if (Test-Path gamedata.json) { Copy-Item gamedata.json $relDir -Force }
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Compress-Archive -Path (Join-Path $relDir '*') -DestinationPath dist\4rVivi.zip -Force
+          Write-Host "Packaged OK from $relDir"
+
+      - name: Upload 4rVivi
+        uses: actions/upload-artifact@v4
+        with:
+          name: 4rVivi
+          path: dist/4rVivi.zip
+
+      - name: Attach to release (on a v* tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/4rVivi.zip
+          generate_release_notes: true
