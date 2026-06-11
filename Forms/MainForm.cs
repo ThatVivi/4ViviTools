@@ -16,6 +16,7 @@ using _4RTools.Utils;     // Subject, Message, MessageCode
 using _4rVivi.UI;
 using _4rVivi.Data;
 using _4rVivi.Macros;
+using Message = _4RTools.Utils.Message;        // disambiguate from System.Windows.Forms.Message
 
 namespace _4rVivi.Forms
 {
