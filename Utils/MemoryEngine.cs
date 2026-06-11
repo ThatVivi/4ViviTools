@@ -106,6 +106,33 @@ namespace _4rVivi.Utils
             return ReadProcessMemory(_handle, addr, buf, size, out int read) && read == size ? buf : null;
         }
 
+        private byte[] TryReadRegion(IntPtr addr, int size)
+        {
+            try
+            {
+                var buf = new byte[size];
+                int read;
+                return (ReadProcessMemory(_handle, addr, buf, size, out read) && read > 0) ? buf : null;
+            }
+            catch { return null; }
+        }
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool IsWow64Process(IntPtr handle, out bool wow64);
+
+        /// <summary>True if the attached target is a 64-bit process (this 32-bit scanner can't read it).</summary>
+        public bool TargetIs64Bit()
+        {
+            try
+            {
+                if (!Environment.Is64BitOperatingSystem) return false;
+                bool wow;
+                if (_handle != IntPtr.Zero && IsWow64Process(_handle, out wow)) return !wow; // not WOW64 => native 64-bit
+            }
+            catch { }
+            return false;
+        }
+
         // ---- region enumeration --------------------------------------------
         private IEnumerable<KeyValuePair<IntPtr, byte[]>> ReadableRegions()
         {
@@ -124,10 +151,10 @@ namespace _4rVivi.Utils
                     && (mbi.Protect & PAGE_NOACCESS) == 0
                     && (mbi.Protect & READABLE_MASK) != 0;
 
-                if (readable)
+                if (readable && regionSize <= 256L * 1024 * 1024)
                 {
-                    var buf = new byte[regionSize];
-                    if (ReadProcessMemory(_handle, mbi.BaseAddress, buf, (int)regionSize, out int read) && read > 0)
+                    byte[] buf = TryReadRegion(mbi.BaseAddress, (int)regionSize);
+                    if (buf != null)
                         yield return new KeyValuePair<IntPtr, byte[]>(mbi.BaseAddress, buf);
                 }
                 addr = (IntPtr)((long)mbi.BaseAddress + regionSize);

@@ -108,6 +108,17 @@ namespace _4rVivi.UI
             void ResizeHandler(object s, EventArgs e) { Apply(); }
         }
 
+
+        // Mirror the whole UI to the right (RTL) for an Arabic feel.
+        public static void ApplyRtl(Control root)
+        {
+            root.RightToLeft = RightToLeft.Yes;
+            var form = root as Form; if (form != null) form.RightToLeftLayout = true;
+            var tc = root as TabControl; if (tc != null) tc.RightToLeftLayout = true;
+            var lv = root as ListView; if (lv != null) lv.RightToLeftLayout = true;
+            foreach (Control c in root.Controls) ApplyRtl(c);
+        }
+
         // Flat dark HP/SP bar.
         public sealed class StatBar : Control
         {

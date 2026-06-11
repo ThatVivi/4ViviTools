@@ -73,9 +73,10 @@ namespace _4rVivi.Forms
             AddPage("Settings", BuildSettingsPage());
 
             InitSelections();
-            if (_navButtons.Count > 0) ShowPage(_navButtons[0].Text.Trim());
+            if (_navButtons.Count > 0) ShowPage((string)_navButtons[0].Tag);
 
             try { Theme.ApplyDark(this); } catch { }   // theming must never crash startup
+            try { if (Lang.IsArabic) Theme.ApplyRtl(this); } catch { }
         }
 
         // ---------------- server / process / profile wiring ----------------
@@ -135,7 +136,7 @@ namespace _4rVivi.Forms
                 TextAlign = ContentAlignment.MiddleLeft, Font = new Font("Segoe UI", 12f, FontStyle.Bold),
                 ForeColor = Theme.Text };
 
-            var lblP = new Label { Text = "Process:", Left = 130, Top = 16, Width = 56, ForeColor = Theme.TextMuted };
+            var lblP = new Label { Text = Lang.T("Process:"), Left = 130, Top = 16, Width = 56, ForeColor = Theme.TextMuted };
             _processCB = new ComboBox { Left = 188, Top = 13, Width = 230, DropDownStyle = ComboBoxStyle.DropDownList };
             _processCB.SelectedIndexChanged += (s, e) =>
             {
@@ -150,7 +151,7 @@ namespace _4rVivi.Forms
             var btnR = new Button { Text = "↻", Left = 422, Top = 12, Width = 30, Height = 26 };
             btnR.Click += (s, e) => RefreshProcessList();
 
-            var lblPr = new Label { Text = "Profile:", Left = 466, Top = 16, Width = 48, ForeColor = Theme.TextMuted };
+            var lblPr = new Label { Text = Lang.T("Profile:"), Left = 466, Top = 16, Width = 48, ForeColor = Theme.TextMuted };
             _profileCB = new ComboBox { Left = 516, Top = 13, Width = 150, DropDownStyle = ComboBoxStyle.DropDownList };
             _profileCB.SelectedIndexChanged += (s, e) =>
             {
@@ -164,13 +165,13 @@ namespace _4rVivi.Forms
                 catch (Exception ex) { SetStatus("Profile error: " + ex.Message); }
             };
 
-            _master = new CheckBox { Text = "OFF  (toggle)", Appearance = Appearance.Button, Dock = DockStyle.Right,
+            _master = new CheckBox { Text = Lang.T("OFF  (toggle)"), Appearance = Appearance.Button, Dock = DockStyle.Right,
                 Width = 150, TextAlign = ContentAlignment.MiddleCenter, FlatStyle = FlatStyle.Flat,
                 BackColor = Theme.Surface2, ForeColor = Theme.Text };
             _master.FlatAppearance.BorderColor = Theme.Border;
             _master.CheckedChanged += (s, e) =>
             {
-                _master.Text = _master.Checked ? "ON" : "OFF  (toggle)";
+                _master.Text = _master.Checked ? Lang.T("ON") : Lang.T("OFF  (toggle)");
                 _master.BackColor = _master.Checked ? Theme.Ok : Theme.Surface2;
                 subject.Notify(new Message(_master.Checked ? MessageCode.TURN_ON : MessageCode.TURN_OFF, null));
             };
@@ -231,7 +232,8 @@ namespace _4rVivi.Forms
 
         private void AddNav(string name)
         {
-            var nav = new NavButton(name) { Dock = DockStyle.None, Width = 150, Height = 36, Margin = new Padding(2, 2, 2, 0) };
+            var nav = new NavButton(Lang.T(name)) { Dock = DockStyle.None, Width = 150, Height = 36, Margin = new Padding(2, 2, 2, 0) };
+            nav.Tag = name;
             nav.Click += (s, e) => ShowPage(name);
             _nav.Controls.Add(nav);
             _navButtons.Add(nav);
@@ -240,7 +242,7 @@ namespace _4rVivi.Forms
         private void ShowPage(string name)
         {
             foreach (var kv in _pages) kv.Value.Visible = (kv.Key == name);
-            foreach (var nav in _navButtons) nav.SetActive(nav.Text.Trim() == name);
+            foreach (var nav in _navButtons) nav.SetActive((string)nav.Tag == name);
         }
 
         private void SetStatus(string s) { if (_status != null) _status.Text = s; }
@@ -249,9 +251,9 @@ namespace _4rVivi.Forms
         private Control BuildScannerPage()
         {
             var p = new Panel { BackColor = Color.White };
-            p.Controls.Add(new Label { Text = "Memory Scanner", Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
+            p.Controls.Add(new Label { Text = Lang.T("Memory Scanner"), Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
             p.Controls.Add(new Label { Text = "Find your HP/SP memory address (ArtMoney-style) if your server's offset is unknown.", Top = 48, Left = 12, AutoSize = true });
-            var b = new Button { Text = "Open Scanner", Left = 12, Top = 84, Width = 160, Height = 32 };
+            var b = new Button { Text = Lang.T("Open Scanner"), Left = 12, Top = 84, Width = 160, Height = 32 };
             b.Click += (s, e) => { using (var f = new ScannerForm()) f.ShowDialog(this); };
             p.Controls.Add(b);
             return p;
@@ -260,21 +262,21 @@ namespace _4rVivi.Forms
         private Control BuildMacrosPage()
         {
             var p = new Panel { BackColor = Color.White, AutoScroll = true };
-            p.Controls.Add(new Label { Text = "Macros & auto-reconnect", Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
-            p.Controls.Add(new Label { Text = "Username", Top = 56, Left = 12, AutoSize = true });
+            p.Controls.Add(new Label { Text = Lang.T("Macros & auto-reconnect"), Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
+            p.Controls.Add(new Label { Text = Lang.T("Username"), Top = 56, Left = 12, AutoSize = true });
             var user = new TextBox { Left = 110, Top = 52, Width = 200 };
             p.Controls.Add(user);
-            p.Controls.Add(new Label { Text = "Password", Top = 88, Left = 12, AutoSize = true });
+            p.Controls.Add(new Label { Text = Lang.T("Password"), Top = 88, Left = 12, AutoSize = true });
             var pass = new TextBox { Left = 110, Top = 84, Width = 200, UseSystemPasswordChar = true };
             p.Controls.Add(pass);
-            p.Controls.Add(new Label { Text = "(stored DPAPI-encrypted, never plaintext)", Top = 88, Left = 320, AutoSize = true, ForeColor = Color.Gray });
-            var saveCreds = new Button { Text = "Save login", Left = 110, Top = 116, Width = 110, Height = 28 };
+            p.Controls.Add(new Label { Text = Lang.T("(stored DPAPI-encrypted, never plaintext)"), Top = 88, Left = 320, AutoSize = true, ForeColor = Color.Gray });
+            var saveCreds = new Button { Text = Lang.T("Save login"), Left = 110, Top = 116, Width = 110, Height = 28 };
             saveCreds.Click += (s, e) => { _creds.Username = user.Text; _creds.SetPassword(pass.Text); _creds.Save("login.dat"); SetStatus("Login saved (encrypted)."); };
             p.Controls.Add(saveCreds);
 
-            var rec = new Button { Text = "Record", Left = 12, Top = 166, Width = 90, Height = 30 };
-            var stop = new Button { Text = "Stop & save", Left = 108, Top = 166, Width = 110, Height = 30, Enabled = false };
-            var play = new Button { Text = "Test play", Left = 224, Top = 166, Width = 100, Height = 30, Enabled = false };
+            var rec = new Button { Text = Lang.T("Record"), Left = 12, Top = 166, Width = 90, Height = 30 };
+            var stop = new Button { Text = Lang.T("Stop & save"), Left = 108, Top = 166, Width = 110, Height = 30, Enabled = false };
+            var play = new Button { Text = Lang.T("Test play"), Left = 224, Top = 166, Width = 100, Height = 30, Enabled = false };
             rec.Click += (s, e) => { _recorder.Start("login"); rec.Enabled = false; stop.Enabled = true; SetStatus("Recording… do your login, then Stop & save."); };
             stop.Click += (s, e) => { _lastRecording = _recorder.Stop(); _lastRecording.Save("login_macro.json"); rec.Enabled = true; stop.Enabled = false; play.Enabled = true; SetStatus("Saved login_macro.json (" + _lastRecording.Events.Count + " events)."); };
             play.Click += (s, e) => { if (_lastRecording != null) System.Threading.Tasks.Task.Run(() => _player.Play(_lastRecording, () => _creds.Username, () => _creds.GetPassword())); };
@@ -286,18 +288,18 @@ namespace _4rVivi.Forms
         private Control BuildDatabasePage()
         {
             var p = new Panel { BackColor = Color.White };
-            p.Controls.Add(new Label { Text = "Game database (rAthena)", Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
+            p.Controls.Add(new Label { Text = Lang.T("Game database (rAthena)"), Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
             var kind = new ComboBox { Left = 12, Top = 50, Width = 110, DropDownStyle = ComboBoxStyle.DropDownList };
             kind.Items.AddRange(new object[] { "Mobs", "Skills", "Items", "Maps" });
             kind.SelectedIndex = 0;
             var query = new TextBox { Left = 128, Top = 50, Width = 250 };
-            var go = new Button { Text = "Search", Left = 384, Top = 49, Width = 90, Height = 26 };
+            var go = new Button { Text = Lang.T("Search"), Left = 384, Top = 49, Width = 90, Height = 26 };
             var list = new ListView { Left = 12, Top = 86, Width = 740, Height = 420, View = View.Details, FullRowSelect = true, GridLines = true, Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom };
             list.Columns.Add("ID", 70); list.Columns.Add("Name", 240); list.Columns.Add("Info", 410);
             p.Controls.AddRange(new Control[] { kind, query, go, list });
             if (_data == null)
             {
-                p.Controls.Add(new Label { Text = "gamedata.json not found next to the exe.", Top = 60, Left = 490, AutoSize = true, ForeColor = Color.Red });
+                p.Controls.Add(new Label { Text = Lang.T("gamedata.json not found next to the exe."), Top = 60, Left = 490, AutoSize = true, ForeColor = Color.Red });
                 return p;
             }
             go.Click += (s, e) =>
@@ -327,20 +329,20 @@ namespace _4rVivi.Forms
         private Control BuildBotFarmPage()
         {
             var p = new Panel();
-            p.Controls.Add(new Label { Text = "Bot / Farm", Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
+            p.Controls.Add(new Label { Text = Lang.T("Bot / Farm"), Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
             p.Controls.Add(new Label { Text = "Experimental: auto-attack / mob-search / autoloot / anti-stuck. Needs entity offsets (Scanner) + botting allowed on your server.", Top = 44, Left = 12, AutoSize = true, MaximumSize = new Size(700, 0) });
 
-            p.Controls.Add(new Label { Text = "Target mob IDs (comma)", Top = 96, Left = 12, AutoSize = true });
+            p.Controls.Add(new Label { Text = Lang.T("Target mob IDs (comma)"), Top = 96, Left = 12, AutoSize = true });
             p.Controls.Add(new TextBox { Left = 210, Top = 92, Width = 220 });
-            p.Controls.Add(new Label { Text = "Flee at HP %", Top = 130, Left = 12, AutoSize = true });
+            p.Controls.Add(new Label { Text = Lang.T("Flee at HP %"), Top = 130, Left = 12, AutoSize = true });
             p.Controls.Add(new NumericUpDown { Left = 210, Top = 126, Width = 60, Minimum = 1, Maximum = 99, Value = 25 });
-            p.Controls.Add(new Label { Text = "Attack key", Top = 164, Left = 12, AutoSize = true });
+            p.Controls.Add(new Label { Text = Lang.T("Attack key"), Top = 164, Left = 12, AutoSize = true });
             p.Controls.Add(new TextBox { Left = 210, Top = 160, Width = 90, Text = "Space" });
-            p.Controls.Add(new Label { Text = "Loot key", Top = 198, Left = 12, AutoSize = true });
+            p.Controls.Add(new Label { Text = Lang.T("Loot key"), Top = 198, Left = 12, AutoSize = true });
             p.Controls.Add(new TextBox { Left = 210, Top = 194, Width = 90, Text = "F11" });
-            p.Controls.Add(new CheckBox { Text = "Stop if a GM is detected (anti-GM)", Top = 230, Left = 12, AutoSize = true, Checked = true });
-            p.Controls.Add(new CheckBox { Text = "Humanized timing (anti-detection)", Top = 258, Left = 12, AutoSize = true, Checked = true });
-            var start = new Button { Text = "Start farming", Left = 12, Top = 296, Width = 130, Height = 32 };
+            p.Controls.Add(new CheckBox { Text = Lang.T("Stop if a GM is detected (anti-GM)"), Top = 230, Left = 12, AutoSize = true, Checked = true });
+            p.Controls.Add(new CheckBox { Text = Lang.T("Humanized timing (anti-detection)"), Top = 258, Left = 12, AutoSize = true, Checked = true });
+            var start = new Button { Text = Lang.T("Start farming"), Left = 12, Top = 296, Width = 130, Height = 32 };
             start.Click += (s, e) => MessageBox.Show(
                 "The farming bot needs the actor-table offsets (found with the Scanner) and a one-time cell->screen calibration before it can run. This panel stores your settings; per-server activation is wired in BotEngine / FarmModules.",
                 "Bot / Farm - setup required");
@@ -351,12 +353,12 @@ namespace _4rVivi.Forms
         private Control BuildStatsPage()
         {
             var p = new Panel();
-            p.Controls.Add(new Label { Text = "Session stats", Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
+            p.Controls.Add(new Label { Text = Lang.T("Session stats"), Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
             string[] rows = { "Session time", "Kills", "Kills / hour", "EXP / hour", "Zeny / hour", "Drops logged" };
             int y = 52;
             foreach (var r in rows)
             {
-                p.Controls.Add(new Label { Text = r, Top = y, Left = 12, AutoSize = true });
+                p.Controls.Add(new Label { Text = Lang.T(r), Top = y, Left = 12, AutoSize = true });
                 p.Controls.Add(new Label { Text = "-", Top = y, Left = 220, AutoSize = true });
                 y += 30;
             }
@@ -367,11 +369,21 @@ namespace _4rVivi.Forms
         private Control BuildSettingsPage()
         {
             var p = new Panel();
-            p.Controls.Add(new Label { Text = "Settings", Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
-            p.Controls.Add(new CheckBox { Text = "Humanize timing (jitter / anti-detection)", Top = 52, Left = 12, AutoSize = true, Checked = true });
-            p.Controls.Add(new CheckBox { Text = "Run as Administrator reminder", Top = 82, Left = 12, AutoSize = true, Checked = true });
-            p.Controls.Add(new Label { Text = "Panic key: F12 turns everything OFF.", Top = 120, Left = 12, AutoSize = true });
-            p.Controls.Add(new Label { Text = "Bind reconnect / auto-sell / auto-storage recordings in the Macros tab (see TriggeredMacros).", Top = 148, Left = 12, AutoSize = true, MaximumSize = new Size(700, 0) });
+            p.Controls.Add(new Label { Text = Lang.T("Settings"), Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
+            p.Controls.Add(new Label { Text = Lang.T("Language") + ":", Top = 56, Left = 12, AutoSize = true });
+            var langCB = new ComboBox { Left = 140, Top = 52, Width = 170, DropDownStyle = ComboBoxStyle.DropDownList };
+            langCB.Items.Add("English");
+            langCB.Items.Add("العربية");
+            langCB.SelectedIndex = Lang.IsArabic ? 1 : 0;
+            langCB.SelectedIndexChanged += (s, e) =>
+            {
+                Lang.Save(langCB.SelectedIndex == 1 ? "ar" : "en");
+                MessageBox.Show(Lang.T("Restart the app to apply the language."), "4rVivi");
+            };
+            p.Controls.Add(langCB);
+            p.Controls.Add(new CheckBox { Text = Lang.T("Humanize timing (jitter / anti-detection)"), Top = 96, Left = 12, AutoSize = true, Checked = true });
+            p.Controls.Add(new CheckBox { Text = Lang.T("Run as Administrator reminder"), Top = 126, Left = 12, AutoSize = true, Checked = true });
+            p.Controls.Add(new Label { Text = Lang.T("Panic key: F12 turns everything OFF."), Top = 164, Left = 12, AutoSize = true });
             return p;
         }
 

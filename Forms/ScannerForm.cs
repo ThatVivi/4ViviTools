@@ -135,6 +135,7 @@ namespace _4rVivi.Forms
             if (_engine.Target == null || _engine.Target.Id != pi.Process.Id)
             {
                 if (!_engine.Attach(pi.Process)) { Status("Attach failed — run 4rVivi as Administrator."); return false; }
+                if (_engine.TargetIs64Bit()) { Status("This program is 64-bit. The scanner is 32-bit and can only scan 32-bit clients (like your RO exe)."); return false; }
             }
             return true;
         }
@@ -157,10 +158,14 @@ namespace _4rVivi.Forms
                 Application.DoEvents();
                 _session = _engine.FirstScan(SelectedType(), ParseValue());
                 ShowResults();
-                EnableRefineButtons(true);
-                Status($"First scan: {_session.Count} candidates. Change HP in-game, type new value, click Next (or use a filter).");
+                EnableRefineButtons(_session.Count > 0);
+                if (_session.Count == 0)
+                    Status("0 found. Type the CURRENT value, pick a 32-bit client, and run as admin. Then take damage and scan again.");
+                else
+                    Status($"First scan: {_session.Count} candidates. Change HP in-game, type the new value, click Next (or a filter).");
             }
-            catch (FormatException) { Status("Enter a valid number for the selected type."); }
+            catch (FormatException) { Status("Type the current value (a number) first, then click First."); }
+            catch (Exception ex) { Status("Scan error: " + ex.Message); }
         }
 
         private void NextScan(ScanFilter filter)
