@@ -64,7 +64,6 @@ namespace _4rVivi.UI
                     dgv.ColumnHeadersDefaultCellStyle.ForeColor = Text;
                     break;
                 case Label _:
-                case LinkLabel _:
                 case CheckBox _:
                 case RadioButton _:
                     c.ForeColor = Text;
@@ -75,9 +74,6 @@ namespace _4rVivi.UI
                     break;
                 case Panel _:
                 case TabControl _:
-                case TabPage _:
-                case FlowLayoutPanel _:
-                case TableLayoutPanel _:
                 case UserControl _:
                 case Form _:
                     c.BackColor = c is Form ? Bg : Surface;
