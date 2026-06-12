@@ -1,5 +1,8 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
-             x:Class="FourRVivi.App.Views.AutopotView" x:DataType="vm:AutopotViewModel">
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.AutopotView"
+             x:DataType="vm:AutopotViewModel">
   <StackPanel Spacing="14">
     <TextBlock Text="AutoPots+" Classes="h1"/>
     <TextBlock Classes="muted" Text="Reads HP/SP from memory. Set % (and optional flat), key, reaction and use-delay. Assign HP/SP addresses in the Scanner first."/>
@@ -17,7 +20,8 @@
               <StackPanel Grid.Column="5" Margin="0,0,12,0"><TextBlock Text="React ms" Classes="muted"/><NumericUpDown Width="90" Minimum="0" Maximum="5000" Value="{Binding ReactionMs}"/></StackPanel>
               <StackPanel Grid.Column="6" Margin="0,0,12,0"><TextBlock Text="Delay ms" Classes="muted"/><NumericUpDown Width="90" Minimum="0" Maximum="60000" Value="{Binding UseDelayMs}"/></StackPanel>
               <Button Grid.Column="7" Content="✕" HorizontalAlignment="Right" VerticalAlignment="Center"
-                      Command="{Binding [ItemsControl].((vm:AutopotViewModel)DataContext).RemovePotCommand}" CommandParameter="{Binding}"/>
+                      Command="{Binding DataContext.RemovePotCommand, RelativeSource={RelativeAncestor ItemsControl}}"
+                      CommandParameter="{Binding}"/>
             </Grid>
           </Border>
         </DataTemplate>
