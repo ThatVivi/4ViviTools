@@ -2,6 +2,7 @@ using FourRVivi.Core.Common;
 using FourRVivi.Core.Game;
 using FourRVivi.Core.Input;
 using FourRVivi.Core.Memory;
+using FourRVivi.Core.Data;
 using Xunit;
 
 namespace FourRVivi.Core.Tests;
