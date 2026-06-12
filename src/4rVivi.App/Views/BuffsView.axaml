@@ -20,6 +20,7 @@
               <StackPanel Grid.Column="2"><TextBlock Text="Interval ms" Classes="muted"/><NumericUpDown Width="130" Minimum="500" Maximum="3600000" Value="{Binding IntervalMs}"/></StackPanel>
               <Button Grid.Column="3" Content="✕" HorizontalAlignment="Right"
                       Command="{Binding #Root.DataContext.RemoveSkillBuffCommand}"
+CommandParameter="{Binding}"/>
             </Grid>
           </Border>
         </DataTemplate>
@@ -38,6 +39,7 @@
               <StackPanel Grid.Column="2"><TextBlock Text="Interval ms" Classes="muted"/><NumericUpDown Width="130" Minimum="500" Maximum="3600000" Value="{Binding IntervalMs}"/></StackPanel>
               <Button Grid.Column="3" Content="✕" HorizontalAlignment="Right"
                       Command="{Binding #Root.DataContext.RemoveItemBuffCommand}"
+CommandParameter="{Binding}"/>
             </Grid>
           </Border>
         </DataTemplate>
