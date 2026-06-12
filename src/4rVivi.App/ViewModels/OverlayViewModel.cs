@@ -13,9 +13,9 @@ public sealed partial class OverlayViewModel : ViewModelBase
 
     public OverlayViewModel(OverlayController overlay) => _overlay = overlay;
 
-    partial void OnCastRangeChanged(int value) { _overlay.CastRange = value; _overlay.Apply(); }
-    partial void OnAoeChanged(int value) { _overlay.Aoe = value; _overlay.Apply(); }
-    partial void OnGutterChanged(bool value) { _overlay.Gutter = value; _overlay.Apply(); }
+    partial void OnCastRangeChanged(int v) { _overlay.CastRange = v; _overlay.Apply(); }
+    partial void OnAoeChanged(int v) { _overlay.Aoe = v; _overlay.Apply(); }
+    partial void OnGutterChanged(bool v) { _overlay.Gutter = v; _overlay.Apply(); }
 
     [RelayCommand] private void Show() => _overlay.Show();
     [RelayCommand] private void Hide() => _overlay.Hide();

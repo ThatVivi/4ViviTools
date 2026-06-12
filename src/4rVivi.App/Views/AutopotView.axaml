@@ -2,30 +2,107 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
              x:Class="FourRVivi.App.Views.AutopotView"
-             x:DataType="vm:AutopotViewModel">
+             x:DataType="vm:AutopotViewModel"
+             x:Name="Root">
+
   <StackPanel Spacing="14">
+
     <TextBlock Text="AutoPots+" Classes="h1"/>
-    <TextBlock Classes="muted" Text="Reads HP/SP from memory. Set % (and optional flat), key, reaction and use-delay. Assign HP/SP addresses in the Scanner first."/>
-    <Button Content="+ Add pot rule" Command="{Binding AddPotCommand}" HorizontalAlignment="Left"/>
+
+    <TextBlock Classes="muted"
+               Text="Reads HP/SP from memory. Set % (and optional flat), key, reaction and use-delay. Assign HP/SP addresses in the Scanner first."/>
+
+    <Button Content="+ Add pot rule"
+            Command="{Binding AddPotCommand}"
+            HorizontalAlignment="Left"/>
+
     <ItemsControl ItemsSource="{Binding Pots}">
       <ItemsControl.ItemTemplate>
+
         <DataTemplate x:DataType="vm:PotRowViewModel">
-          <Border Classes="card" Margin="0,0,0,8">
-            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*" RowDefinitions="Auto" VerticalAlignment="Center">
-              <CheckBox Grid.Column="0" IsChecked="{Binding Enabled}" Content="On" Margin="0,0,12,0"/>
-              <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="Key" Classes="muted"/><TextBox Width="60" Text="{Binding Key}"/></StackPanel>
-              <StackPanel Grid.Column="2" Margin="0,0,12,0"><TextBlock Text="HP/SP %" Classes="muted"/><NumericUpDown Width="100" Minimum="0" Maximum="100" Value="{Binding Percent}"/></StackPanel>
-              <StackPanel Grid.Column="3" Margin="0,0,12,0"><TextBlock Text="Flat" Classes="muted"/><NumericUpDown Width="110" Minimum="0" Maximum="9999999" Value="{Binding Flat}"/></StackPanel>
-              <CheckBox Grid.Column="4" IsChecked="{Binding UseSp}" Content="SP" Margin="0,0,12,0" VerticalAlignment="Bottom"/>
-              <StackPanel Grid.Column="5" Margin="0,0,12,0"><TextBlock Text="React ms" Classes="muted"/><NumericUpDown Width="90" Minimum="0" Maximum="5000" Value="{Binding ReactionMs}"/></StackPanel>
-              <StackPanel Grid.Column="6" Margin="0,0,12,0"><TextBlock Text="Delay ms" Classes="muted"/><NumericUpDown Width="90" Minimum="0" Maximum="60000" Value="{Binding UseDelayMs}"/></StackPanel>
-              <Button Grid.Column="7" Content="✕" HorizontalAlignment="Right" VerticalAlignment="Center"
-                      Command="{Binding DataContext.RemovePotCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}"
+
+          <Border Classes="card"
+                  Margin="0,0,0,8">
+
+            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*"
+                  RowDefinitions="Auto"
+                  VerticalAlignment="Center">
+
+              <CheckBox Grid.Column="0"
+                        IsChecked="{Binding Enabled}"
+                        Content="On"
+                        Margin="0,0,12,0"/>
+
+              <StackPanel Grid.Column="1"
+                          Margin="0,0,12,0">
+                <TextBlock Text="Key"
+                           Classes="muted"/>
+                <TextBox Width="60"
+                         Text="{Binding Key}"/>
+              </StackPanel>
+
+              <StackPanel Grid.Column="2"
+                          Margin="0,0,12,0">
+                <TextBlock Text="HP/SP %"
+                           Classes="muted"/>
+                <NumericUpDown Width="100"
+                               Minimum="0"
+                               Maximum="100"
+                               Value="{Binding Percent}"/>
+              </StackPanel>
+
+              <StackPanel Grid.Column="3"
+                          Margin="0,0,12,0">
+                <TextBlock Text="Flat"
+                           Classes="muted"/>
+                <NumericUpDown Width="110"
+                               Minimum="0"
+                               Maximum="9999999"
+                               Value="{Binding Flat}"/>
+              </StackPanel>
+
+              <CheckBox Grid.Column="4"
+                        IsChecked="{Binding UseSp}"
+                        Content="SP"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Bottom"/>
+
+              <StackPanel Grid.Column="5"
+                          Margin="0,0,12,0">
+                <TextBlock Text="React ms"
+                           Classes="muted"/>
+                <NumericUpDown Width="90"
+                               Minimum="0"
+                               Maximum="5000"
+                               Value="{Binding ReactionMs}"/>
+              </StackPanel>
+
+              <StackPanel Grid.Column="6"
+                          Margin="0,0,12,0">
+                <TextBlock Text="Delay ms"
+                           Classes="muted"/>
+                <NumericUpDown Width="90"
+                               Minimum="0"
+                               Maximum="60000"
+                               Value="{Binding UseDelayMs}"/>
+              </StackPanel>
+
+              <Button Grid.Column="7"
+                      Content="✕"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Center"
+                      Command="{Binding #Root.DataContext.RemovePotCommand}"
                       CommandParameter="{Binding}"/>
+
             </Grid>
+
           </Border>
+
         </DataTemplate>
+
       </ItemsControl.ItemTemplate>
     </ItemsControl>
+
   </StackPanel>
+
 </UserControl>

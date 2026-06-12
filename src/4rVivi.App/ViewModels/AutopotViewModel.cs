@@ -1,86 +1,45 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
-             x:Class="FourRVivi.App.Views.AutopotView"
-             x:DataType="vm:AutopotViewModel"
-             x:Name="Root">
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.Input;
+using FourRVivi.Core.Automation;
+using FourRVivi.Core.Settings;
 
-  <StackPanel Spacing="14">
-    <TextBlock Text="AutoPots+" Classes="h1"/>
-    <TextBlock Classes="muted"
-               Text="Reads HP/SP from memory. Set % (and optional flat), key, reaction and use-delay. Assign HP/SP addresses in the Scanner first."/>
+namespace FourRVivi.App.ViewModels;
 
-    <Button Content="+ Add pot rule"
-            Command="{Binding AddPotCommand}"
-            HorizontalAlignment="Left"/>
+public sealed partial class AutopotViewModel : ViewModelBase
+{
+    private readonly EngineHub _hub;
+    private readonly SettingsStore _settings;
+    public ObservableCollection<PotRowViewModel> Pots { get; } = new();
 
-    <ItemsControl ItemsSource="{Binding Pots}">
-      <ItemsControl.ItemTemplate>
-        <DataTemplate x:DataType="vm:PotRowViewModel">
-          <Border Classes="card" Margin="0,0,0,8">
-            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*"
-                  RowDefinitions="Auto"
-                  VerticalAlignment="Center">
+    public AutopotViewModel(EngineHub hub, SettingsStore settings)
+    {
+        _hub = hub; _settings = settings;
 
-              <CheckBox Grid.Column="0"
-                        IsChecked="{Binding Enabled}"
-                        Content="On"
-                        Margin="0,0,12,0"/>
+        var prof = settings.Current.GetActiveProfile();
+        if (prof.Pots.Count == 0)
+            prof.Pots.Add(new PotConfig { Enabled = true, Key = "F1", Percent = 50, UseSp = false });
 
-              <StackPanel Grid.Column="1" Margin="0,0,12,0">
-                <TextBlock Text="Key" Classes="muted"/>
-                <TextBox Width="60" Text="{Binding Key}"/>
-              </StackPanel>
+        // engine + UI share the same PotConfig instances
+        _hub.Autopot.Rules.Clear();
+        foreach (var c in prof.Pots) { _hub.Autopot.Rules.Add(c); Pots.Add(new PotRowViewModel(c, Save)); }
+    }
 
-              <StackPanel Grid.Column="2" Margin="0,0,12,0">
-                <TextBlock Text="HP/SP %" Classes="muted"/>
-                <NumericUpDown Width="100"
-                               Minimum="0"
-                               Maximum="100"
-                               Value="{Binding Percent}"/>
-              </StackPanel>
+    [RelayCommand] private void AddPot()
+    {
+        var c = new PotConfig { Enabled = true, Key = "F2", Percent = 40 };
+        _settings.Current.GetActiveProfile().Pots.Add(c);
+        _hub.Autopot.Rules.Add(c);
+        Pots.Add(new PotRowViewModel(c, Save));
+        Save();
+    }
 
-              <StackPanel Grid.Column="3" Margin="0,0,12,0">
-                <TextBlock Text="Flat" Classes="muted"/>
-                <NumericUpDown Width="110"
-                               Minimum="0"
-                               Maximum="9999999"
-                               Value="{Binding Flat}"/>
-              </StackPanel>
+    [RelayCommand] private void RemovePot(PotRowViewModel row)
+    {
+        _settings.Current.GetActiveProfile().Pots.Remove(row.Model);
+        _hub.Autopot.Rules.Remove(row.Model);
+        Pots.Remove(row);
+        Save();
+    }
 
-              <CheckBox Grid.Column="4"
-                        IsChecked="{Binding UseSp}"
-                        Content="SP"
-                        Margin="0,0,12,0"
-                        VerticalAlignment="Bottom"/>
-
-              <StackPanel Grid.Column="5" Margin="0,0,12,0">
-                <TextBlock Text="React ms" Classes="muted"/>
-                <NumericUpDown Width="90"
-                               Minimum="0"
-                               Maximum="5000"
-                               Value="{Binding ReactionMs}"/>
-              </StackPanel>
-
-              <StackPanel Grid.Column="6" Margin="0,0,12,0">
-                <TextBlock Text="Delay ms" Classes="muted"/>
-                <NumericUpDown Width="90"
-                               Minimum="0"
-                               Maximum="60000"
-                               Value="{Binding UseDelayMs}"/>
-              </StackPanel>
-
-              <Button Grid.Column="7"
-                      Content="✕"
-                      HorizontalAlignment="Right"
-                      VerticalAlignment="Center"
-                      Command="{Binding #Root.DataContext.RemovePotCommand}"
-                      CommandParameter="{Binding}"/>
-
-            </Grid>
-          </Border>
-        </DataTemplate>
-      </ItemsControl.ItemTemplate>
-    </ItemsControl>
-  </StackPanel>
-</UserControl>
+    private void Save() => _settings.Save();
+}

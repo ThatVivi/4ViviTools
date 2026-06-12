@@ -19,8 +19,8 @@ public sealed partial class SkillsViewModel : ViewModelBase
         _spamDelay = hub.Spammer.DelayMs;
     }
 
-    partial void OnSpamKeyChanged(string value) => _hub.Spammer.Key = value;
-    partial void OnSpamDelayChanged(int value) => _hub.Spammer.DelayMs = Math.Max(20, value);
+    partial void OnSpamKeyChanged(string v) => _hub.Spammer.Key = v;
+    partial void OnSpamDelayChanged(int v) => _hub.Spammer.DelayMs = Math.Max(20, v);
 
     [RelayCommand] private void ApplyRotation()
     {
