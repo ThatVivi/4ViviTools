@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels" xmlns:tr="clr-namespace:FourRVivi.Core.Trackers;assembly=4rVivi.Core"
+             x:Class="FourRVivi.App.Views.LootView" x:DataType="vm:LootViewModel">
+  <Grid RowDefinitions="Auto,Auto,*">
+    <TextBlock Grid.Row="0" Text="Loot log" Classes="h1"/>
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,12">
+      <TextBox Width="240" Text="{Binding Item}" Watermark="Item name"/>
+      <NumericUpDown Width="100" Minimum="1" Maximum="100000" Value="{Binding Qty}"/>
+      <Button Classes="accent" Content="Add" Command="{Binding AddCommand}"/>
+      <Button Content="Clear" Command="{Binding ClearCommand}"/>
+    </StackPanel>
+    <Border Grid.Row="2" Classes="card" Padding="0">
+      <ListBox ItemsSource="{Binding Rows}" Background="Transparent">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="tr:LootRow">
+            <Grid ColumnDefinitions="100,*,60">
+              <TextBlock Grid.Column="0" Text="{Binding Time}" Classes="muted"/>
+              <TextBlock Grid.Column="1" Text="{Binding Item}"/>
+              <TextBlock Grid.Column="2" Text="{Binding Qty}"/>
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Border>
+  </Grid>
+</UserControl>

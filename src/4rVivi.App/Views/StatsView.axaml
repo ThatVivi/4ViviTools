@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.StatsView" x:DataType="vm:StatsViewModel">
+  <StackPanel Spacing="14">
+    <StackPanel Orientation="Horizontal" Spacing="12">
+      <TextBlock Text="Session stats" Classes="h1"/>
+      <Button Content="Reset" Command="{Binding ResetCommand}" VerticalAlignment="Center"/>
+    </StackPanel>
+    <WrapPanel>
+      <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="Elapsed" Classes="muted"/><TextBlock Text="{Binding Elapsed}" FontSize="20"/></StackPanel></Border>
+      <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="Kills" Classes="muted"/><TextBlock Text="{Binding Kills}" FontSize="20"/></StackPanel></Border>
+      <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="EXP / hour" Classes="muted"/><TextBlock Text="{Binding ExpPerHour}" FontSize="20"/></StackPanel></Border>
+      <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="Zeny / hour" Classes="muted"/><TextBlock Text="{Binding ZenyPerHour}" FontSize="20"/></StackPanel></Border>
+      <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="HP" Classes="muted"/><TextBlock Text="{Binding HpText}" FontSize="20"/></StackPanel></Border>
+      <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="SP" Classes="muted"/><TextBlock Text="{Binding SpText}" FontSize="20"/></StackPanel></Border>
+      <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="Weight" Classes="muted"/><TextBlock Text="{Binding WeightText}" FontSize="20"/></StackPanel></Border>
+    </WrapPanel>
+    <TextBlock Classes="muted" TextWrapping="Wrap" Text="EXP/Zeny/Weight need their addresses set in the Scanner. Kills come from the Smart Bot's EXP-gain proxy."/>
+  </StackPanel>
+</UserControl>

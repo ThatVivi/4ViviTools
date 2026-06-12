@@ -1,0 +1,14 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:FourRVivi.App"
+             x:Class="FourRVivi.App.App"
+             RequestedThemeVariant="Dark">
+  <Application.DataTemplates>
+    <local:ViewLocator/>
+  </Application.DataTemplates>
+  <Application.Styles>
+    <FluentTheme/>
+    <StyleInclude Source="avares://4rVivi/Styles/Colors.axaml"/>
+    <StyleInclude Source="avares://4rVivi/Styles/Controls.axaml"/>
+  </Application.Styles>
+</Application>

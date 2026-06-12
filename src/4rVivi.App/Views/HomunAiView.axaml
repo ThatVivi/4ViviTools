@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.HomunAiView" x:DataType="vm:HomunAiViewModel">
+  <Grid RowDefinitions="Auto,Auto,Auto,*">
+    <TextBlock Grid.Row="0" Text="Homunculus / Mercenary AI generator" Classes="h1"/>
+    <Border Grid.Row="1" Classes="card" Margin="0,12">
+      <StackPanel Spacing="10">
+        <CheckBox Content="Aggressive (attack nearby enemies)" IsChecked="{Binding Aggressive}"/>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <StackPanel><TextBlock Text="Follow distance" Classes="muted"/><NumericUpDown Width="100" Minimum="1" Maximum="5" Value="{Binding FollowDistance}"/></StackPanel>
+          <StackPanel><TextBlock Text="Skill at HP %" Classes="muted"/><NumericUpDown Width="100" Minimum="0" Maximum="100" Value="{Binding SkillHpPercent}"/></StackPanel>
+          <StackPanel><TextBlock Text="Skill name" Classes="muted"/><TextBox Width="160" Text="{Binding SkillName}"/></StackPanel>
+        </StackPanel>
+        <Button Classes="accent" Content="Generate AI.lua" Command="{Binding GenerateCommand}" HorizontalAlignment="Left"/>
+        <TextBlock Text="{Binding Status}" Classes="muted"/>
+      </StackPanel>
+    </Border>
+    <TextBlock Grid.Row="2" Text="Output (copy into AI/USER_AI/AI.lua)" Classes="muted" Margin="0,0,0,6"/>
+    <Border Grid.Row="3" Classes="card" Padding="2">
+      <TextBox Text="{Binding Output}" IsReadOnly="True" AcceptsReturn="True" FontFamily="Consolas,monospace" TextWrapping="NoWrap"/>
+    </Border>
+  </Grid>
+</UserControl>

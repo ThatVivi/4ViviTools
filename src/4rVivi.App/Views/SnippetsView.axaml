@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels" xmlns:tools="clr-namespace:FourRVivi.Core.Tools;assembly=4rVivi.Core"
+             x:Class="FourRVivi.App.Views.SnippetsView" x:DataType="vm:SnippetsViewModel">
+  <Grid ColumnDefinitions="280,*" RowDefinitions="Auto,*">
+    <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="NPC snippet library" Classes="h1" Margin="0,0,0,12"/>
+    <StackPanel Grid.Row="1" Grid.Column="0" Spacing="8" Margin="0,0,12,0">
+      <TextBox Text="{Binding Query}" Watermark="filter…"/>
+      <Border Classes="card" Padding="0" Height="430">
+        <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" Background="Transparent">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="tools:Snippet">
+              <StackPanel>
+                <TextBlock Text="{Binding Title}"/>
+                <TextBlock Text="{Binding Category}" Classes="muted" FontSize="11"/>
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Border>
+    </StackPanel>
+    <Border Grid.Row="1" Grid.Column="1" Classes="card" Padding="2">
+      <TextBox Text="{Binding Code}" IsReadOnly="True" AcceptsReturn="True" FontFamily="Consolas,monospace" TextWrapping="NoWrap"/>
+    </Border>
+  </Grid>
+</UserControl>

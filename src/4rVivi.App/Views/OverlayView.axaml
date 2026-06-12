@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.OverlayView" x:DataType="vm:OverlayViewModel">
+  <StackPanel Spacing="14">
+    <TextBlock Text="RCX Overlay" Classes="h1"/>
+    <TextBlock Classes="muted" Text="Draws helper geometry over the game, centered on screen: cast-range circle, AoE box, center cross. Pick your RO process first."/>
+    <Border Classes="card">
+      <StackPanel Spacing="12">
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <StackPanel><TextBlock Text="Cast range (px)" Classes="muted"/><NumericUpDown Width="120" Minimum="0" Maximum="2000" Value="{Binding CastRange}"/></StackPanel>
+          <StackPanel><TextBlock Text="AoE box (px)" Classes="muted"/><NumericUpDown Width="120" Minimum="0" Maximum="2000" Value="{Binding Aoe}"/></StackPanel>
+          <CheckBox Content="Gutter cross" IsChecked="{Binding Gutter}" VerticalAlignment="Bottom"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button Classes="accent" Content="Show overlay" Command="{Binding ShowCommand}"/>
+          <Button Content="Hide overlay" Command="{Binding HideCommand}"/>
+        </StackPanel>
+        <TextBlock Classes="muted" Text="Note: enemy ESP needs per-client memory offsets and is not included."/>
+      </StackPanel>
+    </Border>
+  </StackPanel>
+</UserControl>

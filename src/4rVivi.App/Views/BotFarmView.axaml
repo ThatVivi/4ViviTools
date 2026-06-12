@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.BotFarmView" x:DataType="vm:BotFarmViewModel">
+  <StackPanel Spacing="14">
+    <TextBlock Text="Bot / Farm" Classes="h1"/>
+    <TextBlock Classes="muted" Text="Attack + loot rotation with a flee-at-HP% safety. Needs the HP address set in Scanner for flee to work. Master ON to run."/>
+    <Border Classes="card">
+      <StackPanel Spacing="12">
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <StackPanel><TextBlock Text="Attack key" Classes="muted"/><TextBox Width="80" Text="{Binding AttackKey}"/></StackPanel>
+          <StackPanel><TextBlock Text="Loot key" Classes="muted"/><TextBox Width="80" Text="{Binding LootKey}"/></StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <StackPanel><TextBlock Text="Flee at HP %" Classes="muted"/><NumericUpDown Width="110" Minimum="0" Maximum="100" Value="{Binding FleeAtHpPercent}"/></StackPanel>
+          <StackPanel><TextBlock Text="Rotation ms" Classes="muted"/><NumericUpDown Width="120" Minimum="50" Maximum="10000" Value="{Binding RotationMs}"/></StackPanel>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </StackPanel>
+</UserControl>

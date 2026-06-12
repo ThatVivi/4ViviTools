@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.HudView" x:DataType="vm:HudViewModel">
+  <StackPanel Spacing="14">
+    <TextBlock Text="Buff / debuff HUD" Classes="h1"/>
+    <TextBlock Classes="muted" Text="Countdown timers for buffs. Press Start when you cast; the timer counts down so you know when to re-buff."/>
+    <Button Content="+ Add timer" Command="{Binding AddCommand}" HorizontalAlignment="Left"/>
+    <ItemsControl ItemsSource="{Binding Timers}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:HudRowViewModel">
+          <Border Classes="card" Margin="0,0,0,8">
+            <Grid ColumnDefinitions="220,140,120,Auto,Auto" VerticalAlignment="Center">
+              <TextBox Grid.Column="0" Text="{Binding Name}" Margin="0,0,8,0"/>
+              <NumericUpDown Grid.Column="1" Minimum="1" Maximum="100000" Value="{Binding DurationSec}" Margin="0,0,8,0"/>
+              <TextBlock Grid.Column="2" Text="{Binding Display}" FontSize="16" VerticalAlignment="Center"/>
+              <Button Grid.Column="3" Classes="accent" Content="Start" Margin="6,0,0,0"
+                      Command="{Binding $parent[ItemsControl].((vm:HudViewModel)DataContext).StartTimerCommand}" CommandParameter="{Binding}"/>
+              <Button Grid.Column="4" Content="✕" Margin="6,0,0,0"
+                      Command="{Binding $parent[ItemsControl].((vm:HudViewModel)DataContext).RemoveCommand}" CommandParameter="{Binding}"/>
+            </Grid>
+          </Border>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </StackPanel>
+</UserControl>

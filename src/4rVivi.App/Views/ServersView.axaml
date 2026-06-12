@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.ServersView" x:DataType="vm:ServersViewModel">
+  <StackPanel Spacing="14">
+    <TextBlock Text="Servers &amp; profiles" Classes="h1"/>
+    <Border Classes="card">
+      <StackPanel Spacing="10">
+        <TextBlock Text="Profiles" FontWeight="SemiBold"/>
+        <ListBox ItemsSource="{Binding Profiles}" Height="120" Background="Transparent"/>
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBox Width="200" Text="{Binding NewProfileName}" Watermark="New profile name"/>
+          <Button Content="Add profile" Command="{Binding AddProfileCommand}"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+    <Border Classes="card">
+      <StackPanel Spacing="10">
+        <TextBlock Text="Preferred process names" FontWeight="SemiBold"/>
+        <TextBlock Classes="muted" Text="Comma-separated client exe names to float to the top of the process list."/>
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBox Width="320" Text="{Binding PreferredProcessNames}"/>
+          <Button Content="Save" Command="{Binding SavePreferredCommand}"/>
+        </StackPanel>
+        <TextBlock Classes="muted" Text="{Binding Status}"/>
+      </StackPanel>
+    </Border>
+  </StackPanel>
+</UserControl>

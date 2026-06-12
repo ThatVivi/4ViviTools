@@ -1,0 +1,71 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+        xmlns:game="clr-namespace:FourRVivi.Core.Game;assembly=4rVivi.Core"
+        x:Class="FourRVivi.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Width="1040" Height="680" MinWidth="900" MinHeight="600"
+        Title="4rVivi" Background="{DynamicResource BgBrush}"
+        Opacity="{Binding WindowOpacity}"
+        WindowStartupLocation="CenterScreen">
+
+  <Grid RowDefinitions="56,*">
+
+    <!-- top bar -->
+    <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto,Auto" VerticalAlignment="Center" Margin="14,0">
+        <TextBlock Grid.Column="0" Text="◆ 4rVivi" Foreground="{DynamicResource AccentBrush}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,18,0"/>
+        <TextBlock Grid.Column="1" Text="Process" Classes="muted" VerticalAlignment="Center" Margin="0,0,6,0"/>
+        <ComboBox Grid.Column="2" Width="240" ItemsSource="{Binding Processes}" SelectedItem="{Binding SelectedProcess}">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="game:GameProcess"><TextBlock Text="{Binding Display}"/></DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <Button Grid.Column="3" Content="↻" Margin="6,0,0,0" Command="{Binding RefreshProcessesCommand}"/>
+        <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="14,0,0,0" VerticalAlignment="Center">
+          <TextBlock Text="Profile" Classes="muted" VerticalAlignment="Center" Margin="0,0,6,0"/>
+          <ComboBox Width="140" ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}"/>
+        </StackPanel>
+        <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <TextBlock Text="HP" Classes="muted" VerticalAlignment="Center"/>
+          <ProgressBar Width="90" Minimum="0" Maximum="100" Value="{Binding HpPercent}" Foreground="{DynamicResource DangerBrush}"/>
+          <TextBlock Text="SP" Classes="muted" VerticalAlignment="Center" Margin="6,0,0,0"/>
+          <ProgressBar Width="90" Minimum="0" Maximum="100" Value="{Binding SpPercent}" Foreground="{DynamicResource Accent2Brush}"/>
+        </StackPanel>
+        <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+          <TextBlock Text="Opacity" Classes="muted" VerticalAlignment="Center" Margin="0,0,6,0"/>
+          <Slider Width="110" Minimum="0.7" Maximum="1.0" Value="{Binding WindowOpacity}" VerticalAlignment="Center"/>
+        </StackPanel>
+        <ToggleButton Grid.Column="7" MinWidth="160" IsChecked="{Binding MasterOn}" Content="{Binding MasterLabel}" Classes="accent"/>
+      </Grid>
+    </Border>
+
+    <!-- body -->
+    <Grid Grid.Row="1" ColumnDefinitions="212,*">
+      <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
+        <ScrollViewer>
+          <ItemsControl ItemsSource="{Binding NavItems}" Margin="0,6">
+            <ItemsControl.DataTemplates>
+              <DataTemplate DataType="vm:NavSection">
+                <TextBlock Classes="section" Text="{Binding Title}"/>
+              </DataTemplate>
+              <DataTemplate DataType="vm:NavPage">
+                <RadioButton Classes="nav" GroupName="nav" Content="{Binding Title}"
+                             IsChecked="{Binding IsActive, Mode=TwoWay}" Command="{Binding SelectCommand}"/>
+              </DataTemplate>
+            </ItemsControl.DataTemplates>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+
+      <Grid Grid.Column="1" RowDefinitions="*,Auto">
+        <ScrollViewer Grid.Row="0">
+          <ContentControl Content="{Binding CurrentPage}" Margin="22"/>
+        </ScrollViewer>
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="14,7">
+          <TextBlock Text="{Binding StatusText}" Classes="muted"/>
+        </Border>
+      </Grid>
+    </Grid>
+  </Grid>
+</Window>

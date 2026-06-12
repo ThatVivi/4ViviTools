@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.ItemDbEditorView" x:DataType="vm:ItemDbEditorViewModel">
+  <Grid RowDefinitions="Auto,Auto,Auto,*">
+    <TextBlock Grid.Row="0" Text="Item-DB script editor" Classes="h1"/>
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,12">
+      <TextBox Width="420" Text="{Binding Path}" Watermark="C:\rathena\db\re\item_db_equip.yml"/>
+      <Button Content="Load" Command="{Binding LoadCommand}"/>
+      <Button Classes="accent" Content="Save" Command="{Binding SaveCommand}"/>
+    </StackPanel>
+    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10" Margin="0,0,0,8">
+      <TextBox Width="240" Text="{Binding Find}" Watermark="find (id / aegis / text)"/>
+      <Button Content="Find" Command="{Binding FindNextCommand}"/>
+      <TextBlock Text="{Binding Status}" Classes="muted" VerticalAlignment="Center"/>
+    </StackPanel>
+    <Border Grid.Row="3" Classes="card" Padding="2">
+      <TextBox Text="{Binding Content}" AcceptsReturn="True" AcceptsTab="True" FontFamily="Consolas,monospace"
+               TextWrapping="NoWrap" VerticalAlignment="Stretch"/>
+    </Border>
+  </Grid>
+</UserControl>

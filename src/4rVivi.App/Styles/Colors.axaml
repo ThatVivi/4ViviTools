@@ -1,0 +1,26 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <Color x:Key="BgColor">#101116</Color>
+    <Color x:Key="SurfaceColor">#171922</Color>
+    <Color x:Key="Surface2Color">#21242E</Color>
+    <Color x:Key="BorderColor">#303442</Color>
+    <Color x:Key="TextColor">#ECEEF5</Color>
+    <Color x:Key="TextMutedColor">#949AAA</Color>
+    <Color x:Key="AccentColor">#7C6CF7</Color>
+    <Color x:Key="Accent2Color">#6366F1</Color>
+    <Color x:Key="OkColor">#34C78E</Color>
+    <Color x:Key="DangerColor">#EB5757</Color>
+
+    <SolidColorBrush x:Key="BgBrush" Color="{StaticResource BgColor}"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
+    <SolidColorBrush x:Key="Surface2Brush" Color="{StaticResource Surface2Color}"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+    <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+    <SolidColorBrush x:Key="Accent2Brush" Color="{StaticResource Accent2Color}"/>
+    <SolidColorBrush x:Key="OkBrush" Color="{StaticResource OkColor}"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
+  </Styles.Resources>
+</Styles>

@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.SettingsView" x:DataType="vm:SettingsViewModel">
+  <StackPanel Spacing="14">
+    <TextBlock Text="Settings" Classes="h1"/>
+    <Border Classes="card">
+      <StackPanel Spacing="12">
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <StackPanel><TextBlock Text="Language" Classes="muted"/><ComboBox Width="100" ItemsSource="{Binding Languages}" SelectedItem="{Binding Language}"/></StackPanel>
+          <StackPanel><TextBlock Text="Accent hex" Classes="muted"/><TextBox Width="120" Text="{Binding AccentHex}"/></StackPanel>
+          <StackPanel><TextBlock Text="Opacity %" Classes="muted"/><NumericUpDown Width="110" Minimum="70" Maximum="100" Value="{Binding Opacity}"/></StackPanel>
+        </StackPanel>
+        <CheckBox Content="Humanize timing (anti-detection jitter)" IsChecked="{Binding Humanize}"/>
+        <CheckBox Content="Acrylic / Mica backdrop" IsChecked="{Binding Acrylic}"/>
+        <Button Classes="accent" Content="Save settings" Command="{Binding SaveCommand}" HorizontalAlignment="Left"/>
+        <TextBlock Classes="muted" Text="{Binding Status}"/>
+      </StackPanel>
+    </Border>
+  </StackPanel>
+</UserControl>

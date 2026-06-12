@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.MacrosView" x:DataType="vm:MacrosViewModel">
+  <StackPanel Spacing="14">
+    <TextBlock Text="Macros" Classes="h1"/>
+    <TextBlock Classes="muted" TextWrapping="Wrap" Text="Chain macros for equip/skill switch, auto-vend, auto-storage. Keys are comma-separated. Tick Loop to repeat while master is ON."/>
+    <Button Content="+ Add macro" Command="{Binding AddChainCommand}" HorizontalAlignment="Left"/>
+    <ItemsControl ItemsSource="{Binding Chains}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:MacroRowViewModel">
+          <Border Classes="card" Margin="0,0,0,8">
+            <Grid ColumnDefinitions="180,*,80,110,Auto,Auto" VerticalAlignment="Center">
+              <TextBox Grid.Column="0" Text="{Binding Name}" Margin="0,0,8,0"/>
+              <TextBox Grid.Column="1" Text="{Binding KeysCsv}" Watermark="F9, ENTER, ENTER" Margin="0,0,8,0"/>
+              <CheckBox Grid.Column="2" Content="Loop" IsChecked="{Binding LoopWhileOn}"/>
+              <NumericUpDown Grid.Column="3" Minimum="200" Maximum="600000" Value="{Binding IntervalMs}" Margin="0,0,8,0"/>
+              <Button Grid.Column="4" Classes="accent" Content="Play"
+                      Command="{Binding $parent[ItemsControl].((vm:MacrosViewModel)DataContext).PlayChainCommand}" CommandParameter="{Binding}"/>
+              <Button Grid.Column="5" Content="✕" Margin="6,0,0,0"
+                      Command="{Binding $parent[ItemsControl].((vm:MacrosViewModel)DataContext).RemoveChainCommand}" CommandParameter="{Binding}"/>
+            </Grid>
+          </Border>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+    <TextBlock Classes="section" Text="LOGIN / RECONNECT"/>
+    <Border Classes="card">
+      <StackPanel Spacing="10">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBox Width="260" Text="{Binding Sequence}" Watermark="ENTER, ENTER"/>
+          <StackPanel><TextBlock Text="Gap ms" Classes="muted"/><NumericUpDown Width="100" Minimum="20" Maximum="5000" Value="{Binding GapMs}"/></StackPanel>
+          <Button Classes="accent" Content="Play login" VerticalAlignment="Bottom" Command="{Binding PlayLoginCommand}"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <StackPanel><TextBlock Text="Username" Classes="muted"/><TextBox Width="170" Text="{Binding Username}"/></StackPanel>
+          <StackPanel><TextBlock Text="Password" Classes="muted"/><TextBox Width="170" PasswordChar="•" Text="{Binding Password}"/></StackPanel>
+          <Button Content="Save login" VerticalAlignment="Bottom" Command="{Binding SaveLoginCommand}"/>
+        </StackPanel>
+        <TextBlock Text="{Binding Status}" Classes="muted"/>
+      </StackPanel>
+    </Border>
+  </StackPanel>
+</UserControl>

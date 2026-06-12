@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.DashboardView" x:DataType="vm:DashboardViewModel">
+  <StackPanel Spacing="18">
+    <Border Classes="card">
+      <StackPanel Spacing="10">
+        <TextBlock Text="◆ 4rVivi" Classes="h1"/>
+        <TextBlock Classes="muted" Text="Pick your RO process in the top bar, then turn everything on."/>
+        <Button Classes="accent" Content="Turn everything ON / OFF" Command="{Binding ToggleMasterCommand}" HorizontalAlignment="Left"/>
+      </StackPanel>
+    </Border>
+    <TextBlock Classes="section" Text="QUICK OPEN"/>
+    <WrapPanel>
+      <Button Content="Autopot" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Autopot"/>
+      <Button Content="Skills" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Skills"/>
+      <Button Content="Bot / Farm" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Bot / Farm"/>
+      <Button Content="RCX Overlay" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="RCX Overlay"/>
+      <Button Content="Database" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Database"/>
+      <Button Content="Scanner" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Scanner"/>
+      <Button Content="Settings" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Settings"/>
+    </WrapPanel>
+  </StackPanel>
+</UserControl>

@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.SmartBotView" x:DataType="vm:SmartBotViewModel">
+  <StackPanel Spacing="14">
+    <TextBlock Text="Smart Bot" Classes="h1"/>
+    <TextBlock Classes="muted" TextWrapping="Wrap" Text="Attack + skill rotation, auto-loot, teleport when no progress, and return-to-town when overweight. Master ON to run. Set HP/EXP/Weight/Pos addresses in the Scanner for full behaviour."/>
+    <Border Classes="card">
+      <StackPanel Spacing="12">
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <StackPanel><TextBlock Text="Attack key" Classes="muted"/><AutoCompleteBox Width="100" FilterMode="Contains" ItemsSource="{Binding Keys}" Text="{Binding AttackKey}"/></StackPanel>
+          <StackPanel><TextBlock Text="Loot key" Classes="muted"/><AutoCompleteBox Width="100" FilterMode="Contains" ItemsSource="{Binding Keys}" Text="{Binding LootKey}"/></StackPanel>
+          <StackPanel><TextBlock Text="Teleport key" Classes="muted"/><AutoCompleteBox Width="100" FilterMode="Contains" ItemsSource="{Binding Keys}" Text="{Binding TeleportKey}"/></StackPanel>
+          <StackPanel><TextBlock Text="Return key" Classes="muted"/><AutoCompleteBox Width="100" FilterMode="Contains" ItemsSource="{Binding Keys}" Text="{Binding ReturnKey}"/></StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock Text="Skill rotation" Classes="muted" VerticalAlignment="Center"/>
+          <TextBox Width="240" Text="{Binding Rotation}" Watermark="F2, F3 (woven into attacks)"/>
+          <Button Content="Apply rotation" Command="{Binding ApplyRotationCommand}"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <StackPanel><TextBlock Text="Flee at HP %" Classes="muted"/><NumericUpDown Width="110" Minimum="0" Maximum="100" Value="{Binding FleeAtHpPercent}"/></StackPanel>
+          <StackPanel><TextBlock Text="Stuck seconds" Classes="muted"/><NumericUpDown Width="110" Minimum="2" Maximum="120" Value="{Binding StuckSeconds}"/></StackPanel>
+          <StackPanel><TextBlock Text="Return at weight %" Classes="muted"/><NumericUpDown Width="130" Minimum="0" Maximum="100" Value="{Binding ReturnAtWeightPercent}"/></StackPanel>
+          <StackPanel><TextBlock Text="Rotation ms" Classes="muted"/><NumericUpDown Width="110" Minimum="80" Maximum="5000" Value="{Binding RotationMs}"/></StackPanel>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+    <StackPanel Orientation="Horizontal" Spacing="10">
+      <TextBlock Text="{Binding AddressStatus}" Classes="muted" TextWrapping="Wrap" Width="640"/>
+      <Button Content="Refresh" Command="{Binding RefreshAddressesCommand}"/>
+    </StackPanel>
+  </StackPanel>
+</UserControl>

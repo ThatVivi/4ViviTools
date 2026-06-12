@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.MvpTrackerView" x:DataType="vm:MvpTrackerViewModel">
+  <Grid RowDefinitions="Auto,Auto,Auto,*">
+    <TextBlock Grid.Row="0" Text="MVP Tracker" Classes="h1"/>
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,12">
+      <Button Classes="accent" Content="Seed from database" Command="{Binding SeedFromDbCommand}"/>
+      <Button Content="+ Add MVP" Command="{Binding AddCommand}"/>
+    </StackPanel>
+    <TextBlock Grid.Row="2" Classes="muted" Text="{Binding Status}" Margin="0,0,0,8"/>
+    <Border Grid.Row="3" Classes="card" Padding="0">
+      <ListBox ItemsSource="{Binding Entries}" Background="Transparent">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:MvpRowViewModel">
+            <Grid ColumnDefinitions="200,140,80,80,120,Auto,Auto" VerticalAlignment="Center">
+              <TextBox Grid.Column="0" Text="{Binding Name}" Margin="0,0,6,0"/>
+              <TextBox Grid.Column="1" Text="{Binding Map}" Watermark="map" Margin="0,0,6,0"/>
+              <NumericUpDown Grid.Column="2" Minimum="1" Maximum="100000" Value="{Binding MinMinutes}" Margin="0,0,6,0"/>
+              <NumericUpDown Grid.Column="3" Minimum="1" Maximum="100000" Value="{Binding MaxMinutes}" Margin="0,0,6,0"/>
+              <TextBlock Grid.Column="4" Text="{Binding Status}" VerticalAlignment="Center"/>
+              <Button Grid.Column="5" Classes="accent" Content="Killed" Margin="6,0,0,0"
+                      Command="{Binding $parent[ItemsControl].((vm:MvpTrackerViewModel)DataContext).RegisterKillCommand}" CommandParameter="{Binding}"/>
+              <Button Grid.Column="6" Content="✕" Margin="6,0,0,0"
+                      Command="{Binding $parent[ItemsControl].((vm:MvpTrackerViewModel)DataContext).RemoveCommand}" CommandParameter="{Binding}"/>
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Border>
+  </Grid>
+</UserControl>

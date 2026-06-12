@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.CalculatorView" x:DataType="vm:CalculatorViewModel">
+  <StackPanel Spacing="14">
+    <TextBlock Text="Damage / stat calculator" Classes="h1"/>
+    <TextBlock Classes="muted" Text="Approximate pre-renewal derived stats — a planning aid, not server-exact."/>
+    <Border Classes="card">
+      <StackPanel Spacing="10">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <StackPanel><TextBlock Text="Base Lv" Classes="muted"/><NumericUpDown Width="90" Minimum="1" Maximum="200" Value="{Binding BaseLevel}"/></StackPanel>
+          <StackPanel><TextBlock Text="Weapon ATK" Classes="muted"/><NumericUpDown Width="110" Minimum="0" Maximum="5000" Value="{Binding WeaponAtk}"/></StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <StackPanel><TextBlock Text="STR" Classes="muted"/><NumericUpDown Width="80" Minimum="1" Maximum="999" Value="{Binding Str}"/></StackPanel>
+          <StackPanel><TextBlock Text="AGI" Classes="muted"/><NumericUpDown Width="80" Minimum="1" Maximum="999" Value="{Binding Agi}"/></StackPanel>
+          <StackPanel><TextBlock Text="VIT" Classes="muted"/><NumericUpDown Width="80" Minimum="1" Maximum="999" Value="{Binding Vit}"/></StackPanel>
+          <StackPanel><TextBlock Text="INT" Classes="muted"/><NumericUpDown Width="80" Minimum="1" Maximum="999" Value="{Binding Intel}"/></StackPanel>
+          <StackPanel><TextBlock Text="DEX" Classes="muted"/><NumericUpDown Width="80" Minimum="1" Maximum="999" Value="{Binding Dex}"/></StackPanel>
+          <StackPanel><TextBlock Text="LUK" Classes="muted"/><NumericUpDown Width="80" Minimum="1" Maximum="999" Value="{Binding Luk}"/></StackPanel>
+        </StackPanel>
+        <Button Classes="accent" Content="Compute" Command="{Binding ComputeCommand}" HorizontalAlignment="Left"/>
+      </StackPanel>
+    </Border>
+    <Border Classes="card" Padding="0">
+      <ListBox ItemsSource="{Binding Results}" Background="Transparent" FontFamily="Consolas,monospace"/>
+    </Border>
+  </StackPanel>
+</UserControl>

@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.DatabaseView" x:DataType="vm:DatabaseViewModel">
+  <Grid RowDefinitions="Auto,Auto,Auto,*">
+    <TextBlock Grid.Row="0" Text="Game database (rAthena)" Classes="h1"/>
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,12">
+      <ComboBox Width="120" ItemsSource="{Binding Kinds}" SelectedItem="{Binding SelectedKind}"/>
+      <TextBox Width="280" Text="{Binding Query}" Watermark="Search…"/>
+      <Button Classes="accent" Content="Search" Command="{Binding SearchCommand}"/>
+      <Button Content="Reload database" Command="{Binding ReloadCommand}"/>
+    </StackPanel>
+    <TextBlock Grid.Row="2" Classes="muted" Text="{Binding Diagnostics}" Margin="0,0,0,8"/>
+    <Border Grid.Row="3" Classes="card" Padding="0">
+      <ListBox ItemsSource="{Binding Results}" Background="Transparent">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:DbRow">
+            <Grid ColumnDefinitions="70,240,*">
+              <TextBlock Grid.Column="0" Text="{Binding Id}" Classes="muted"/>
+              <TextBlock Grid.Column="1" Text="{Binding Name}"/>
+              <TextBlock Grid.Column="2" Text="{Binding Info}" Classes="muted"/>
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Border>
+  </Grid>
+</UserControl>
