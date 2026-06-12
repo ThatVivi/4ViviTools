@@ -1,35 +1,103 @@
-using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.Input;
-using FourRVivi.Core.Automation;
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.BuffsView"
+             x:DataType="vm:BuffsViewModel"
+             x:Name="Root">
 
-namespace FourRVivi.App.ViewModels;
+  <StackPanel Spacing="14">
+    <TextBlock Text="Buffs" Classes="h1"/>
 
-public sealed partial class BuffsViewModel : ViewModelBase
-{
-    private readonly EngineHub _hub;
-    public ObservableCollection<BuffRowViewModel> SkillBuffs { get; } = new();
-    public ObservableCollection<BuffRowViewModel> ItemBuffs { get; } = new();
+    <TextBlock Classes="muted"
+               Text="Re-cast skill and item buffs on a timer. Interval is milliseconds."/>
 
-    public BuffsViewModel(EngineHub hub)
-    {
-        _hub = hub;
-        foreach (var r in _hub.SkillBuffs.Rules) SkillBuffs.Add(new BuffRowViewModel(r));
-        foreach (var r in _hub.ItemBuffs.Rules) ItemBuffs.Add(new BuffRowViewModel(r));
-    }
+    <TextBlock Classes="section"
+               Text="SKILL BUFFS"/>
 
-    [RelayCommand] private void AddSkillBuff()
-    {
-        var r = new BuffRule { Key = "F5", IntervalMs = 30000 };
-        _hub.SkillBuffs.Rules.Add(r); SkillBuffs.Add(new BuffRowViewModel(r));
-    }
-    [RelayCommand] private void RemoveSkillBuff(BuffRowViewModel row)
-    { _hub.SkillBuffs.Rules.Remove(row.Model); SkillBuffs.Remove(row); }
+    <Button Content="+ Add skill buff"
+            Command="{Binding AddSkillBuffCommand}"
+            HorizontalAlignment="Left"/>
 
-    [RelayCommand] private void AddItemBuff()
-    {
-        var r = new BuffRule { Key = "F6", IntervalMs = 60000 };
-        _hub.ItemBuffs.Rules.Add(r); ItemBuffs.Add(new BuffRowViewModel(r));
-    }
-    [RelayCommand] private void RemoveItemBuff(BuffRowViewModel row)
-    { _hub.ItemBuffs.Rules.Remove(row.Model); ItemBuffs.Remove(row); }
-}
+    <ItemsControl ItemsSource="{Binding SkillBuffs}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:BuffRowViewModel">
+          <Border Classes="card" Margin="0,0,0,8">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,*"
+                  VerticalAlignment="Center">
+
+              <CheckBox Grid.Column="0"
+                        IsChecked="{Binding Enabled}"
+                        Content="On"
+                        Margin="0,0,12,0"/>
+
+              <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                <TextBlock Text="Key" Classes="muted"/>
+                <TextBox Width="60" Text="{Binding Key}"/>
+              </StackPanel>
+
+              <StackPanel Grid.Column="2">
+                <TextBlock Text="Interval ms" Classes="muted"/>
+                <NumericUpDown Width="130"
+                               Minimum="500"
+                               Maximum="3600000"
+                               Value="{Binding IntervalMs}"/>
+              </StackPanel>
+
+              <Button Grid.Column="3"
+                      Content="✕"
+                      HorizontalAlignment="Right"
+                      Command="{Binding #Root.DataContext.RemoveSkillBuffCommand}"
+                      CommandParameter="{Binding}"/>
+
+            </Grid>
+          </Border>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+    <TextBlock Classes="section"
+               Text="ITEM BUFFS"/>
+
+    <Button Content="+ Add item buff"
+            Command="{Binding AddItemBuffCommand}"
+            HorizontalAlignment="Left"/>
+
+    <ItemsControl ItemsSource="{Binding ItemBuffs}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:BuffRowViewModel">
+          <Border Classes="card" Margin="0,0,0,8">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,*"
+                  VerticalAlignment="Center">
+
+              <CheckBox Grid.Column="0"
+                        IsChecked="{Binding Enabled}"
+                        Content="On"
+                        Margin="0,0,12,0"/>
+
+              <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                <TextBlock Text="Key" Classes="muted"/>
+                <TextBox Width="60" Text="{Binding Key}"/>
+              </StackPanel>
+
+              <StackPanel Grid.Column="2">
+                <TextBlock Text="Interval ms" Classes="muted"/>
+                <NumericUpDown Width="130"
+                               Minimum="500"
+                               Maximum="3600000"
+                               Value="{Binding IntervalMs}"/>
+              </StackPanel>
+
+              <Button Grid.Column="3"
+                      Content="✕"
+                      HorizontalAlignment="Right"
+                      Command="{Binding #Root.DataContext.RemoveItemBuffCommand}"
+                      CommandParameter="{Binding}"/>
+
+            </Grid>
+          </Border>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+  </StackPanel>
+</UserControl>
