@@ -33,13 +33,24 @@ jobs:
           name: TestLogs
           path: test_log.txt
 
+      # Publish step: Capture full output and fail if the command fails
       - name: Publish single-file exe (win-x64, self-contained)
         id: publish
-        run: dotnet publish src/4rVivi.App/4rVivi.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o publish > publish_log.txt 2>&1 || true
+        run: |
+          dotnet publish src/4rVivi.App/4rVivi.App.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true `
+            -o publish > publish_log.txt 2>&1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         shell: pwsh
 
+      # Always upload the publish log
       - name: Upload Publish Logs
-        if: always() && steps.publish.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: PublishLogs
@@ -50,14 +61,9 @@ jobs:
         shell: pwsh
         run: Get-ChildItem -Recurse publish | Select-Object FullName, Length | Format-Table -AutoSize
 
-      - name: Verify exe exists
-        shell: pwsh
-        run: |
-          if (-not (Test-Path "publish/4rVivi.exe")) { Write-Error "4rVivi.exe was not produced — see the publish step log."; exit 1 }
-          Write-Host "OK: $((Get-Item 'publish/4rVivi.exe').Length) bytes"
-
+      # Only upload the EXE if it exists
       - name: Upload exe
-        if: always()
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: 4rVivi
