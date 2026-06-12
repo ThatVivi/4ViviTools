@@ -19,7 +19,7 @@
               <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="Key" Classes="muted"/><TextBox Width="60" Text="{Binding Key}"/></StackPanel>
               <StackPanel Grid.Column="2"><TextBlock Text="Interval ms" Classes="muted"/><NumericUpDown Width="130" Minimum="500" Maximum="3600000" Value="{Binding IntervalMs}"/></StackPanel>
               <Button Grid.Column="3" Content="✕" HorizontalAlignment="Right"
-                      Command="{Binding #Root.DataContext.RemoveSkillBuffCommand}"
+                      Command="{Binding #Root.((vm:BuffsViewModel)DataContext).RemoveSkillBuffCommand}"
 CommandParameter="{Binding}"/>
             </Grid>
           </Border>
@@ -38,7 +38,7 @@ CommandParameter="{Binding}"/>
               <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="Key" Classes="muted"/><TextBox Width="60" Text="{Binding Key}"/></StackPanel>
               <StackPanel Grid.Column="2"><TextBlock Text="Interval ms" Classes="muted"/><NumericUpDown Width="130" Minimum="500" Maximum="3600000" Value="{Binding IntervalMs}"/></StackPanel>
               <Button Grid.Column="3" Content="✕" HorizontalAlignment="Right"
-                      Command="{Binding #Root.DataContext.RemoveItemBuffCommand}"
+                      Command="{Binding #Root.((vm:BuffsViewModel)DataContext).RemoveItemBuffCommand}"
 CommandParameter="{Binding}"/>
             </Grid>
           </Border>
