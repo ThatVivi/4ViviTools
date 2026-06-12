@@ -1,71 +1,39 @@
 name: Build 4rVivi
 
 on:
-  workflow_dispatch:
   push:
-    tags: ["v*"]
-
-permissions:
-  contents: write
+    branches: [ "**" ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v2
-
-      - name: Restore packages
-        run: nuget restore 4RTools.sln
-
-      - name: Build (Release, x86)
-        id: build
-        continue-on-error: true
-        run: msbuild 4RTools.sln /p:Configuration=Release /m "/flp:logfile=build.log;verbosity=normal" /clp:Summary
-
-      - name: Show build errors
-        if: always()
-        shell: pwsh
-        run: |
-          if (Test-Path build.log) {
-            Write-Host "===== error lines ====="
-            Select-String -Path build.log -Pattern ': error' | ForEach-Object { $_.Line }
-            Write-Host "===== last 40 lines ====="
-            Get-Content build.log -Tail 40
-          } else { Write-Host "no build.log" }
-
-      - name: Upload build log
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
         with:
-          name: build-log
-          path: build.log
+          dotnet-version: '8.0.x'
 
-      - name: Fail if build failed
-        if: steps.build.outcome == 'failure'
-        shell: pwsh
-        run: |
-          Write-Error "Build failed - see 'Show build errors' above or the build-log artifact."
-          exit 1
+      - name: Restore
+        run: dotnet restore 4rVivi.sln
 
-      - name: Upload 4rVivi exe
+      - name: Test (Core)
+        run: dotnet test tests/4rVivi.Core.Tests/4rVivi.Core.Tests.csproj -c Release --no-restore
+
+      - name: Publish single-file exe
+        run: >
+          dotnet publish src/4rVivi.App/4rVivi.App.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+          -o publish
+
+      - name: Upload exe
         uses: actions/upload-artifact@v4
         with:
           name: 4rVivi
+          path: publish/4rVivi.exe
           if-no-files-found: error
-          path: |
-            bin/Release/4rVivi.exe
-            bin/Release/4rVivi.exe.config
-
-      - name: Attach to release (on a v* tag)
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: bin/Release/4rVivi.exe
-          generate_release_notes: true
