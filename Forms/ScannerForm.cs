@@ -135,7 +135,7 @@ namespace _4rVivi.Forms
             if (_engine.Target == null || _engine.Target.Id != pi.Process.Id)
             {
                 if (!_engine.Attach(pi.Process)) { Status("Attach failed — run 4rVivi as Administrator."); return false; }
-                if (_engine.TargetIs64Bit()) { Status("This program is 64-bit. The scanner is 32-bit and can only scan 32-bit clients (like your RO exe)."); return false; }
+                // 4rVivi is AnyCPU/64-bit now — it can scan both 32- and 64-bit targets.
             }
             return true;
         }

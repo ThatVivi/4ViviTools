@@ -143,13 +143,15 @@ namespace _4rVivi.UI
     // Rounded sidebar nav button.
     public sealed class NavButton : Button
     {
+        private bool _active;
         public NavButton(string text)
         {
-            Text = "   " + text;
+            Text = "    " + text;
             TextAlign = ContentAlignment.MiddleLeft;
             Height = 38;
             FlatStyle = FlatStyle.Flat;
             FlatAppearance.BorderSize = 0;
+            FlatAppearance.MouseOverBackColor = Theme.Surface2;
             BackColor = Theme.Surface;
             ForeColor = Theme.TextMuted;
             UseVisualStyleBackColor = false;
@@ -158,8 +160,17 @@ namespace _4rVivi.UI
         }
         public void SetActive(bool on)
         {
-            BackColor = on ? Theme.Accent : Theme.Surface;
+            _active = on;
+            BackColor = on ? Theme.Surface2 : Theme.Surface;
             ForeColor = on ? Color.White : Theme.TextMuted;
+            Invalidate();
+        }
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            if (_active)
+                using (var b = new SolidBrush(Theme.Accent))
+                    e.Graphics.FillRectangle(b, 0, 6, 3, Height - 12);
         }
     }
 }

@@ -476,6 +476,7 @@
     <Compile Include="Macros\TriggeredMacros.cs" />
     <Compile Include="UI\Theme.cs" />
     <Compile Include="UI\Localization.cs" />
+    <Compile Include="Features\AdvancedAutopot.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Security" />

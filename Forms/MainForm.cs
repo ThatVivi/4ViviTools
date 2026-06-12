@@ -2,7 +2,7 @@
 // Each feature form (Autopot, Spammer, Switcher, Songs, Autobuff, etc.) is embedded as a
 // child control, wired to a shared Subject + process/profile selection (same as the original
 // Container). Plus 4rVivi-only tabs: Database, Macros, Scanner.
-// .NET Framework 4.x, x86. namespace _4rVivi.Forms.
+// .NET Framework 4.x, AnyCPU (x64). namespace _4rVivi.Forms.
 
 using System;
 using System.Collections.Generic;
@@ -16,6 +16,7 @@ using _4RTools.Utils;     // Subject, Message, MessageCode
 using _4rVivi.UI;
 using _4rVivi.Data;
 using _4rVivi.Macros;
+using _4rVivi.Features;
 using Message = _4RTools.Utils.Message;        // disambiguate from System.Windows.Forms.Message
 
 namespace _4rVivi.Forms
@@ -36,6 +37,8 @@ namespace _4rVivi.Forms
         private readonly MacroRecorder _recorder = new MacroRecorder();
         private readonly MacroPlayer _player = new MacroPlayer();
         private MacroRecording _lastRecording;
+        private readonly AdvancedAutopot _adv = new AdvancedAutopot();
+        private readonly List<Func<PotRule>> _potRows = new List<Func<PotRule>>();
 
         public MainForm()
         {
@@ -44,6 +47,7 @@ namespace _4rVivi.Forms
             MinimumSize = new Size(820, 560);
             StartPosition = FormStartPosition.CenterScreen;
             Font = new Font("Segoe UI", 9f);
+            try { DoubleBuffered = true; } catch { }   // reduce flicker
 
             LoadServers();
             try { _data = new DataService(); } catch { _data = null; }
@@ -51,6 +55,8 @@ namespace _4rVivi.Forms
             BuildTopBar();
             BuildSidebar();
             BuildContent();
+
+            AddPage("Dashboard", BuildDashboardPage());
 
             // ---- real 4RTools feature forms ----
             AddFormPage("Autopot", () => new AutopotForm(subject, false));
@@ -64,6 +70,7 @@ namespace _4rVivi.Forms
             AddFormPage("ATK / DEF", () => new ATKDEFForm(subject));
             AddFormPage("Skill Timer", () => new SkillTimerForm(subject));
             AddFormPage("Servers", () => new ServersForm(subject));
+            AddPage("AutoPots+", BuildAutoPotsPlusPage());
             // ---- 4rVivi-only pages ----
             AddPage("Macros", BuildMacrosPage());
             AddPage("Database", BuildDatabasePage());
@@ -387,8 +394,99 @@ namespace _4rVivi.Forms
             return p;
         }
 
+        private Control BuildDashboardPage()
+        {
+            var p = new Panel();
+            p.Controls.Add(new Label { Text = "4rVivi", Top = 16, Left = 18, AutoSize = true, Font = new Font("Segoe UI", 22f, FontStyle.Bold) });
+            p.Controls.Add(new Label { Text = Lang.T("Pick your RO process in the top bar, then turn ON."), Top = 62, Left = 20, AutoSize = true, ForeColor = Theme.TextMuted });
+
+            var big = new Button { Text = Lang.T("TURN ON / OFF"), Left = 20, Top = 100, Width = 220, Height = 56, Font = new Font("Segoe UI", 12f, FontStyle.Bold) };
+            big.Click += (s, e) => { try { if (_master != null) _master.Checked = !_master.Checked; } catch { } };
+            p.Controls.Add(big);
+
+            p.Controls.Add(new Label { Text = Lang.T("Quick open"), Top = 178, Left = 20, AutoSize = true, ForeColor = Theme.TextMuted });
+            string[][] jumps = new string[][] {
+                new[]{ "Autopot", "Autopot" }, new[]{ "Spammer", "Spammer" }, new[]{ "Switcher", "Switcher" },
+                new[]{ "Bot / Farm", "Bot / Farm" }, new[]{ "Database", "Database" }, new[]{ "Settings", "Settings" } };
+            int x = 20, y = 206;
+            foreach (var j in jumps)
+            {
+                string key = j[1];
+                var b = new Button { Text = Lang.T(j[0]), Left = x, Top = y, Width = 160, Height = 46 };
+                b.Click += (s, e) => ShowPage(key);
+                p.Controls.Add(b);
+                x += 174; if (x > 20 + 174 * 2) { x = 20; y += 58; }
+            }
+            return p;
+        }
+
+        private Control BuildAutoPotsPlusPage()
+        {
+            _potRows.Clear();
+            var p = new Panel { AutoScroll = true };
+            p.Controls.Add(new Label { Text = Lang.T("Advanced Autopot"), Top = 12, Left = 12, AutoSize = true, Font = new Font("Segoe UI", 14f, FontStyle.Bold) });
+            p.Controls.Add(new Label { Text = Lang.T("Reads HP/SP from memory. Set % or flat value, key, reaction (ms), use-delay (ms). Pick your process in the top bar first."), Top = 42, Left = 12, AutoSize = true, ForeColor = Theme.TextMuted, MaximumSize = new Size(740, 0) });
+
+            int y = 86;
+            int[] cols = { 12, 70, 150, 232, 300, 372 };
+            string[] heads = { "Tier", "On / %", "Flat", "Key", "React", "Delay" };
+            for (int i = 0; i < heads.Length; i++)
+                p.Controls.Add(new Label { Text = heads[i], Left = cols[i], Top = y, AutoSize = true, ForeColor = Theme.TextMuted });
+            y += 24;
+
+            AddPotRow(p, ref y, cols, "HP 1", false);
+            AddPotRow(p, ref y, cols, "HP 2", false);
+            AddPotRow(p, ref y, cols, "SP 1", true);
+            AddPotRow(p, ref y, cols, "SP 2", true);
+            AddPotRow(p, ref y, cols, "YGG", false);
+
+            var start = new Button { Text = Lang.T("Start"), Left = 12, Top = y + 12, Width = 110, Height = 34 };
+            var stop = new Button { Text = Lang.T("Stop"), Left = 130, Top = y + 12, Width = 110, Height = 34 };
+            var st = new Label { Text = "", Left = 252, Top = y + 20, AutoSize = true, ForeColor = Theme.TextMuted };
+            _adv.Status = m => { try { st.Text = m; } catch { } };
+            start.Click += (s, e) =>
+            {
+                var rules = new List<PotRule>();
+                foreach (var b in _potRows) { var r = b(); if (r != null) rules.Add(r); }
+                _adv.Rules.Clear(); _adv.Rules.AddRange(rules);
+                _adv.Start();
+                st.Text = Lang.T("Running") + " (" + rules.Count + ")";
+            };
+            stop.Click += (s, e) => { _adv.Stop(); st.Text = Lang.T("Stopped"); };
+            p.Controls.Add(start); p.Controls.Add(stop); p.Controls.Add(st);
+            return p;
+        }
+
+        private void AddPotRow(Panel p, ref int y, int[] cols, string name, bool isSp)
+        {
+            p.Controls.Add(new Label { Text = name, Left = cols[0], Top = y + 3, AutoSize = true });
+            var en = new CheckBox { Left = cols[1] - 18, Top = y, Width = 16, Checked = true };
+            var pct = new NumericUpDown { Left = cols[1], Top = y, Width = 55, Minimum = 0, Maximum = 100, Value = 0 };
+            var flat = new NumericUpDown { Left = cols[2], Top = y, Width = 76, Minimum = 0, Maximum = 1000000, Value = 0 };
+            var key = new TextBox { Left = cols[3], Top = y, Width = 60 };
+            var rea = new NumericUpDown { Left = cols[4], Top = y, Width = 62, Minimum = 0, Maximum = 2000, Value = 0 };
+            var ud = new NumericUpDown { Left = cols[5], Top = y, Width = 62, Minimum = 0, Maximum = 5000, Value = 100 };
+            p.Controls.AddRange(new Control[] { en, pct, flat, key, rea, ud });
+            _potRows.Add(() =>
+            {
+                if (!en.Checked) return null;
+                Keys k = ParseKey(key.Text);
+                if (k == Keys.None) return null;
+                if ((int)pct.Value == 0 && (int)flat.Value == 0) return null;
+                return new PotRule { Name = name, Key = k, Percent = (int)pct.Value, Flat = (int)flat.Value, IsSp = isSp, ReactionMs = (int)rea.Value, UseDelayMs = (int)ud.Value };
+            });
+            y += 30;
+        }
+
+        private static Keys ParseKey(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return Keys.None;
+            try { return (Keys)Enum.Parse(typeof(Keys), s.Trim(), true); } catch { return Keys.None; }
+        }
+
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
+            try { _adv.Stop(); } catch { }
             try { if (_recorder.Recording) _recorder.Stop(); } catch { }
             try { _data?.Dispose(); } catch { }
             base.OnFormClosed(e);

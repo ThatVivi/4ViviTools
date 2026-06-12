@@ -93,6 +93,16 @@ namespace _4rVivi.UI
             { "Session time", "مدة الجلسة" }, { "Kills", "القتلات" }, { "Kills / hour", "قتلات/ساعة" },
             { "EXP / hour", "خبرة/ساعة" }, { "Zeny / hour", "زيني/ساعة" }, { "Drops logged", "الدروبات المسجلة" },
             { "Session stats", "إحصائيات الجلسة" },
+            { "Pick your RO process in the top bar, then turn ON.", "اختر عملية RO من الشريط فوق، وبعدها شغّل." },
+            { "TURN ON / OFF", "تشغيل / إيقاف" },
+            { "Quick open", "فتح سريع" },
+            { "Dashboard", "الرئيسية" },
+            { "Advanced Autopot", "أوتو بوشن متقدم" },
+            { "Reads HP/SP from memory. Set % or flat value, key, reaction (ms), use-delay (ms). Pick your process in the top bar first.", "يقرأ HP/SP من الذاكرة. حدّد % أو رقم، الزر، وقت رد الفعل، ومهلة الاستخدام. اختر العملية فوق أولاً." },
+            { "AutoPots+", "أوتو بوشن+" },
+            { "Start", "ابدأ" }, { "Stop", "إيقاف" }, { "Running", "شغّال" }, { "Stopped", "متوقف" },
+
+
         };
     }
 }
