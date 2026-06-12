@@ -91,7 +91,7 @@
                       Content="✕"
                       HorizontalAlignment="Right"
                       VerticalAlignment="Center"
-                      Command="{Binding #Root.DataContext.RemovePotCommand}"
+                      Command="{Binding $parent[UserControl].DataContext.RemovePotCommand}"
                       CommandParameter="{Binding}"/>
 
             </Grid>
