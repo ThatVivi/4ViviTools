@@ -20,15 +20,12 @@ jobs:
       - name: Restore
         run: dotnet restore 4rVivi.sln
 
-      # Capture test logs
       - name: Test (Core) — non-blocking
         continue-on-error: true
         id: test
-        run: |
-          dotnet test tests/4rVivi.Core.Tests/4rVivi.Core.Tests.csproj -c Release --no-restore --logger "console;verbosity=normal" > test_log.txt 2>&1 || true
+        run: dotnet test tests/4rVivi.Core.Tests/4rVivi.Core.Tests.csproj -c Release --no-restore --logger "console;verbosity=normal" > test_log.txt 2>&1 || true
         shell: pwsh
 
-      # Upload test logs if the test step fails
       - name: Upload Test Logs
         if: always() && steps.test.outcome == 'failure'
         uses: actions/upload-artifact@v4
@@ -36,21 +33,11 @@ jobs:
           name: TestLogs
           path: test_log.txt
 
-      # Capture publish logs
       - name: Publish single-file exe (win-x64, self-contained)
         id: publish
-        run: |
-          dotnet publish src/4rVivi.App/4rVivi.App.csproj
-            -c Release
-            -r win-x64
-            --self-contained true
-            -p:PublishSingleFile=true
-            -p:IncludeNativeLibrariesForSelfExtract=true
-            -p:EnableCompressionInSingleFile=true
-            -o publish > publish_log.txt 2>&1 || true
+        run: dotnet publish src/4rVivi.App/4rVivi.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o publish > publish_log.txt 2>&1 || true
         shell: pwsh
 
-      # Upload publish logs if the publish step fails
       - name: Upload Publish Logs
         if: always() && steps.publish.outcome == 'failure'
         uses: actions/upload-artifact@v4
