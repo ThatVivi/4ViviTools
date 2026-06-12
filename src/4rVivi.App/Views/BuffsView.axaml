@@ -18,7 +18,7 @@
               <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="Key" Classes="muted"/><TextBox Width="60" Text="{Binding Key}"/></StackPanel>
               <StackPanel Grid.Column="2"><TextBlock Text="Interval ms" Classes="muted"/><NumericUpDown Width="130" Minimum="500" Maximum="3600000" Value="{Binding IntervalMs}"/></StackPanel>
               <Button Grid.Column="3" Content="✕" HorizontalAlignment="Right"
-                      Command="{Binding DataContext.RemoveSkillBuffCommand, RelativeSource={RelativeAncestor ItemsControl}}"
+                      Command="{Binding DataContext.RemoveSkillBuffCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}"
                       CommandParameter="{Binding}"/>
             </Grid>
           </Border>
@@ -37,7 +37,7 @@
               <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="Key" Classes="muted"/><TextBox Width="60" Text="{Binding Key}"/></StackPanel>
               <StackPanel Grid.Column="2"><TextBlock Text="Interval ms" Classes="muted"/><NumericUpDown Width="130" Minimum="500" Maximum="3600000" Value="{Binding IntervalMs}"/></StackPanel>
               <Button Grid.Column="3" Content="✕" HorizontalAlignment="Right"
-                      Command="{Binding DataContext.RemoveItemBuffCommand, RelativeSource={RelativeAncestor ItemsControl}}"
+                      Command="{Binding DataContext.RemoveItemBuffCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}"
                       CommandParameter="{Binding}"/>
             </Grid>
           </Border>
