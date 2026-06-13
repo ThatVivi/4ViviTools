@@ -4,6 +4,7 @@ namespace FourRVivi.Core.Trackers;
 
 public sealed class MvpEntry
 {
+    public int MobId { get; set; }
     public string Name { get; set; } = "";
     public string Map { get; set; } = "";
     public int MinMinutes { get; set; } = 60;

@@ -11,6 +11,13 @@
         </StackPanel>
         <CheckBox Content="Humanize timing (anti-detection jitter)" IsChecked="{Binding Humanize}"/>
         <CheckBox Content="Acrylic / Mica backdrop" IsChecked="{Binding Acrylic}"/>
+        <TextBlock Text="Game folder (for AzzyAI + item icons)" Classes="muted"/>
+        <TextBox Width="420" HorizontalAlignment="Left" Text="{Binding GameFolder}" Watermark="C:\Games\RagnarokOnline"/>
+        <TextBlock Text="Divine-Pride image URL ({id} placeholder) + API key" Classes="muted"/>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBox Width="360" Text="{Binding DivinePrideUrl}"/>
+          <TextBox Width="180" Text="{Binding DivinePrideKey}" Watermark="API key (optional)"/>
+        </StackPanel>
         <Button Classes="accent" Content="Save settings" Command="{Binding SaveCommand}" HorizontalAlignment="Left"/>
         <TextBlock Classes="muted" Text="{Binding Status}"/>
       </StackPanel>

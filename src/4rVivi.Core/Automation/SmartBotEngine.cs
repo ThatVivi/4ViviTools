@@ -17,11 +17,15 @@ public sealed class SmartBotEngine : AutomationEngine
     public int StuckSeconds { get; set; } = 8;             // no EXP/HP change -> teleport
     public int ReturnAtWeightPercent { get; set; } = 90;
     public int RotationMs { get; set; } = 350;
+    public bool ClickToMove { get; set; } = true;   // walk by clicking random nearby points
+    public int MoveRadius { get; set; } = 180;       // px around screen centre
 
     public int Kills { get; private set; }                  // proxied from EXP gains
     public DateTime StartedAt { get; private set; } = DateTime.Now;
 
     private readonly StatReader _stat;
+    private readonly MouseSender _mouse = new();
+    private readonly Random _rng = new();
     private int _skillIdx;
     private long _lastChangeTick;
     private int _lastExp = -1, _lastHp = -1, _lastPx = -1, _lastPy = -1;
@@ -56,7 +60,21 @@ public sealed class SmartBotEngine : AutomationEngine
                     continue;
                 }
 
-                // attack + weave a rotation skill
+                // walk: click a random nearby point so the character moves and finds mobs
+                if (ClickToMove)
+                {
+                    var (cw, ch) = _mouse.ClientSize(Hwnd);
+                    if (cw > 0 && ch > 0)
+                    {
+                        int cx = cw / 2, cy = ch / 2;
+                        int x = Math.Clamp(cx + _rng.Next(-MoveRadius, MoveRadius), 4, cw - 4);
+                        int y = Math.Clamp(cy + _rng.Next(-MoveRadius, MoveRadius), 4, ch - 4);
+                        _mouse.Click(Hwnd, x, y);
+                        await Timing.DelayAsync(RotationMs / 2, ct);
+                    }
+                }
+
+                // attack + weave the user-registered skills
                 Keys.Tap(Hwnd, KeyName.ToVk(AttackKey), 15);
                 if (SkillRotation.Count > 0)
                 {

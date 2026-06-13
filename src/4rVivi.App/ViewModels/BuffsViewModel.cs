@@ -1,18 +1,22 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using FourRVivi.Core.Automation;
+using FourRVivi.Core.Game;
+using FourRVivi.Core.Input;
 
 namespace FourRVivi.App.ViewModels;
 
 public sealed partial class BuffsViewModel : ViewModelBase
 {
     private readonly EngineHub _hub;
+    private readonly GameSession _session;
+    private readonly KeySender _keys = new();
     public ObservableCollection<BuffRowViewModel> SkillBuffs { get; } = new();
     public ObservableCollection<BuffRowViewModel> ItemBuffs { get; } = new();
 
-    public BuffsViewModel(EngineHub hub)
+    public BuffsViewModel(EngineHub hub, GameSession session)
     {
-        _hub = hub;
+        _hub = hub; _session = session;
         foreach (var r in _hub.SkillBuffs.Rules) SkillBuffs.Add(new BuffRowViewModel(r));
         foreach (var r in _hub.ItemBuffs.Rules) ItemBuffs.Add(new BuffRowViewModel(r));
     }
@@ -32,4 +36,16 @@ public sealed partial class BuffsViewModel : ViewModelBase
     }
     [RelayCommand] private void RemoveItemBuff(BuffRowViewModel row)
     { _hub.ItemBuffs.Rules.Remove(row.Model); ItemBuffs.Remove(row); }
+
+    /// <summary>One button: fire every enabled skill buff key in order.</summary>
+    [RelayCommand] private async Task RunBuffSequence()
+    {
+        if (_session.WindowHandle == IntPtr.Zero) return;
+        foreach (var b in SkillBuffs)
+        {
+            if (!b.Enabled || string.IsNullOrWhiteSpace(b.Key)) continue;
+            _keys.Tap(_session.WindowHandle, KeyName.ToVk(b.Key), 20);
+            await Task.Delay(300);
+        }
+    }
 }

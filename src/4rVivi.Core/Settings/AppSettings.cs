@@ -33,6 +33,9 @@ public sealed class AppSettings
     public string ActiveProfile { get; set; } = "Default";
     public List<ProfileConfig> Profiles { get; set; } = new() { new ProfileConfig() };
     public Dictionary<string, string> ExternalToolPaths { get; set; } = new();
+    public string DivinePrideImageUrl { get; set; } = "https://static.divine-pride.net/images/mobs/png/{id}.png";
+    public string DivinePrideApiKey { get; set; } = "";
+    public string GameFolder { get; set; } = "";
     public List<ChainMacro> Macros { get; set; } = new();
     public List<BuffTimer> BuffTimers { get; set; } = new();
 

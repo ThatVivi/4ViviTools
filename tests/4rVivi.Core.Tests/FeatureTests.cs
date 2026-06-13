@@ -10,7 +10,7 @@ public class StatCalculatorTests
     [Fact]
     public void Computes_core_stats()
     {
-        var r = StatCalculator.Compute(new CalcInput(99, 99, 1, 1, 1, 50, 50, 100));
+        var r = StatCalculator.Compute(new CalcInput { BaseLevel = 99, Str = 99, Dex = 50, Luk = 50, WeaponAtk = 100 });
         Assert.True(r["ATK"] > 100);
         Assert.True(r["HIT"] >= 99 + 50);
         Assert.True(r["CRIT"] >= 1);

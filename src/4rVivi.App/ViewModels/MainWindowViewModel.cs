@@ -41,7 +41,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         DashboardViewModel dashboard, AutopotViewModel autopot, BuffsViewModel buffs, SkillsViewModel skills,
         SmartBotViewModel smartBot, BotFarmViewModel botFarm, OverlayViewModel overlay, MacrosViewModel macros,
         MvpTrackerViewModel mvp, HudViewModel hud, LootViewModel loot,
-        DatabaseViewModel database, ItemDbEditorViewModel itemDb, CalculatorViewModel calc, SnippetsViewModel snippets, HomunAiViewModel homun,
+        DatabaseViewModel database, CalculatorViewModel calc, HomunAiViewModel homun,
         GrfViewModel grf, SpriteViewerViewModel sprite, ToolsLauncherViewModel tools,
         ScannerViewModel scanner, ServersViewModel servers, StatsViewModel stats, SettingsViewModel settingsVm)
     {
@@ -67,9 +67,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         AddSection("DATA");
         AddPage("Database", database);
-        AddPage("Item-DB Editor", itemDb);
         AddPage("Calculator", calc);
-        AddPage("NPC Snippets", snippets);
         AddPage("Homun AI", homun);
 
         AddSection("TOOLS");

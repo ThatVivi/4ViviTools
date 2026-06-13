@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels" xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
              x:Class="FourRVivi.App.Views.SmartBotView" x:DataType="vm:SmartBotViewModel">
   <StackPanel Spacing="14">
     <TextBlock Text="Smart Bot" Classes="h1"/>
@@ -6,10 +6,10 @@
     <Border Classes="card">
       <StackPanel Spacing="12">
         <StackPanel Orientation="Horizontal" Spacing="14">
-          <StackPanel><TextBlock Text="Attack key" Classes="muted"/><AutoCompleteBox Width="100" FilterMode="Contains" ItemsSource="{Binding Keys}" Text="{Binding AttackKey}"/></StackPanel>
-          <StackPanel><TextBlock Text="Loot key" Classes="muted"/><AutoCompleteBox Width="100" FilterMode="Contains" ItemsSource="{Binding Keys}" Text="{Binding LootKey}"/></StackPanel>
-          <StackPanel><TextBlock Text="Teleport key" Classes="muted"/><AutoCompleteBox Width="100" FilterMode="Contains" ItemsSource="{Binding Keys}" Text="{Binding TeleportKey}"/></StackPanel>
-          <StackPanel><TextBlock Text="Return key" Classes="muted"/><AutoCompleteBox Width="100" FilterMode="Contains" ItemsSource="{Binding Keys}" Text="{Binding ReturnKey}"/></StackPanel>
+          <StackPanel><TextBlock Text="Attack key" Classes="muted"/><ctrl:KeyCaptureBox Width="100" KeyText="{Binding AttackKey}"/></StackPanel>
+          <StackPanel><TextBlock Text="Loot key" Classes="muted"/><ctrl:KeyCaptureBox Width="100" KeyText="{Binding LootKey}"/></StackPanel>
+          <StackPanel><TextBlock Text="Teleport key" Classes="muted"/><ctrl:KeyCaptureBox Width="100" KeyText="{Binding TeleportKey}"/></StackPanel>
+          <StackPanel><TextBlock Text="Return key" Classes="muted"/><ctrl:KeyCaptureBox Width="100" KeyText="{Binding ReturnKey}"/></StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="10">
           <TextBlock Text="Skill rotation" Classes="muted" VerticalAlignment="Center"/>
@@ -21,6 +21,8 @@
           <StackPanel><TextBlock Text="Stuck seconds" Classes="muted"/><NumericUpDown Width="110" Minimum="2" Maximum="120" Value="{Binding StuckSeconds}"/></StackPanel>
           <StackPanel><TextBlock Text="Return at weight %" Classes="muted"/><NumericUpDown Width="130" Minimum="0" Maximum="100" Value="{Binding ReturnAtWeightPercent}"/></StackPanel>
           <StackPanel><TextBlock Text="Rotation ms" Classes="muted"/><NumericUpDown Width="110" Minimum="80" Maximum="5000" Value="{Binding RotationMs}"/></StackPanel>
+          <CheckBox Content="Click to move" IsChecked="{Binding ClickToMove}" VerticalAlignment="Bottom"/>
+          <StackPanel><TextBlock Text="Move radius px" Classes="muted"/><NumericUpDown Width="120" Minimum="20" Maximum="600" Value="{Binding MoveRadius}"/></StackPanel>
         </StackPanel>
       </StackPanel>
     </Border>

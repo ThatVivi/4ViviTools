@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace FourRVivi.Core.Memory;
 
-public enum ScanType { Int32, Int16, Float }
+public enum ScanType { Byte, Int16, Int32, Int64, UInt16, UInt32, Float, Double, String }
 public enum ScanFilter { Exact, Changed, Unchanged, Increased, Decreased, Unknown }
 
 public sealed record ScanHit(IntPtr Address, object Value)
@@ -38,7 +38,7 @@ public sealed class MemoryScanner
         var diag = new ScanDiagnostics { TargetIs64Bit = _r.TargetIs64Bit() };
         byte[] needle = ToBytes(type, value);
         int vsize = needle.Length;
-        int step = Aligned ? vsize : (type == ScanType.Int16 ? 2 : 1);
+        int step = (type == ScanType.String || type == ScanType.Byte) ? 1 : (Aligned ? vsize : 1);
 
         var regions = EnumerateRegions(diag);
         var bag = new ConcurrentBag<ScanHit>();
@@ -91,8 +91,14 @@ public sealed class MemoryScanner
 
     private object? ReadCurrent(ScanType t, IntPtr a) => t switch
     {
+        ScanType.Byte => _r.ReadByte(a),
         ScanType.Int16 => _r.ReadInt16(a),
+        ScanType.UInt16 => _r.ReadUInt16(a),
+        ScanType.Int32 => _r.ReadInt32(a),
+        ScanType.UInt32 => _r.ReadUInt32(a),
+        ScanType.Int64 => _r.ReadInt64(a),
         ScanType.Float => _r.ReadFloat(a),
+        ScanType.Double => _r.ReadDouble(a),
         _ => _r.ReadInt32(a)
     };
 
@@ -134,15 +140,28 @@ public sealed class MemoryScanner
 
     private static byte[] ToBytes(ScanType t, object v) => t switch
     {
+        ScanType.Byte => new[] { Convert.ToByte(v) },
         ScanType.Int16 => BitConverter.GetBytes(Convert.ToInt16(v)),
+        ScanType.UInt16 => BitConverter.GetBytes(Convert.ToUInt16(v)),
+        ScanType.Int32 => BitConverter.GetBytes(Convert.ToInt32(v)),
+        ScanType.UInt32 => BitConverter.GetBytes(Convert.ToUInt32(v)),
+        ScanType.Int64 => BitConverter.GetBytes(Convert.ToInt64(v)),
         ScanType.Float => BitConverter.GetBytes(Convert.ToSingle(v)),
+        ScanType.Double => BitConverter.GetBytes(Convert.ToDouble(v)),
+        ScanType.String => System.Text.Encoding.ASCII.GetBytes(Convert.ToString(v) ?? ""),
         _ => BitConverter.GetBytes(Convert.ToInt32(v))
     };
 
     private static object ReadTyped(ScanType t, byte[] b, int i) => t switch
     {
+        ScanType.Byte => b[i],
         ScanType.Int16 => BitConverter.ToInt16(b, i),
+        ScanType.UInt16 => BitConverter.ToUInt16(b, i),
+        ScanType.Int32 => BitConverter.ToInt32(b, i),
+        ScanType.UInt32 => BitConverter.ToUInt32(b, i),
+        ScanType.Int64 => BitConverter.ToInt64(b, i),
         ScanType.Float => BitConverter.ToSingle(b, i),
+        ScanType.Double => BitConverter.ToDouble(b, i),
         _ => BitConverter.ToInt32(b, i)
     };
 
@@ -152,12 +171,22 @@ public sealed class MemoryScanner
         return true;
     }
 
-    private static int Compare(object a, object b) => Convert.ToDouble(a).CompareTo(Convert.ToDouble(b));
+    private static int Compare(object a, object b)
+    {
+        if (a is string || b is string) return string.Equals(a?.ToString(), b?.ToString(), StringComparison.Ordinal) ? 0 : 1;
+        return Convert.ToDouble(a).CompareTo(Convert.ToDouble(b));
+    }
 
     public static object ParseValue(ScanType t, string text) => t switch
     {
+        ScanType.String => text,
         ScanType.Float => float.Parse(text.Trim(), CultureInfo.InvariantCulture),
+        ScanType.Double => double.Parse(text.Trim(), CultureInfo.InvariantCulture),
+        ScanType.Byte => byte.Parse(text.Trim()),
         ScanType.Int16 => short.Parse(text.Trim()),
+        ScanType.UInt16 => ushort.Parse(text.Trim()),
+        ScanType.UInt32 => uint.Parse(text.Trim()),
+        ScanType.Int64 => long.Parse(text.Trim()),
         _ => int.Parse(text.Trim())
     };
 }

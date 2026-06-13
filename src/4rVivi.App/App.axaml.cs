@@ -44,6 +44,7 @@ public partial class App : Application
         s.AddSingleton<MvpTracker>();
         s.AddSingleton(sp => new SessionTracker(sp.GetRequiredService<GameSession>()));
         s.AddSingleton<LootLog>();
+        s.AddSingleton<MvpIconService>();
         s.AddSingleton<GameSession>();
         s.AddSingleton<EngineHub>();
         s.AddSingleton<ProcessWatcher>();
@@ -72,9 +73,7 @@ public partial class App : Application
         s.AddSingleton<MvpTrackerViewModel>();
         s.AddSingleton<HudViewModel>();
         s.AddSingleton<LootViewModel>();
-        s.AddSingleton<ItemDbEditorViewModel>();
         s.AddSingleton<CalculatorViewModel>();
-        s.AddSingleton<SnippetsViewModel>();
         s.AddSingleton<HomunAiViewModel>();
         s.AddSingleton<GrfViewModel>();
         s.AddSingleton<SpriteViewerViewModel>();

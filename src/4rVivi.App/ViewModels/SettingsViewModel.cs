@@ -19,6 +19,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private int _opacity;
     [ObservableProperty] private bool _humanize;
     [ObservableProperty] private bool _acrylic;
+    [ObservableProperty] private string _divinePrideUrl;
+    [ObservableProperty] private string _divinePrideKey;
+    [ObservableProperty] private string _gameFolder;
     [ObservableProperty] private string _status = "";
 
     public SettingsViewModel(SettingsStore settings, Loc loc, EngineHub hub)
@@ -27,6 +30,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         var s = settings.Current;
         _language = s.Language; _accentHex = s.AccentHex; _opacity = s.WindowOpacity;
         _humanize = s.HumanizeTiming; _acrylic = s.AcrylicBackdrop;
+        _divinePrideUrl = s.DivinePrideImageUrl; _divinePrideKey = s.DivinePrideApiKey; _gameFolder = s.GameFolder;
     }
 
     [RelayCommand] private void Save()
@@ -34,6 +38,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         var s = _settings.Current;
         s.Language = Language; s.AccentHex = AccentHex; s.WindowOpacity = Math.Clamp(Opacity, 70, 100);
         s.HumanizeTiming = Humanize; s.AcrylicBackdrop = Acrylic;
+        s.DivinePrideImageUrl = DivinePrideUrl; s.DivinePrideApiKey = DivinePrideKey; s.GameFolder = GameFolder;
         _settings.Save();
         _loc.SetLang(Language);
         _hub.Timing.Enabled = Humanize;

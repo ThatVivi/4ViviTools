@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels" xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
              x:Class="FourRVivi.App.Views.SkillsView" x:DataType="vm:SkillsViewModel">
   <StackPanel Spacing="14">
     <TextBlock Text="Skills" Classes="h1"/>
@@ -6,7 +6,7 @@
       <StackPanel Spacing="10">
         <TextBlock Text="Spammer" FontWeight="SemiBold"/>
         <StackPanel Orientation="Horizontal" Spacing="14">
-          <StackPanel><TextBlock Text="Key" Classes="muted"/><TextBox Width="70" Text="{Binding SpamKey}"/></StackPanel>
+          <StackPanel><TextBlock Text="Key" Classes="muted"/><ctrl:KeyCaptureBox Width="70" KeyText="{Binding SpamKey}"/></StackPanel>
           <StackPanel><TextBlock Text="Delay ms" Classes="muted"/><NumericUpDown Width="120" Minimum="20" Maximum="10000" Value="{Binding SpamDelay}"/></StackPanel>
         </StackPanel>
       </StackPanel>

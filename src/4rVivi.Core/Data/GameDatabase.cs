@@ -44,6 +44,14 @@ public sealed class GameDatabase
     public List<MobInfo> SearchMobs(string q, int n = 60) => _d.Mobs.Where(m => Has(m.Name, q) || Has(m.Aegis, q)).OrderBy(m => m.Level).Take(n).ToList();
     public List<SkillInfo> SearchSkills(string q, int n = 60) => _d.Skills.Where(s => Has(s.Name, q)).Take(n).ToList();
     public List<ItemInfo> SearchItems(string q, int n = 60) => _d.Items.Where(i => Has(i.Name, q) || Has(i.Aegis, q)).Take(n).ToList();
+    public List<EquipInfo> SearchEquips(string q, string? slot = null, int n = 80)
+        => _d.Equips.Where(e =>
+               (string.IsNullOrEmpty(q) || Has(e.Name, q) || Has(e.Aegis, q)) &&
+               (string.IsNullOrEmpty(slot) || e.Loc.Contains(slot, StringComparer.OrdinalIgnoreCase)))
+           .Take(n).ToList();
+    public EquipInfo? Equip(int id) => _d.Equips.FirstOrDefault(e => e.Id == id);
+    public int EquipCount => _d.Equips.Count;
+
     public IReadOnlyList<MobInfo> MvpMobs() => _d.Mobs.Where(m => m.Mvp).OrderBy(m => m.Name).ToList();
     public MobInfo? Mob(int id) => _d.Mobs.FirstOrDefault(m => m.Id == id);
     public (int mobs,int skills,int items,int maps) Counts() => (_d.Mobs.Count,_d.Skills.Count,_d.Items.Count,_d.Maps.Count);

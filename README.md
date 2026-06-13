@@ -40,3 +40,16 @@ an address isn't set (e.g. stuck-detection falls back to "no HP/EXP change → t
 - `src/4rVivi.Core` — engine: Memory, Input, Game, Automation, Trackers, Macros, Tools, Grf, Data, Settings, Localization.
 - `src/4rVivi.App` — Avalonia UI (MVVM + DI), custom theme, overlay.
 - `tests/4rVivi.Core.Tests` — xUnit (CI gate).
+
+## Update (mega v2)
+- Keys are now **recorded** (click a field, press the key) in Autopot, Buffs, Skills, Smart Bot.
+- **Smart Bot** clicks around to walk/seek, then uses your recorded skills (Click to move + radius).
+- **Scanner**: ArtMoney-style two tables (Found → Saved), more value types (byte/16/32/64/uint/float/double/string), Name=String + HP=Integer auto-setup, assign any role and Apply to the active profile.
+- **Buffs**: one "Run buff sequence" button fires every buff key in order.
+- **Calculator + gear planner**: class/weapon, full DEF/MDEF/FLEE/HIT/CRIT/ASPD; search equipment from the DB and add pieces to a build — their bonuses feed the calc. Manual enchant/card stat fields included.
+- **MVP Tracker**: monster icons download from divine-pride (set URL/API key in Settings).
+- **Homun AI**: bundled AzzyAI — set your game folder, Apply copies it into `<game>\AI\USER_AI`.
+- Removed Item-DB editor + NPC snippets. Bundled ro-tools UI/job icons.
+
+### You must set your game folder (Settings)
+Per-item/skill/equipment icons and AzzyAI need your client folder. Item icons load from your GRF/data; MVP icons come from divine-pride at runtime.

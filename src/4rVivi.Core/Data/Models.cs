@@ -40,10 +40,24 @@ public sealed class ItemInfo
     [JsonPropertyName("slots")] public int Slots { get; set; }
     [JsonPropertyName("weight")] public int Weight { get; set; }
 }
+public sealed class EquipInfo
+{
+    [JsonPropertyName("id")] public int Id { get; set; }
+    [JsonPropertyName("aegis")] public string Aegis { get; set; } = "";
+    [JsonPropertyName("name")] public string Name { get; set; } = "";
+    [JsonPropertyName("type")] public string Type { get; set; } = "";
+    [JsonPropertyName("slots")] public int Slots { get; set; }
+    [JsonPropertyName("loc")] public List<string> Loc { get; set; } = new();
+    [JsonPropertyName("subtype")] public string SubType { get; set; } = "";
+    [JsonPropertyName("bonuses")] public Dictionary<string,int> Bonuses { get; set; } = new();
+    [JsonPropertyName("effect")] public string Effect { get; set; } = "";
+}
+
 public sealed class GameData
 {
     [JsonPropertyName("mobs")] public List<MobInfo> Mobs { get; set; } = new();
     [JsonPropertyName("skills")] public List<SkillInfo> Skills { get; set; } = new();
     [JsonPropertyName("items")] public List<ItemInfo> Items { get; set; } = new();
+    [JsonPropertyName("equips")] public List<EquipInfo> Equips { get; set; } = new();
     [JsonPropertyName("maps")] public List<string> Maps { get; set; } = new();
 }

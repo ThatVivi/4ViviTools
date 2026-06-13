@@ -1,22 +1,19 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
              x:Class="FourRVivi.App.Views.HomunAiView" x:DataType="vm:HomunAiViewModel">
   <Grid RowDefinitions="Auto,Auto,Auto,*">
-    <TextBlock Grid.Row="0" Text="Homunculus / Mercenary AI generator" Classes="h1"/>
-    <Border Grid.Row="1" Classes="card" Margin="0,12">
-      <StackPanel Spacing="10">
-        <CheckBox Content="Aggressive (attack nearby enemies)" IsChecked="{Binding Aggressive}"/>
-        <StackPanel Orientation="Horizontal" Spacing="12">
-          <StackPanel><TextBlock Text="Follow distance" Classes="muted"/><NumericUpDown Width="100" Minimum="1" Maximum="5" Value="{Binding FollowDistance}"/></StackPanel>
-          <StackPanel><TextBlock Text="Skill at HP %" Classes="muted"/><NumericUpDown Width="100" Minimum="0" Maximum="100" Value="{Binding SkillHpPercent}"/></StackPanel>
-          <StackPanel><TextBlock Text="Skill name" Classes="muted"/><TextBox Width="160" Text="{Binding SkillName}"/></StackPanel>
-        </StackPanel>
-        <Button Classes="accent" Content="Generate AI.lua" Command="{Binding GenerateCommand}" HorizontalAlignment="Left"/>
-        <TextBlock Text="{Binding Status}" Classes="muted"/>
-      </StackPanel>
-    </Border>
-    <TextBlock Grid.Row="2" Text="Output (copy into AI/USER_AI/AI.lua)" Classes="muted" Margin="0,0,0,6"/>
-    <Border Grid.Row="3" Classes="card" Padding="2">
-      <TextBox Text="{Binding Output}" IsReadOnly="True" AcceptsReturn="True" FontFamily="Consolas,monospace" TextWrapping="NoWrap"/>
-    </Border>
+    <TextBlock Grid.Row="0" Text="Homunculus / Merc AI (AzzyAI)" Classes="h1"/>
+    <TextBlock Grid.Row="1" Classes="muted" TextWrapping="Wrap"
+               Text="Bundled Dr. Azzy AI (a proven mix used across servers). Set your game folder and Apply — files are copied straight into &lt;game&gt;\AI\USER_AI, replacing what's there."/>
+    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10" Margin="0,12">
+      <TextBox Width="420" Text="{Binding GameFolder}" Watermark="C:\Games\RagnarokOnline"/>
+      <Button Classes="accent" Content="Apply to game" Command="{Binding ApplyCommand}"/>
+    </StackPanel>
+    <Grid Grid.Row="3" RowDefinitions="Auto,*">
+      <TextBlock Grid.Row="0" Text="{Binding Status}" Classes="muted" TextWrapping="Wrap" Margin="0,0,0,8"/>
+      <Border Grid.Row="1" Classes="card" Padding="0">
+        <ListBox ItemsSource="{Binding Files}" Background="Transparent" FontFamily="Consolas,monospace"/>
+      </Border>
+    </Grid>
   </Grid>
 </UserControl>

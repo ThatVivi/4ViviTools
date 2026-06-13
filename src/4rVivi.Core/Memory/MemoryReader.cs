@@ -67,6 +67,18 @@ public sealed class MemoryReader : IDisposable
         return Native.ReadProcessMemory(_handle, addr, buffer, size, out int read) || read > 0 ? read : 0;
     }
 
+    public byte ReadByte(IntPtr a) { var b = ReadBytes(a, 1); return b is null ? (byte)0 : b[0]; }
+    public long ReadInt64(IntPtr a) { var b = ReadBytes(a, 8); return b is null ? 0 : BitConverter.ToInt64(b); }
+    public uint ReadUInt32(IntPtr a) { var b = ReadBytes(a, 4); return b is null ? 0 : BitConverter.ToUInt32(b); }
+    public ushort ReadUInt16(IntPtr a) { var b = ReadBytes(a, 2); return b is null ? (ushort)0 : BitConverter.ToUInt16(b); }
+    public double ReadDouble(IntPtr a) { var b = ReadBytes(a, 8); return b is null ? 0 : BitConverter.ToDouble(b); }
+    public string ReadString(IntPtr a, int len)
+    {
+        var b = ReadBytes(a, len); if (b is null) return "";
+        int z = Array.IndexOf(b, (byte)0); if (z >= 0) len = z;
+        return System.Text.Encoding.ASCII.GetString(b, 0, Math.Max(0, len));
+    }
+
     public int ReadInt32(IntPtr a) { var b = ReadBytes(a, 4); return b is null ? 0 : BitConverter.ToInt32(b); }
     public short ReadInt16(IntPtr a) { var b = ReadBytes(a, 2); return b is null ? (short)0 : BitConverter.ToInt16(b); }
     public float ReadFloat(IntPtr a) { var b = ReadBytes(a, 4); return b is null ? 0f : BitConverter.ToSingle(b); }

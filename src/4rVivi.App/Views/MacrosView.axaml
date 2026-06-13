@@ -14,9 +14,9 @@
               <CheckBox Grid.Column="2" Content="Loop" IsChecked="{Binding LoopWhileOn}"/>
               <NumericUpDown Grid.Column="3" Minimum="200" Maximum="600000" Value="{Binding IntervalMs}" Margin="0,0,8,0"/>
               <Button Grid.Column="4" Classes="accent" Content="Play"
-                      Command="{Binding $parent[ItemsControl].((vm:MacrosViewModel)DataContext).PlayChainCommand}" CommandParameter="{Binding}"/>
+                      Command="{ReflectionBinding DataContext.PlayChainCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
               <Button Grid.Column="5" Content="✕" Margin="6,0,0,0"
-                      Command="{Binding $parent[ItemsControl].((vm:MacrosViewModel)DataContext).RemoveChainCommand}" CommandParameter="{Binding}"/>
+                      Command="{ReflectionBinding DataContext.RemoveChainCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
             </Grid>
           </Border>
         </DataTemplate>
