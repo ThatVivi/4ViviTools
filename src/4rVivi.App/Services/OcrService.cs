@@ -1,5 +1,4 @@
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -44,7 +43,7 @@ public sealed class OcrService
         using var bmp = new System.Drawing.Bitmap(w, h);
         using (var g = Graphics.FromImage(bmp)) g.CopyFromScreen(x, y, 0, 0, new System.Drawing.Size(w, h));
         using var ms = new MemoryStream();
-        bmp.Save(ms, ImageFormat.Png);
+        bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
         using var eng = new TesseractEngine(_tessDir, "eng", EngineMode.Default);
         using var img = Pix.LoadFromMemory(ms.ToArray());
         using var page = eng.Process(img);
