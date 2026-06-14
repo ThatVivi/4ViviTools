@@ -35,6 +35,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private string _masterLabel = "Turn everything ON";
     [ObservableProperty] private double _hpPercent = -1;
     [ObservableProperty] private double _spPercent = -1;
+    [ObservableProperty] private string _hpText = "";
+    [ObservableProperty] private string _spText = "";
 
     public MainWindowViewModel(
         GameSession session, EngineHub hub, ProcessService procs, SettingsStore settings, Loc loc, NavigationService nav,
@@ -98,7 +100,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _hub.StartAllLoops();
 
         var t = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
-        t.Tick += (_, _) => { HpPercent = _session.Health.HpPercent; SpPercent = _session.Health.SpPercent; };
+        t.Tick += (_, _) =>
+        {
+            var h = _session.Health;
+            HpPercent = h.HpPercent; SpPercent = h.SpPercent;
+            HpText = h.Hp < 0 ? "" : (h.MaxHp > 0 ? $"{h.Hp}/{h.MaxHp}" : h.Hp.ToString());
+            SpText = h.Sp < 0 ? "" : (h.MaxSp > 0 ? $"{h.Sp}/{h.MaxSp}" : h.Sp.ToString());
+        };
         t.Start();
     }
 

@@ -176,7 +176,7 @@ public sealed partial class ScannerViewModel : ViewModelBase
                 ? $"Read {_ocrValues.Count} values. HP pre-filled — hit First scan, change HP in-game, then Next to pin the address."
                 : "OCR found no values. Move the Basic Info box to the top-left, or set a region.";
         }
-        catch (Exception ex) { Status = "OCR error: " + ex.Message; }
+        catch (Exception ex) { Status = "OCR error: " + (ex.InnerException?.Message ?? ex.Message); }
     }
 
     [RelayCommand] private void UseDetected(string entry)

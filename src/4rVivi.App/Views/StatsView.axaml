@@ -10,10 +10,15 @@
       <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="Kills" Classes="muted"/><TextBlock Text="{Binding Kills}" FontSize="20"/></StackPanel></Border>
       <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="EXP / hour" Classes="muted"/><TextBlock Text="{Binding ExpPerHour}" FontSize="20"/></StackPanel></Border>
       <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="Zeny / hour" Classes="muted"/><TextBlock Text="{Binding ZenyPerHour}" FontSize="20"/></StackPanel></Border>
+      <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="EXP gained" Classes="muted"/><TextBlock Text="{Binding ExpGained}" FontSize="20"/></StackPanel></Border>
       <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="HP" Classes="muted"/><TextBlock Text="{Binding HpText}" FontSize="20"/></StackPanel></Border>
       <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="SP" Classes="muted"/><TextBlock Text="{Binding SpText}" FontSize="20"/></StackPanel></Border>
       <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="Weight" Classes="muted"/><TextBlock Text="{Binding WeightText}" FontSize="20"/></StackPanel></Border>
     </WrapPanel>
-    <TextBlock Classes="muted" TextWrapping="Wrap" Text="EXP/Zeny/Weight need their addresses set in the Scanner. Kills come from the Smart Bot's EXP-gain proxy."/>
+    <TextBlock Classes="section" Text="EXP GAIN LOG"/>
+    <Border Classes="card" Padding="0">
+      <ListBox ItemsSource="{Binding ExpLog}" Background="Transparent" FontFamily="Consolas,monospace" MaxHeight="240"/>
+    </Border>
+    <TextBlock Classes="muted" TextWrapping="Wrap" Text="EXP/Zeny/Weight/HP/SP need their addresses set in the Scanner. The log records each EXP increase. Kills come from the Smart Bot's EXP-gain proxy."/>
   </StackPanel>
 </UserControl>

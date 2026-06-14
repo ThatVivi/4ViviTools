@@ -28,9 +28,11 @@
         </StackPanel>
         <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
           <TextBlock Text="HP" Classes="muted" VerticalAlignment="Center"/>
-          <ProgressBar Width="90" Minimum="0" Maximum="100" Value="{Binding HpPercent}" Foreground="{DynamicResource DangerBrush}"/>
+          <ProgressBar Width="70" Minimum="0" Maximum="100" Value="{Binding HpPercent}" Foreground="{DynamicResource DangerBrush}"/>
+          <TextBlock Text="{Binding HpText}" VerticalAlignment="Center" MinWidth="56"/>
           <TextBlock Text="SP" Classes="muted" VerticalAlignment="Center" Margin="6,0,0,0"/>
-          <ProgressBar Width="90" Minimum="0" Maximum="100" Value="{Binding SpPercent}" Foreground="{DynamicResource Accent2Brush}"/>
+          <ProgressBar Width="70" Minimum="0" Maximum="100" Value="{Binding SpPercent}" Foreground="{DynamicResource Accent2Brush}"/>
+          <TextBlock Text="{Binding SpText}" VerticalAlignment="Center" MinWidth="56"/>
         </StackPanel>
         <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
           <TextBlock Text="Opacity" Classes="muted" VerticalAlignment="Center" Margin="0,0,6,0"/>
