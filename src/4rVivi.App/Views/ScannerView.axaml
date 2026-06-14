@@ -1,5 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels" xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              x:Class="FourRVivi.App.Views.ScannerView" x:DataType="vm:ScannerViewModel" x:Name="Root">
   <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
     <TextBlock Grid.Row="0" Text="Memory scanner" Classes="h1"/>
@@ -11,8 +11,19 @@
           <StackPanel><TextBlock Text="Character name (String)" Classes="muted"/><TextBox Width="200" Text="{Binding CharacterName}"/></StackPanel>
           <StackPanel><TextBlock Text="Current HP (Integer)" Classes="muted"/><TextBox Width="140" Text="{Binding CurrentHp}"/></StackPanel>
           <Button Classes="accent" Content="Auto-setup" VerticalAlignment="Bottom" Command="{Binding AutoSetupCommand}"/>
+          <Button Content="Read values (OCR)" VerticalAlignment="Bottom" Command="{Binding ReadScreenCommand}"/>
         </StackPanel>
         <TextBlock Text="{Binding Tip}" Classes="muted"/>
+        <ItemsControl ItemsSource="{Binding Detected}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="sys:String">
+              <Button Content="{Binding}" Margin="0,2,6,0"
+                      Command="{ReflectionBinding DataContext.UseDetectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                      CommandParameter="{Binding}"/>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+          <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+        </ItemsControl>
       </StackPanel>
     </Border>
 
@@ -21,6 +32,7 @@
       <TextBox Width="160" Text="{Binding Value}" Watermark="value"/>
       <Button Classes="accent" Content="First scan" Command="{Binding FirstScanCommand}"/>
       <Button Content="New scan" Command="{Binding ResetCommand}"/>
+      <Button Content="Re-attach" Command="{Binding ReattachCommand}"/>
     </StackPanel>
 
     <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8" IsEnabled="{Binding CanRefine}" Margin="0,0,0,8">
@@ -41,7 +53,7 @@
             <TextBlock Grid.Column="1" Text="Value" Classes="muted"/>
             <TextBlock Grid.Column="2" Text="Type" Classes="muted"/>
           </Grid>
-          <ListBox ItemsSource="{Binding Found}" SelectedItem="{Binding SelectedFound}" Background="Transparent">
+          <ListBox ItemsSource="{Binding Found}" SelectedItem="{Binding SelectedFound}" Background="Transparent" MaxHeight="340">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:ScanRow">
                 <Grid ColumnDefinitions="150,*,80">
@@ -71,14 +83,17 @@
             <TextBlock Grid.Column="2" Text="Value" Classes="muted"/>
             <TextBlock Grid.Column="3" Text="Role" Classes="muted"/>
           </Grid>
-          <ListBox ItemsSource="{Binding Saved}" SelectedItem="{Binding SelectedSaved}" Background="Transparent">
+          <ListBox ItemsSource="{Binding Saved}" SelectedItem="{Binding SelectedSaved}" Background="Transparent" MaxHeight="340">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:ScanRow">
-                <Grid ColumnDefinitions="120,140,*,90">
+                <Grid ColumnDefinitions="110,130,*,70,30">
                   <TextBox Grid.Column="0" Text="{Binding Description}" Margin="0,0,4,0"/>
                   <TextBlock Grid.Column="1" Text="{Binding AddressHex}" VerticalAlignment="Center"/>
                   <TextBlock Grid.Column="2" Text="{Binding Value}" Classes="muted" VerticalAlignment="Center"/>
                   <TextBlock Grid.Column="3" Text="{Binding Role}" VerticalAlignment="Center"/>
+                  <Button Grid.Column="4" Content="✕"
+                          Command="{ReflectionBinding DataContext.RemoveSavedRowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                          CommandParameter="{Binding}"/>
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>

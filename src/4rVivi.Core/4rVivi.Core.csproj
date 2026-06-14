@@ -7,9 +7,11 @@
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Data\gamedata.json" />
     <EmbeddedResource Include="Data\gamedata.json" />
+    <EmbeddedResource Include="Data\idnum2itemresnametable.txt" />
   </ItemGroup>
 </Project>

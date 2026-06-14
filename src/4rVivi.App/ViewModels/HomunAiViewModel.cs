@@ -25,7 +25,11 @@ public sealed partial class HomunAiViewModel : ViewModelBase
         LoadFileList();
     }
 
-    partial void OnGameFolderChanged(string value) { _settings.Current.GameFolder = value; _settings.Save(); }
+    partial void OnGameFolderChanged(string value)
+    {
+        _settings.Current.GameFolder = value; _settings.Save();
+        if (!string.IsNullOrWhiteSpace(value) && Directory.Exists(value)) CopyToGame(value);
+    }
 
     private void LoadFileList()
     {
@@ -42,16 +46,21 @@ public sealed partial class HomunAiViewModel : ViewModelBase
     {
         if (string.IsNullOrWhiteSpace(GameFolder) || !Directory.Exists(GameFolder))
         { Status = "Set a valid game folder first."; return; }
+        CopyToGame(GameFolder);
+    }
+
+    private void CopyToGame(string folder)
+    {
         try
         {
-            string aiDir = Path.Combine(GameFolder, "AI");
+            string aiDir = Path.Combine(folder, "AI");
             Directory.CreateDirectory(aiDir);
             using var s = AssetLoader.Open(new Uri("avares://4rVivi/Assets/azzyai.zip"));
             using var zip = new ZipArchive(s, ZipArchiveMode.Read);
             int n = 0;
             foreach (var e in zip.Entries)
             {
-                if (e.Name.Length == 0) continue;            // dir entry
+                if (e.Name.Length == 0) continue;
                 string dest = Path.Combine(aiDir, e.FullName.Replace('/', Path.DirectorySeparatorChar));
                 Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
                 using var es = e.Open();
@@ -59,8 +68,8 @@ public sealed partial class HomunAiViewModel : ViewModelBase
                 es.CopyTo(fs);
                 n++;
             }
-            Status = $"Applied {n} AzzyAI files to {aiDir}\\USER_AI. Enable it in-game with @aimode / restart your homunculus.";
+            Status = $"Copied {n} AzzyAI files to {aiDir}. Enable in-game (@aimode) / restart your homunculus.";
         }
-        catch (Exception ex) { Status = "Apply failed: " + ex.Message; }
+        catch (Exception ex) { Status = "Copy failed: " + ex.Message; }
     }
 }

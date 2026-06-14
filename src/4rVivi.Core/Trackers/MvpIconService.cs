@@ -1,4 +1,5 @@
 using System.Net.Http;
+using System.Text.Json;
 
 namespace FourRVivi.Core.Trackers;
 
@@ -9,6 +10,7 @@ public sealed class MvpIconService
     public string CacheDir { get; }
     public string UrlTemplate { get; set; } = "https://static.divine-pride.net/images/mobs/png/{id}.png";
     public string? ApiKey { get; set; }
+    public string ApiBase { get; set; } = "https://www.divine-pride.net/api/database/Monster/{id}?apiKey={key}";
 
     public MvpIconService()
     {
@@ -37,5 +39,25 @@ public sealed class MvpIconService
             return path;
         }
         catch { return null; }
+    }
+
+    /// <summary>Fetches the monster's primary spawn map name from divine-pride (needs API key).</summary>
+    public async Task<string?> FetchMapAsync(int id)
+    {
+        if (id <= 0 || string.IsNullOrWhiteSpace(ApiKey)) return null;
+        try
+        {
+            string url = ApiBase.Replace("{id}", id.ToString()).Replace("{key}", ApiKey);
+            string json = await Http.GetStringAsync(url);
+            using var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.TryGetProperty("spawn", out var sp) && sp.ValueKind == JsonValueKind.Array && sp.GetArrayLength() > 0)
+            {
+                var first = sp[0];
+                if (first.TryGetProperty("mapname", out var mn)) return mn.GetString();
+                if (first.TryGetProperty("rawName", out var rn)) return rn.GetString();
+            }
+        }
+        catch { }
+        return null;
     }
 }

@@ -23,6 +23,9 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         Services = ConfigureServices();
+        var iconSvc = Services.GetRequiredService<IconImageService>();
+        IconImageService.Instance = iconSvc;
+        iconSvc.SetGameFolder(Services.GetRequiredService<SettingsStore>().Current.GameFolder);
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -45,6 +48,9 @@ public partial class App : Application
         s.AddSingleton(sp => new SessionTracker(sp.GetRequiredService<GameSession>()));
         s.AddSingleton<LootLog>();
         s.AddSingleton<MvpIconService>();
+        s.AddSingleton<IconService>();
+        s.AddSingleton<IconImageService>();
+        s.AddSingleton<OcrService>();
         s.AddSingleton<GameSession>();
         s.AddSingleton<EngineHub>();
         s.AddSingleton<ProcessWatcher>();

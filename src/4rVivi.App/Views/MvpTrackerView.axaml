@@ -10,7 +10,7 @@
     </StackPanel>
     <TextBlock Grid.Row="2" Classes="muted" Text="{Binding Status}" Margin="0,0,0,8"/>
     <Border Grid.Row="3" Classes="card" Padding="0">
-      <ListBox ItemsSource="{Binding Entries}" Background="Transparent">
+      <ListBox ItemsSource="{Binding Entries}" Background="Transparent" MaxHeight="430">
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="vm:MvpRowViewModel">
             <Grid ColumnDefinitions="40,180,130,70,70,120,Auto,Auto" VerticalAlignment="Center">

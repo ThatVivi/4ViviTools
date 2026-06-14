@@ -79,8 +79,14 @@ public sealed partial class MvpTrackerViewModel : ViewModelBase
         {
             var path = await _icons.EnsureIconAsync(r.MobId);
             if (path is not null) { r.LoadIcon(path); ok++; }
+            if (string.IsNullOrWhiteSpace(r.Map))
+            {
+                var map = await _icons.FetchMapAsync(r.MobId);
+                if (!string.IsNullOrWhiteSpace(map)) r.Map = map;
+            }
         }
-        Status = $"Downloaded/cached {ok} icons. (Set the URL/API key in Settings if none appear.)";
+        _tracker.Save();
+        Status = $"Downloaded/cached {ok} icons + maps. (Set the divine-pride API key in Settings if none appear.)";
     }
 
     [RelayCommand] private void Add()

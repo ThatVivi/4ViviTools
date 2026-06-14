@@ -28,6 +28,13 @@ public sealed class GameSession : IDisposable
         return r;
     }
 
+    public OpResult Reattach()
+    {
+        if (Process is null) return OpResult.Fail("No process selected — pick it in the top bar.");
+        try { return Attach(Process.GetProcessById(Process.Pid)); }
+        catch (Exception e) { return OpResult.Fail("Re-attach failed: " + e.Message); }
+    }
+
     public void UseProfile(string name, MemoryAddressBook book)
     {
         ProfileName = name;

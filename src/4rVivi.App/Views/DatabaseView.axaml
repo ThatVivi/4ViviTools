@@ -10,13 +10,14 @@
     </StackPanel>
     <TextBlock Grid.Row="2" Classes="muted" Text="{Binding Diagnostics}" Margin="0,0,0,8"/>
     <Border Grid.Row="3" Classes="card" Padding="0">
-      <ListBox ItemsSource="{Binding Results}" Background="Transparent">
+      <ListBox ItemsSource="{Binding Results}" Background="Transparent" MaxHeight="430">
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="vm:DbRow">
-            <Grid ColumnDefinitions="70,240,*">
-              <TextBlock Grid.Column="0" Text="{Binding Id}" Classes="muted"/>
-              <TextBlock Grid.Column="1" Text="{Binding Name}"/>
-              <TextBlock Grid.Column="2" Text="{Binding Info}" Classes="muted"/>
+            <Grid ColumnDefinitions="28,64,230,*">
+              <Image Grid.Column="0" Width="22" Height="22" Source="{Binding Id, Converter={StaticResource IdToIcon}}"/>
+              <TextBlock Grid.Column="1" Text="{Binding Id}" Classes="muted" VerticalAlignment="Center"/>
+              <TextBlock Grid.Column="2" Text="{Binding Name}" VerticalAlignment="Center"/>
+              <TextBlock Grid.Column="3" Text="{Binding Info}" Classes="muted" VerticalAlignment="Center"/>
             </Grid>
           </DataTemplate>
         </ListBox.ItemTemplate>

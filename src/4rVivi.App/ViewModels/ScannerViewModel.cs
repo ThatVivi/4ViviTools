@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using FourRVivi.Core.Game;
 using FourRVivi.Core.Memory;
 using FourRVivi.Core.Settings;
+using FourRVivi.App.Services;
 using CoreRoles = FourRVivi.Core.Game.Roles;
 
 namespace FourRVivi.App.ViewModels;
@@ -22,6 +23,8 @@ public sealed partial class ScannerViewModel : ViewModelBase
 {
     private readonly GameSession _session;
     private readonly SettingsStore _settings;
+    private readonly OcrService _ocr;
+    private Dictionary<string,int> _ocrValues = new();
     private MemoryScanner? _scanner;
     private List<ScanHit> _current = new();
 
@@ -42,9 +45,11 @@ public sealed partial class ScannerViewModel : ViewModelBase
     [ObservableProperty] private string _status = "Pick your process in the top bar. Then use Auto-setup, or scan manually.";
     [ObservableProperty] private string _tip = TipFor("Int32");
 
-    public ScannerViewModel(GameSession session, SettingsStore settings)
+    public ObservableCollection<string> Detected { get; } = new();
+
+    public ScannerViewModel(GameSession session, SettingsStore settings, OcrService ocr)
     {
-        _session = session; _settings = settings;
+        _session = session; _settings = settings; _ocr = ocr;
         // hydrate saved table from the active profile's address book
         foreach (var kv in settings.Current.GetActiveProfile().Addresses.Entries)
             Saved.Add(new ScanRow { Address = kv.Value.Runtime, Type = kv.Value.Type, Role = kv.Key, Description = kv.Key });
@@ -64,7 +69,8 @@ public sealed partial class ScannerViewModel : ViewModelBase
     // ---- Auto-setup: find Name (string) + HP (int) quickly ----
     [RelayCommand] private void AutoSetup()
     {
-        if (!_session.Reader.Attached) { Status = "Not attached. Pick your RO process first."; return; }
+        if (!_session.Reader.Attached) _session.Reattach();
+        if (!_session.Reader.Attached) { Status = "Not attached. Pick your RO process in the top bar first."; return; }
         _scanner = new MemoryScanner(_session.Reader);
         Found.Clear();
 
@@ -88,7 +94,8 @@ public sealed partial class ScannerViewModel : ViewModelBase
     // ---- manual scan ----
     [RelayCommand] private void FirstScan()
     {
-        if (!_session.Reader.Attached) { Status = "Not attached. Pick your RO process first."; return; }
+        if (!_session.Reader.Attached) _session.Reattach();
+        if (!_session.Reader.Attached) { Status = "Not attached. Pick your RO process in the top bar first."; return; }
         try
         {
             _scanner = new MemoryScanner(_session.Reader);
@@ -126,10 +133,57 @@ public sealed partial class ScannerViewModel : ViewModelBase
     [RelayCommand] private void MoveToSaved()
     {
         if (SelectedFound is null) { Status = "Select a row on the left first."; return; }
-        Saved.Add(new ScanRow { Address = SelectedFound.Address, Type = SelectedFound.Type, Value = SelectedFound.Value, Description = SelectedFound.Description });
-        Status = "Moved to saved list. Set a role and Apply to use it in the bot/autopot.";
+        var row = new ScanRow { Address = SelectedFound.Address, Type = SelectedFound.Type, Value = SelectedFound.Value, Description = SelectedFound.Description };
+        Saved.Add(row);
+        SelectedSaved = row;
+        Status = "Moved to saved list (selected). Pick a role and Apply to use it in the bot/autopot.";
     }
-    [RelayCommand] private void RemoveSaved() { if (SelectedSaved is not null) Saved.Remove(SelectedSaved); }
+    [RelayCommand] private void RemoveSaved() => RemoveSavedRow(SelectedSaved);
+
+    [RelayCommand] private void RemoveSavedRow(ScanRow? row)
+    {
+        if (row is null) return;
+        Saved.Remove(row);
+        if (!string.IsNullOrEmpty(row.Role))
+        {
+            var prof = _settings.Current.GetActiveProfile();
+            prof.Addresses.Entries.Remove(row.Role);
+            _session.UseProfile(prof.Name, prof.Addresses);
+            _settings.Save();
+        }
+        Status = "Removed from saved list.";
+    }
+
+    [RelayCommand] private void Reattach()
+    {
+        var r = _session.Reattach();
+        Status = r.Ok ? "Re-attached. Now scan." : r.Error!;
+    }
+
+    [RelayCommand] private async Task ReadScreen()
+    {
+        if (_session.WindowHandle == IntPtr.Zero) { Status = "Attach to your RO process first."; return; }
+        Status = "Reading the game's Basic Info box (downloading OCR data on first run)…";
+        if (!await _ocr.EnsureDataAsync()) { Status = "Could not get OCR data (no internet?)."; return; }
+        try
+        {
+            string text = await Task.Run(() => _ocr.Read(_session.WindowHandle, 0, 0, 0, 0));
+            _ocrValues = _ocr.Parse(text);
+            Detected.Clear();
+            foreach (var kv in _ocrValues) Detected.Add($"{kv.Key} = {kv.Value}");
+            if (_ocrValues.TryGetValue("HP", out int hp)) { Value = hp.ToString(); SelectedType = "Int32"; }
+            Status = _ocrValues.Count > 0
+                ? $"Read {_ocrValues.Count} values. HP pre-filled — hit First scan, change HP in-game, then Next to pin the address."
+                : "OCR found no values. Move the Basic Info box to the top-left, or set a region.";
+        }
+        catch (Exception ex) { Status = "OCR error: " + ex.Message; }
+    }
+
+    [RelayCommand] private void UseDetected(string entry)
+    {
+        var key = entry.Split('=')[0].Trim();
+        if (_ocrValues.TryGetValue(key, out int v)) { Value = v.ToString(); SelectedType = "Int32"; SelectedRole = key; Status = $"Value set to {key}={v}. First scan, then refine."; }
+    }
 
     [RelayCommand] private void ApplyRole()
     {
@@ -148,6 +202,7 @@ public sealed partial class ScannerViewModel : ViewModelBase
         prof.Addresses.Set(role, new SavedAddress { Runtime = a, ModuleOffset = off, Type = type });
         _session.UseProfile(prof.Name, prof.Addresses);
         _settings.Save();
+        foreach (var dup in Saved.Where(r => r.Role == role && r.Address != a).ToList()) Saved.Remove(dup);
         if (!Saved.Any(r => r.Address == a && r.Role == role))
             Saved.Add(new ScanRow { Address = a, Type = type, Role = role, Description = role });
     }

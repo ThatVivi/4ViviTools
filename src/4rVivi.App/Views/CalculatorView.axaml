@@ -62,12 +62,13 @@
         <Button Classes="accent" Content="Add to build ▼" Command="{Binding AddToBuildCommand}"/>
       </StackPanel>
       <Border Grid.Row="1" Classes="card" Padding="0">
-        <ListBox ItemsSource="{Binding SearchResults}" SelectedItem="{Binding SelectedEquip}" Background="Transparent">
+        <ListBox ItemsSource="{Binding SearchResults}" SelectedItem="{Binding SelectedEquip}" Background="Transparent" MaxHeight="260">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="data:EquipInfo">
-              <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Grid.Column="0" Text="{Binding Name}"/>
-                <TextBlock Grid.Column="1" Text="{Binding SubType}" Classes="muted"/>
+              <Grid ColumnDefinitions="26,*,Auto">
+                <Image Grid.Column="0" Width="20" Height="20" Source="{Binding Id, Converter={StaticResource IdToIcon}}"/>
+                <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2" Text="{Binding SubType}" Classes="muted" VerticalAlignment="Center"/>
               </Grid>
             </DataTemplate>
           </ListBox.ItemTemplate>
@@ -79,12 +80,13 @@
         <TextBlock Text="{Binding Effect}" Classes="muted" TextWrapping="Wrap" Width="380"/>
       </StackPanel>
       <Border Grid.Row="3" Classes="card" Padding="0">
-        <ListBox ItemsSource="{Binding Build}" Background="Transparent">
+        <ListBox ItemsSource="{Binding Build}" Background="Transparent" MaxHeight="220">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="data:EquipInfo">
-              <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center"/>
-                <Button Grid.Column="1" Content="✕"
+              <Grid ColumnDefinitions="26,*,Auto">
+                <Image Grid.Column="0" Width="20" Height="20" Source="{Binding Id, Converter={StaticResource IdToIcon}}"/>
+                <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center"/>
+                <Button Grid.Column="2" Content="✕"
                         Command="{ReflectionBinding DataContext.RemoveFromBuildCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         CommandParameter="{Binding}"/>
               </Grid>

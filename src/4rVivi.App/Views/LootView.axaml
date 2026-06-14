@@ -9,7 +9,7 @@
       <Button Content="Clear" Command="{Binding ClearCommand}"/>
     </StackPanel>
     <Border Grid.Row="2" Classes="card" Padding="0">
-      <ListBox ItemsSource="{Binding Rows}" Background="Transparent">
+      <ListBox ItemsSource="{Binding Rows}" Background="Transparent" MaxHeight="430">
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="tr:LootRow">
             <Grid ColumnDefinitions="100,*,60">
