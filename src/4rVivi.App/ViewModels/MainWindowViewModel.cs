@@ -41,7 +41,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel(
         GameSession session, EngineHub hub, ProcessService procs, SettingsStore settings, Loc loc, NavigationService nav,
         DashboardViewModel dashboard, AutopotViewModel autopot, BuffsViewModel buffs, SkillsViewModel skills,
-        SmartBotViewModel smartBot, BotFarmViewModel botFarm, OverlayViewModel overlay, MacrosViewModel macros,
+        SmartBotViewModel smartBot, ClassSkillsViewModel classSkills, BotFarmViewModel botFarm, OverlayViewModel overlay, MacrosViewModel macros,
         MvpTrackerViewModel mvp, HudViewModel hud, LootViewModel loot,
         DatabaseViewModel database, CalculatorViewModel calc, HomunAiViewModel homun,
         GrfViewModel grf, SpriteViewerViewModel sprite, ToolsLauncherViewModel tools,
@@ -55,6 +55,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         AddPage("Autopot", autopot);
         AddPage("Buffs", buffs);
         AddPage("Skills", skills);
+        AddPage("Skill Spammer", classSkills);
         AddPage("Smart Bot", smartBot);
         AddPage("Bot (basic)", botFarm);
         AddPage("RCX Overlay", overlay);

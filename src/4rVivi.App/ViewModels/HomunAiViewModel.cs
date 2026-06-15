@@ -35,8 +35,10 @@ public sealed partial class HomunAiViewModel : ViewModelBase
     {
         try
         {
-            using var s = AssetLoader.Open(new Uri("avares://4rVivi/Assets/azzyai.zip"));
-            using var zip = new ZipArchive(s, ZipArchiveMode.Read);
+            using var src = AssetLoader.Open(new Uri("avares://4rVivi/Assets/azzyai.zip"));
+            using var mem = new MemoryStream();
+            src.CopyTo(mem); mem.Position = 0;
+            using var zip = new ZipArchive(mem, ZipArchiveMode.Read);
             foreach (var e in zip.Entries.Where(e => e.Name.Length > 0)) Files.Add(e.FullName);
         }
         catch (Exception ex) { Status = "Could not read bundled AzzyAI: " + ex.Message; }
@@ -55,8 +57,10 @@ public sealed partial class HomunAiViewModel : ViewModelBase
         {
             string aiDir = Path.Combine(folder, "AI");
             Directory.CreateDirectory(aiDir);
-            using var s = AssetLoader.Open(new Uri("avares://4rVivi/Assets/azzyai.zip"));
-            using var zip = new ZipArchive(s, ZipArchiveMode.Read);
+            using var src = AssetLoader.Open(new Uri("avares://4rVivi/Assets/azzyai.zip"));
+            using var mem = new MemoryStream();
+            src.CopyTo(mem); mem.Position = 0;
+            using var zip = new ZipArchive(mem, ZipArchiveMode.Read);
             int n = 0;
             foreach (var e in zip.Entries)
             {

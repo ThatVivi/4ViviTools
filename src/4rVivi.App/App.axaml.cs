@@ -25,7 +25,9 @@ public partial class App : Application
         Services = ConfigureServices();
         var iconSvc = Services.GetRequiredService<IconImageService>();
         IconImageService.Instance = iconSvc;
-        iconSvc.SetGameFolder(Services.GetRequiredService<SettingsStore>().Current.GameFolder);
+        var st = Services.GetRequiredService<SettingsStore>();
+        iconSvc.SetGameFolder(st.Current.GameFolder);
+        iconSvc.SetGrf(st.Current.GrfPath);
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -49,6 +51,7 @@ public partial class App : Application
         s.AddSingleton<LootLog>();
         s.AddSingleton<MvpIconService>();
         s.AddSingleton<IconService>();
+        s.AddSingleton<ClassData>();
         s.AddSingleton<IconImageService>();
         s.AddSingleton<OcrService>();
         s.AddSingleton<GameSession>();
@@ -76,6 +79,7 @@ public partial class App : Application
         s.AddSingleton<SettingsViewModel>();
 
         s.AddSingleton<SmartBotViewModel>();
+        s.AddSingleton<ClassSkillsViewModel>();
         s.AddSingleton<MvpTrackerViewModel>();
         s.AddSingleton<HudViewModel>();
         s.AddSingleton<LootViewModel>();

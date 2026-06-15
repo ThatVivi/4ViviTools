@@ -13,5 +13,6 @@
     <None Remove="Data\gamedata.json" />
     <EmbeddedResource Include="Data\gamedata.json" />
     <EmbeddedResource Include="Data\idnum2itemresnametable.txt" />
+    <EmbeddedResource Include="Data\classdata.json" />
   </ItemGroup>
 </Project>

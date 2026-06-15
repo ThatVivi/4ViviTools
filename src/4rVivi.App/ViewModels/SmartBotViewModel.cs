@@ -36,16 +36,16 @@ public sealed partial class SmartBotViewModel : ViewModelBase
         RefreshAddresses();
     }
 
-    partial void OnAttackKeyChanged(string v) => _hub.SmartBot.AttackKey = v;
-    partial void OnLootKeyChanged(string v) => _hub.SmartBot.LootKey = v;
-    partial void OnTeleportKeyChanged(string v) => _hub.SmartBot.TeleportKey = v;
-    partial void OnReturnKeyChanged(string v) => _hub.SmartBot.ReturnKey = v;
-    partial void OnFleeAtHpPercentChanged(int v) => _hub.SmartBot.FleeAtHpPercent = v;
-    partial void OnStuckSecondsChanged(int v) => _hub.SmartBot.StuckSeconds = Math.Max(2, v);
-    partial void OnReturnAtWeightPercentChanged(int v) => _hub.SmartBot.ReturnAtWeightPercent = v;
-    partial void OnRotationMsChanged(int v) => _hub.SmartBot.RotationMs = Math.Max(80, v);
-    partial void OnClickToMoveChanged(bool v) => _hub.SmartBot.ClickToMove = v;
-    partial void OnMoveRadiusChanged(int v) => _hub.SmartBot.MoveRadius = Math.Max(20, v);
+    partial void OnAttackKeyChanged(string value) => _hub.SmartBot.AttackKey = value;
+    partial void OnLootKeyChanged(string value) => _hub.SmartBot.LootKey = value;
+    partial void OnTeleportKeyChanged(string value) => _hub.SmartBot.TeleportKey = value;
+    partial void OnReturnKeyChanged(string value) => _hub.SmartBot.ReturnKey = value;
+    partial void OnFleeAtHpPercentChanged(int value) => _hub.SmartBot.FleeAtHpPercent = value;
+    partial void OnStuckSecondsChanged(int value) => _hub.SmartBot.StuckSeconds = Math.Max(2, value);
+    partial void OnReturnAtWeightPercentChanged(int value) => _hub.SmartBot.ReturnAtWeightPercent = value;
+    partial void OnRotationMsChanged(int value) => _hub.SmartBot.RotationMs = Math.Max(80, value);
+    partial void OnClickToMoveChanged(bool value) => _hub.SmartBot.ClickToMove = value;
+    partial void OnMoveRadiusChanged(int value) => _hub.SmartBot.MoveRadius = Math.Max(20, value);
 
     [RelayCommand] private void ApplyRotation()
     {

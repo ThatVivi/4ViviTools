@@ -5,6 +5,7 @@ using FourRVivi.Core.Game;
 using FourRVivi.Core.Memory;
 using FourRVivi.Core.Settings;
 using FourRVivi.App.Services;
+using System.Security.Principal;
 using CoreRoles = FourRVivi.Core.Game.Roles;
 
 namespace FourRVivi.App.ViewModels;
@@ -44,6 +45,15 @@ public sealed partial class ScannerViewModel : ViewModelBase
     [ObservableProperty] private bool _canRefine;
     [ObservableProperty] private string _status = "Pick your process in the top bar. Then use Auto-setup, or scan manually.";
     [ObservableProperty] private string _tip = TipFor("Int32");
+    [ObservableProperty] private string _adminStatus = IsElevated() ? "Admin: yes" : "Admin: NO \u2014 close and Run as administrator";
+
+    private static bool IsElevated()
+    {
+        try { using var id = WindowsIdentity.GetCurrent(); return new WindowsPrincipal(id).IsInRole(WindowsBuiltInRole.Administrator); }
+        catch { return false; }
+    }
+
+
 
     public ObservableCollection<string> Detected { get; } = new();
 
@@ -103,7 +113,7 @@ public sealed partial class ScannerViewModel : ViewModelBase
             PublishFound();
             var d = _scanner.LastDiagnostics;
             Status = _current.Count == 0
-                ? (d.RegionsRead == 0 ? "0 found: run as Administrator and pick the game window."
+                ? (d.RegionsRead == 0 ? (IsElevated() ? "0 found: couldn\u0027t read memory. Pick the RO CLIENT window (not the launcher)." : "0 found: not elevated. Run 4rVivi as administrator.")
                                       : $"0 found in {d.BytesRead / (1024 * 1024)} MB. Check value/type.")
                 : $"{_current.Count} candidates ({d.BytesRead / (1024 * 1024)} MB, {d.ElapsedMs} ms). Change the value, set it, Next.";
             CanRefine = _current.Count > 0;
@@ -158,6 +168,28 @@ public sealed partial class ScannerViewModel : ViewModelBase
     {
         var r = _session.Reattach();
         Status = r.Ok ? "Re-attached. Now scan." : r.Error!;
+    }
+
+    [RelayCommand] private async Task AutoFindHp()
+    {
+        if (!_session.Reader.Attached) _session.Reattach();
+        if (!_session.Reader.Attached) { Status = "Attach to your RO process first."; return; }
+        Status = "Auto-find: getting OCR ready…";
+        if (!await _ocr.EnsureDataAsync()) { Status = "Couldn't get OCR data (no internet?)."; return; }
+
+        _scanner = new MemoryScanner(_session.Reader);
+        List<ScanHit>? cur = null; int last = -1;
+        for (int i = 0; i < 30; i++)
+        {
+            var vals = _ocr.Parse(await Task.Run(() => _ocr.Read(_session.WindowHandle, 0, 0, 0, 0)));
+            if (!vals.TryGetValue("HP", out int hp)) { Status = "Auto-find: can't read HP — move the Basic Info box to the top-left."; await Task.Delay(900); continue; }
+            if (cur is null) { cur = _scanner.FirstScan(ScanType.Int32, hp); last = hp; }
+            else if (hp != last) { cur = _scanner.NextScan(cur, ScanType.Int32, ScanFilter.Exact, hp); last = hp; }
+            Status = $"Auto-find: HP {hp} — {cur.Count} candidates. Keep playing so HP changes…";
+            if (cur.Count == 1) { SaveRole("HP", cur[0].Address, "Int32"); Status = $"HP locked at {cur[0].AddressHex} and saved to your profile!"; _current = cur; PublishFound(); return; }
+            await Task.Delay(1000);
+        }
+        if (cur is not null) { _current = cur; PublishFound(); CanRefine = true; Status = $"Narrowed to {cur.Count}. Let HP change more and retry, or pick from Found."; }
     }
 
     [RelayCommand] private async Task ReadScreen()

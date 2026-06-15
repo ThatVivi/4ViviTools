@@ -11,7 +11,7 @@ namespace FourRVivi.App.Services;
 /// English tessdata downloads on first use (user's machine).</summary>
 public sealed class OcrService
 {
-    private readonly string _tessDir = Path.Combine(AppContext.BaseDirectory, "tessdata");
+    private readonly string _tessDir = Path.Combine(AppContext.BaseDirectory ?? AppDomain.CurrentDomain.BaseDirectory ?? ".", "tessdata");
 
     [DllImport("user32.dll")] private static extern bool GetWindowRect(IntPtr h, out RECT r);
     [StructLayout(LayoutKind.Sequential)] private struct RECT { public int Left, Top, Right, Bottom; }
@@ -44,6 +44,7 @@ public sealed class OcrService
         using (var g = Graphics.FromImage(bmp)) g.CopyFromScreen(x, y, 0, 0, new System.Drawing.Size(w, h));
         using var ms = new MemoryStream();
         bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+        if (!File.Exists(Path.Combine(_tessDir, "eng.traineddata"))) throw new FileNotFoundException("OCR language data missing (download failed). Check internet and retry.");
         using var eng = new TesseractEngine(_tessDir, "eng", EngineMode.Default);
         using var img = Pix.LoadFromMemory(ms.ToArray());
         using var page = eng.Process(img);

@@ -36,6 +36,7 @@ public sealed class AppSettings
     public string DivinePrideImageUrl { get; set; } = "https://static.divine-pride.net/images/mobs/png/{id}.png";
     public string DivinePrideApiKey { get; set; } = "";
     public string GameFolder { get; set; } = "";
+    public string GrfPath { get; set; } = "";
     public List<ChainMacro> Macros { get; set; } = new();
     public List<BuffTimer> BuffTimers { get; set; } = new();
 

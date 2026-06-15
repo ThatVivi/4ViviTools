@@ -2,7 +2,12 @@
              xmlns:vm="clr-namespace:FourRVivi.App.ViewModels" xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              x:Class="FourRVivi.App.Views.ScannerView" x:DataType="vm:ScannerViewModel" x:Name="Root">
   <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
-    <TextBlock Grid.Row="0" Text="Memory scanner" Classes="h1"/>
+    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12">
+      <TextBlock Text="Memory scanner" Classes="h1"/>
+      <Border Background="{DynamicResource Surface2Brush}" CornerRadius="6" Padding="8,3" VerticalAlignment="Center">
+        <TextBlock Text="{Binding AdminStatus}" Classes="muted"/>
+      </Border>
+    </StackPanel>
 
     <Border Grid.Row="1" Classes="card" Margin="0,12,0,8">
       <StackPanel Spacing="8">
@@ -12,6 +17,7 @@
           <StackPanel><TextBlock Text="Current HP (Integer)" Classes="muted"/><TextBox Width="140" Text="{Binding CurrentHp}"/></StackPanel>
           <Button Classes="accent" Content="Auto-setup" VerticalAlignment="Bottom" Command="{Binding AutoSetupCommand}"/>
           <Button Content="Read values (OCR)" VerticalAlignment="Bottom" Command="{Binding ReadScreenCommand}"/>
+          <Button Classes="accent" Content="Auto-find HP (OCR)" VerticalAlignment="Bottom" Command="{Binding AutoFindHpCommand}"/>
         </StackPanel>
         <TextBlock Text="{Binding Tip}" Classes="muted"/>
         <ItemsControl ItemsSource="{Binding Detected}">
@@ -53,7 +59,7 @@
             <TextBlock Grid.Column="1" Text="Value" Classes="muted"/>
             <TextBlock Grid.Column="2" Text="Type" Classes="muted"/>
           </Grid>
-          <ListBox ItemsSource="{Binding Found}" SelectedItem="{Binding SelectedFound}" Background="Transparent" MaxHeight="340">
+          <ListBox ItemsSource="{Binding Found}" SelectedItem="{Binding SelectedFound}" Background="Transparent">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:ScanRow">
                 <Grid ColumnDefinitions="150,*,80">
@@ -83,7 +89,7 @@
             <TextBlock Grid.Column="2" Text="Value" Classes="muted"/>
             <TextBlock Grid.Column="3" Text="Role" Classes="muted"/>
           </Grid>
-          <ListBox ItemsSource="{Binding Saved}" SelectedItem="{Binding SelectedSaved}" Background="Transparent" MaxHeight="340">
+          <ListBox ItemsSource="{Binding Saved}" SelectedItem="{Binding SelectedSaved}" Background="Transparent">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:ScanRow">
                 <Grid ColumnDefinitions="110,130,*,70,30">

@@ -13,6 +13,8 @@
         <CheckBox Content="Acrylic / Mica backdrop" IsChecked="{Binding Acrylic}"/>
         <TextBlock Text="Game folder (for AzzyAI + item icons)" Classes="muted"/>
         <TextBox Width="420" HorizontalAlignment="Left" Text="{Binding GameFolder}" Watermark="C:\Games\RagnarokOnline"/>
+        <TextBlock Text="GRF file (icons load straight from here — e.g. gem.grf)" Classes="muted"/>
+        <TextBox Width="420" HorizontalAlignment="Left" Text="{Binding GrfPath}" Watermark="C:\Games\RagnarokOnline\gem.grf"/>
         <TextBlock Text="Divine-Pride image URL ({id} placeholder) + API key" Classes="muted"/>
         <StackPanel Orientation="Horizontal" Spacing="8">
           <TextBox Width="360" Text="{Binding DivinePrideUrl}"/>

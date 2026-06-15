@@ -12,6 +12,13 @@ public sealed record GrfEntry(string Name, int CompSize, int RealSize, byte Flag
 /// <summary>Reads GRF v0x200 archives: list entries, extract zlib files. DES-encrypted entries unsupported.</summary>
 public sealed class GrfArchive : IDisposable
 {
+    private static readonly Encoding Win1252;
+    static GrfArchive()
+    {
+        try { Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); } catch { }
+        Win1252 = GetEnc(1252);
+    }
+    private static Encoding GetEnc(int cp) { try { return Encoding.GetEncoding(cp); } catch { return Encoding.Latin1; } }
     private readonly FileStream _fs;
     private readonly BinaryReader _br;
     public List<GrfEntry> Entries { get; } = new();
@@ -48,7 +55,7 @@ public sealed class GrfArchive : IDisposable
         {
             int start = p;
             while (p < table.Length && table[p] != 0) p++;
-            string name = Encoding.Latin1.GetString(table, start, p - start);
+            string name = Win1252.GetString(table, start, p - start);
             p++; // null
             if (p + 17 > table.Length) break;
             int csize = BitConverter.ToInt32(table, p); p += 4;
@@ -59,6 +66,18 @@ public sealed class GrfArchive : IDisposable
             Entries.Add(new GrfEntry(name.Replace('\\', '/'), csize, rsize, flags, offset));
         }
     }
+
+    private Dictionary<string, GrfEntry>? _index;
+    public GrfEntry? Find(string name)
+    {
+        if (_index is null)
+        {
+            _index = new(StringComparer.OrdinalIgnoreCase);
+            foreach (var e in Entries) _index[e.Name] = e;
+        }
+        return _index.TryGetValue(name, out var hit) ? hit : null;
+    }
+    public byte[]? Extract(string name) { var e = Find(name); return e is null ? null : Extract(e); }
 
     public byte[]? Extract(GrfEntry e)
     {

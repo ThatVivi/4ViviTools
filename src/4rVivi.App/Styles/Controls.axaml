@@ -68,14 +68,47 @@
     <Setter Property="Background" Value="{DynamicResource Accent2Brush}"/>
   </Style>
 
-  <!-- inputs on dark -->
+  <!-- inputs on dark: readable size + light text so values are visible -->
   <Style Selector="TextBox">
     <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+    <Setter Property="CaretBrush" Value="{DynamicResource TextBrush}"/>
     <Setter Property="CornerRadius" Value="8"/>
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="MinHeight" Value="32"/>
+    <Setter Property="Padding" Value="8,5"/>
+  </Style>
+  <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+    <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
   </Style>
   <Style Selector="ComboBox">
     <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
     <Setter Property="CornerRadius" Value="8"/>
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="MinHeight" Value="32"/>
+  </Style>
+  <Style Selector="ComboBoxItem">
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+  </Style>
+  <!-- NumericUpDown was unstyled: light text + readable size -->
+  <Style Selector="NumericUpDown">
+    <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+    <Setter Property="CornerRadius" Value="8"/>
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="MinHeight" Value="32"/>
+    <Setter Property="MinWidth" Value="96"/>
+  </Style>
+  <Style Selector="NumericUpDown /template/ TextBox">
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+    <Setter Property="CaretBrush" Value="{DynamicResource TextBrush}"/>
+    <Setter Property="FontSize" Value="13"/>
+  </Style>
+  <Style Selector="AutoCompleteBox">
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+    <Setter Property="MinHeight" Value="32"/>
+    <Setter Property="FontSize" Value="13"/>
   </Style>
 
   <!-- accent toggle (master ON/OFF) -->

@@ -19,8 +19,8 @@ public sealed partial class BotFarmViewModel : ViewModelBase
         _fleeAtHpPercent = b.FleeAtHpPercent; _rotationMs = b.RotationMs;
     }
 
-    partial void OnAttackKeyChanged(string v) => _hub.BotFarm.AttackKey = v;
-    partial void OnLootKeyChanged(string v) => _hub.BotFarm.LootKey = v;
-    partial void OnFleeAtHpPercentChanged(int v) => _hub.BotFarm.FleeAtHpPercent = v;
-    partial void OnRotationMsChanged(int v) => _hub.BotFarm.RotationMs = Math.Max(50, v);
+    partial void OnAttackKeyChanged(string value) => _hub.BotFarm.AttackKey = value;
+    partial void OnLootKeyChanged(string value) => _hub.BotFarm.LootKey = value;
+    partial void OnFleeAtHpPercentChanged(int value) => _hub.BotFarm.FleeAtHpPercent = value;
+    partial void OnRotationMsChanged(int value) => _hub.BotFarm.RotationMs = Math.Max(50, value);
 }

@@ -62,7 +62,7 @@
         <Button Classes="accent" Content="Add to build ▼" Command="{Binding AddToBuildCommand}"/>
       </StackPanel>
       <Border Grid.Row="1" Classes="card" Padding="0">
-        <ListBox ItemsSource="{Binding SearchResults}" SelectedItem="{Binding SelectedEquip}" Background="Transparent" MaxHeight="260">
+        <ListBox ItemsSource="{Binding SearchResults}" SelectedItem="{Binding SelectedEquip}" Background="Transparent">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="data:EquipInfo">
               <Grid ColumnDefinitions="26,*,Auto">
@@ -80,7 +80,7 @@
         <TextBlock Text="{Binding Effect}" Classes="muted" TextWrapping="Wrap" Width="380"/>
       </StackPanel>
       <Border Grid.Row="3" Classes="card" Padding="0">
-        <ListBox ItemsSource="{Binding Build}" Background="Transparent" MaxHeight="220">
+        <ListBox ItemsSource="{Binding Build}" Background="Transparent">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="data:EquipInfo">
               <Grid ColumnDefinitions="26,*,Auto">

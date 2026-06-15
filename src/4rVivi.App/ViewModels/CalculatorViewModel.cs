@@ -58,7 +58,7 @@ public sealed partial class CalculatorViewModel : ViewModelBase
 
     public CalculatorViewModel(Lazy<GameDatabase> db) => _db = db;
 
-    partial void OnSelectedEquipChanged(EquipInfo? v) => Effect = v?.Effect ?? "";
+    partial void OnSelectedEquipChanged(EquipInfo? value) => Effect = value?.Effect ?? "";
 
     [RelayCommand] private void SearchEquip()
     {
