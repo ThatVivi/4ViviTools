@@ -11,7 +11,17 @@ namespace FourRVivi.App.Services;
 /// English tessdata downloads on first use (user's machine).</summary>
 public sealed class OcrService
 {
-    private readonly string _tessDir = Path.Combine(AppContext.BaseDirectory ?? AppDomain.CurrentDomain.BaseDirectory ?? ".", "tessdata");
+    private readonly string _tessDir = ResolveTessDir();
+
+    private static string ResolveTessDir()
+    {
+        string? b = null;
+        try { b = AppContext.BaseDirectory; } catch { }
+        if (string.IsNullOrEmpty(b)) { try { b = AppDomain.CurrentDomain.BaseDirectory; } catch { } }
+        if (string.IsNullOrEmpty(b)) { try { b = Path.GetDirectoryName(Environment.ProcessPath); } catch { } }
+        if (string.IsNullOrEmpty(b)) b = Directory.GetCurrentDirectory();
+        return Path.Combine(b!, "tessdata");
+    }
 
     [DllImport("user32.dll")] private static extern bool GetWindowRect(IntPtr h, out RECT r);
     [StructLayout(LayoutKind.Sequential)] private struct RECT { public int Left, Top, Right, Bottom; }
@@ -34,21 +44,25 @@ public sealed class OcrService
     /// <summary>OCR a region; if w/h are 0 it grabs the top-left 260x170 of the game window.</summary>
     public string Read(IntPtr hwnd, int x, int y, int w, int h)
     {
-        if (w <= 0 || h <= 0)
+        try
         {
-            if (hwnd != IntPtr.Zero && GetWindowRect(hwnd, out var r))
-            { x = r.Left; y = r.Top; w = 260; h = 170; }
-            else return "";
+            if (w <= 0 || h <= 0)
+            {
+                if (hwnd != IntPtr.Zero && GetWindowRect(hwnd, out var r))
+                { x = r.Left; y = r.Top; w = 260; h = 170; }
+                else return "";
+            }
+            if (string.IsNullOrEmpty(_tessDir) || !File.Exists(Path.Combine(_tessDir, "eng.traineddata"))) return "";
+            using var bmp = new System.Drawing.Bitmap(w, h);
+            using (var g = Graphics.FromImage(bmp)) g.CopyFromScreen(x, y, 0, 0, new System.Drawing.Size(w, h));
+            using var ms = new MemoryStream();
+            bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            using var eng = new TesseractEngine(_tessDir, "eng", EngineMode.Default);
+            using var img = Pix.LoadFromMemory(ms.ToArray());
+            using var page = eng.Process(img);
+            return page.GetText();
         }
-        using var bmp = new System.Drawing.Bitmap(w, h);
-        using (var g = Graphics.FromImage(bmp)) g.CopyFromScreen(x, y, 0, 0, new System.Drawing.Size(w, h));
-        using var ms = new MemoryStream();
-        bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-        if (!File.Exists(Path.Combine(_tessDir, "eng.traineddata"))) throw new FileNotFoundException("OCR language data missing (download failed). Check internet and retry.");
-        using var eng = new TesseractEngine(_tessDir, "eng", EngineMode.Default);
-        using var img = Pix.LoadFromMemory(ms.ToArray());
-        using var page = eng.Process(img);
-        return page.GetText();
+        catch { return ""; }   // never throw: OCR must never crash the app
     }
 
     public Dictionary<string, int> Parse(string text)

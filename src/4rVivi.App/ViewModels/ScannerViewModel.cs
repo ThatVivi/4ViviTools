@@ -172,6 +172,12 @@ public sealed partial class ScannerViewModel : ViewModelBase
 
     [RelayCommand] private async Task AutoFindHp()
     {
+        try { await AutoFindHpCore(); }
+        catch (Exception ex) { Status = "Auto-find stopped: " + (ex.InnerException?.Message ?? ex.Message); }
+    }
+
+    private async Task AutoFindHpCore()
+    {
         if (!_session.Reader.Attached) _session.Reattach();
         if (!_session.Reader.Attached) { Status = "Attach to your RO process first."; return; }
         Status = "Auto-find: getting OCR ready…";
