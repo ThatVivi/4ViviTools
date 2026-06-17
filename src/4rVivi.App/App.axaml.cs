@@ -22,6 +22,8 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+      try
+      {
         Services = ConfigureServices();
         var iconSvc = Services.GetRequiredService<IconImageService>();
         IconImageService.Instance = iconSvc;
@@ -36,6 +38,8 @@ public partial class App : Application
             vm.AttachWindow(desktop.MainWindow);
         }
         base.OnFrameworkInitializationCompleted();
+      }
+      catch (Exception ex) { FourRVivi.App.Services.AppLog.Crash("Startup failed", ex); throw; }
     }
 
     private static IServiceProvider ConfigureServices()

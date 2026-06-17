@@ -24,6 +24,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private string _gameFolder;
     [ObservableProperty] private string _grfPath;
     [ObservableProperty] private string _status = "";
+    public string AppVersion => "4rVivi v" + (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "?");
 
     public SettingsViewModel(SettingsStore settings, Loc loc, EngineHub hub)
     {

@@ -22,6 +22,7 @@
         </StackPanel>
         <Button Classes="accent" Content="Save settings" Command="{Binding SaveCommand}" HorizontalAlignment="Left"/>
         <TextBlock Classes="muted" Text="{Binding Status}"/>
+        <TextBlock Classes="muted" Text="{Binding AppVersion}"/>
       </StackPanel>
     </Border>
   </StackPanel>

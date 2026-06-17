@@ -7,6 +7,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,10 +21,12 @@
     <PackageReference Include="System.Drawing.Common" Version="8.0.10" />
     <PackageReference Include="Tesseract" Version="5.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\4rVivi.Core\4rVivi.Core.csproj" />
+    <ProjectReference Include="..\4rVivi.Plugins.Abstractions\4rVivi.Plugins.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
