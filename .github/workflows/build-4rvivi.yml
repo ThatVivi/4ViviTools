@@ -2,70 +2,129 @@ name: Build 4rVivi
 
 on:
   push:
-    branches: [ "**" ]
+    branches:
+      - "**"
   workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_VERSION: "8.0.x"
 
 jobs:
   build:
+
     runs-on: windows-latest
+
     steps:
+
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET 8
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            C:\Users\runneradmin\.nuget\packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Generate Version
+        shell: pwsh
+        run: |
+          $version = "1.0.${{ github.run_number }}"
+          echo "VERSION=$version" >> $env:GITHUB_ENV
 
       - name: Restore
         run: dotnet restore 4rVivi.sln
 
-      - name: Test (Core) — non-blocking
+      - name: Security Audit
         continue-on-error: true
-        id: test
-        run: dotnet test tests/4rVivi.Core.Tests/4rVivi.Core.Tests.csproj -c Release --no-restore --logger "console;verbosity=normal" > test_log.txt 2>&1 || true
+        run: dotnet list 4rVivi.sln package --vulnerable
+
+      - name: Build
+        run: |
+          dotnet build 4rVivi.sln `
+          -c Release `
+          --no-restore
+
+      - name: Test
+        continue-on-error: true
+        id: tests
         shell: pwsh
+        run: |
+          dotnet test `
+          tests/4rVivi.Core.Tests/4rVivi.Core.Tests.csproj `
+          -c Release `
+          --no-build `
+          > test_log.txt 2>&1
 
       - name: Upload Test Logs
-        if: always() && steps.test.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: TestLogs
           path: test_log.txt
+          if-no-files-found: ignore
 
-      # Publish step: Capture full output and fail if the command fails
-      - name: Publish single-file exe (win-x64, self-contained)
-        id: publish
-        run: |
-          dotnet publish src/4rVivi.App/4rVivi.App.csproj `
-            -c Release `
-            -r win-x64 `
-            --self-contained true `
-            -p:PublishSingleFile=true `
-            -p:IncludeNativeLibrariesForSelfExtract=true `
-            -p:EnableCompressionInSingleFile=true `
-            -o publish > publish_log.txt 2>&1
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Publish
         shell: pwsh
+        run: |
+          dotnet publish `
+          src/4rVivi.App/4rVivi.App.csproj `
+          -c Release `
+          -r win-x64 `
+          --self-contained true `
+          -p:PublishSingleFile=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -p:EnableCompressionInSingleFile=true `
+          -p:PublishReadyToRun=true `
+          -p:TieredCompilation=true `
+          -p:TieredPGO=true `
+          -p:Version=$env:VERSION `
+          -o publish `
+          > publish_log.txt 2>&1
 
-      # Always upload the publish log
-      - name: Upload Publish Logs
+          if ($LASTEXITCODE -ne 0)
+          {
+              Get-Content publish_log.txt
+              exit $LASTEXITCODE
+          }
+
+      - name: Upload Publish Log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: PublishLogs
           path: publish_log.txt
 
-      - name: List publish output
-        if: always()
+      - name: Create ZIP
         shell: pwsh
-        run: Get-ChildItem -Recurse publish | Select-Object FullName, Length | Format-Table -AutoSize
+        run: |
+          Compress-Archive `
+          -Path publish/* `
+          -DestinationPath 4rVivi.zip `
+          -Force
 
-      # Only upload the EXE if it exists
-      - name: Upload exe
-        if: success()
+      - name: Generate SHA256
+        shell: pwsh
+        run: |
+          Get-FileHash 4rVivi.zip -Algorithm SHA256 |
+          Select-Object Hash |
+          Out-File SHA256.txt
+
+      - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
           name: 4rVivi
-          path: publish/4rVivi.exe
-          if-no-files-found: error
+          path: |
+            4rVivi.zip
+            SHA256.txt
