@@ -18,6 +18,7 @@ public sealed class SmartBotEngine : AutomationEngine
     public int ReturnAtWeightPercent { get; set; } = 90;
     public int RotationMs { get; set; } = 350;
     public bool ClickToMove { get; set; } = true;   // walk by clicking random nearby points
+    public bool ClickAttack { get; set; } = true;   // RO is click-to-attack: click a nearby point instead of a fixed key
     public int MoveRadius { get; set; } = 180;       // px around screen centre
 
     public int Kills { get; private set; }                  // proxied from EXP gains
@@ -75,7 +76,14 @@ public sealed class SmartBotEngine : AutomationEngine
                 }
 
                 // attack + weave the user-registered skills
-                Keys.Tap(Hwnd, KeyName.ToVk(AttackKey), 15);
+                if (ClickAttack)
+                {
+                    var (aw, ah) = _mouse.ClientSize(Hwnd);
+                    if (aw > 0 && ah > 0)
+                        _mouse.Click(Hwnd, Math.Clamp(aw / 2 + _rng.Next(-MoveRadius, MoveRadius), 4, aw - 4),
+                                            Math.Clamp(ah / 2 + _rng.Next(-MoveRadius, MoveRadius), 4, ah - 4));
+                }
+                else Keys.Tap(Hwnd, KeyName.ToVk(AttackKey), 15);
                 if (SkillRotation.Count > 0)
                 {
                     await Timing.DelayAsync(RotationMs / 3, ct);

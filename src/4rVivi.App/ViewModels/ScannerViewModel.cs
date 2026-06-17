@@ -33,6 +33,7 @@ public sealed partial class ScannerViewModel : ViewModelBase
     public string[] RoleList { get; } = CoreRoles.All;
 
     public ObservableCollection<ScanRow> Found { get; } = new();   // left table
+    public ObservableCollection<ScanRow> Compare { get; } = new(); // middle table (frozen snapshot)
     public ObservableCollection<ScanRow> Saved { get; } = new();   // right table (ArtMoney-style)
 
     [ObservableProperty] private string _selectedType = "Int32";
@@ -42,6 +43,7 @@ public sealed partial class ScannerViewModel : ViewModelBase
     [ObservableProperty] private string _selectedRole = "HP";
     [ObservableProperty] private ScanRow? _selectedFound;
     [ObservableProperty] private ScanRow? _selectedSaved;
+    [ObservableProperty] private ScanRow? _selectedCompare;
     [ObservableProperty] private bool _canRefine;
     [ObservableProperty] private string _status = "Pick your process in the top bar. Then use Auto-setup, or scan manually.";
     [ObservableProperty] private string _tip = TipFor("Int32");
@@ -148,6 +150,26 @@ public sealed partial class ScannerViewModel : ViewModelBase
         SelectedSaved = row;
         Status = "Moved to saved list (selected). Pick a role and Apply to use it in the bot/autopot.";
     }
+    [RelayCommand] private void Snapshot()
+    {
+        Compare.Clear();
+        foreach (var r in Found) Compare.Add(new ScanRow { Address = r.Address, Type = r.Type, Value = r.Value, Description = r.Description });
+        Status = $"Snapshot: {Compare.Count} rows frozen in the middle table.";
+    }
+    [RelayCommand] private void MoveFoundToCompare()
+    {
+        if (SelectedFound is null) { Status = "Select a row in Found first."; return; }
+        Compare.Add(new ScanRow { Address = SelectedFound.Address, Type = SelectedFound.Type, Value = SelectedFound.Value, Description = SelectedFound.Description });
+    }
+    [RelayCommand] private void CompareToSaved()
+    {
+        if (SelectedCompare is null) { Status = "Select a row in Compare first."; return; }
+        var row = new ScanRow { Address = SelectedCompare.Address, Type = SelectedCompare.Type, Value = SelectedCompare.Value, Description = SelectedCompare.Description };
+        Saved.Add(row); SelectedSaved = row;
+        Status = "Moved to Saved (selected). Pick a role and Apply.";
+    }
+    [RelayCommand] private void RemoveCompare() { if (SelectedCompare is not null) Compare.Remove(SelectedCompare); }
+
     [RelayCommand] private void RemoveSaved() => RemoveSavedRow(SelectedSaved);
 
     [RelayCommand] private void RemoveSavedRow(ScanRow? row)

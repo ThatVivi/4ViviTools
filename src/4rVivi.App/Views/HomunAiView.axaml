@@ -1,19 +1,35 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             xmlns:tools="clr-namespace:FourRVivi.Core.Tools;assembly=4rVivi.Core"
              x:Class="FourRVivi.App.Views.HomunAiView" x:DataType="vm:HomunAiViewModel">
-  <Grid RowDefinitions="Auto,Auto,Auto,*">
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
     <TextBlock Grid.Row="0" Text="Homunculus / Merc AI (AzzyAI)" Classes="h1"/>
     <TextBlock Grid.Row="1" Classes="muted" TextWrapping="Wrap"
-               Text="Bundled Dr. Azzy AI (a proven mix used across servers). Set your game folder and Apply — files are copied straight into &lt;game&gt;\AI\USER_AI, replacing what's there."/>
+               Text="Edit the AzzyAI settings, set your game folder, then Apply config (writes AzzyConfig.lua) and Apply files (copies the AI into &lt;game&gt;\AI\USER_AI)."/>
     <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10" Margin="0,12">
-      <TextBox Width="420" Text="{Binding GameFolder}" Watermark="C:\Games\RagnarokOnline"/>
-      <Button Classes="accent" Content="Apply to game" Command="{Binding ApplyCommand}"/>
+      <TextBox Width="360" Text="{Binding GameFolder}" Watermark="C:\Games\RagnarokOnline"/>
+      <Button Classes="accent" Content="Apply config" Command="{Binding ApplyConfigCommand}"/>
+      <Button Content="Apply files" Command="{Binding ApplyCommand}"/>
     </StackPanel>
-    <Grid Grid.Row="3" RowDefinitions="Auto,*">
-      <TextBlock Grid.Row="0" Text="{Binding Status}" Classes="muted" TextWrapping="Wrap" Margin="0,0,0,8"/>
-      <Border Grid.Row="1" Classes="card" Padding="0">
-        <ListBox ItemsSource="{Binding Files}" Background="Transparent" FontFamily="Consolas,monospace"/>
-      </Border>
-    </Grid>
+    <ScrollViewer Grid.Row="3">
+      <ItemsControl ItemsSource="{Binding Options}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="tools:AzzyOption">
+            <Border Classes="card" Margin="0,0,0,6" Padding="10,6">
+              <Grid ColumnDefinitions="210,150,*">
+                <TextBlock Grid.Column="0" Text="{Binding Key}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <CheckBox IsVisible="{Binding IsBool}" IsChecked="{Binding BoolValue}" Content="On"/>
+                  <NumericUpDown IsVisible="{Binding IsInt}" Minimum="0" Maximum="1000000" Value="{Binding IntValue}"/>
+                  <ComboBox IsVisible="{Binding IsEnum}" Width="130" ItemsSource="{Binding EnumValues}" SelectedItem="{Binding StringValue}"/>
+                </Panel>
+                <TextBlock Grid.Column="2" Text="{Binding Description}" Classes="muted" VerticalAlignment="Center" TextWrapping="Wrap"/>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+    <TextBlock Grid.Row="4" Text="{Binding Status}" Classes="muted" TextWrapping="Wrap" Margin="0,8,0,0"/>
   </Grid>
 </UserControl>

@@ -6,6 +6,7 @@ using Avalonia.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FourRVivi.Core.Settings;
+using FourRVivi.Core.Tools;
 
 namespace FourRVivi.App.ViewModels;
 
@@ -14,6 +15,7 @@ public sealed partial class HomunAiViewModel : ViewModelBase
 {
     private readonly SettingsStore _settings;
     public ObservableCollection<string> Files { get; } = new();
+    public ObservableCollection<AzzyOption> Options { get; } = new(AzzyConfig.Defaults());
 
     [ObservableProperty] private string _gameFolder = "";
     [ObservableProperty] private string _status = "Paste your RO game folder (the one with the client .exe), review the AzzyAI files, then Apply.";
@@ -49,6 +51,19 @@ public sealed partial class HomunAiViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(GameFolder) || !Directory.Exists(GameFolder))
         { Status = "Set a valid game folder first."; return; }
         CopyToGame(GameFolder);
+    }
+
+    [RelayCommand] private void ApplyConfig()
+    {
+        if (string.IsNullOrWhiteSpace(GameFolder) || !Directory.Exists(GameFolder)) { Status = "Set a valid game folder first."; return; }
+        try
+        {
+            string dir = Path.Combine(GameFolder, "AI", "USER_AI");
+            Directory.CreateDirectory(dir);
+            File.WriteAllText(Path.Combine(dir, "AzzyConfig.lua"), AzzyConfig.ToLua(Options));
+            Status = $"Saved {Options.Count} AzzyAI settings to {dir}\\AzzyConfig.lua.";
+        }
+        catch (Exception ex) { Status = "Save config failed: " + ex.Message; }
     }
 
     private void CopyToGame(string folder)

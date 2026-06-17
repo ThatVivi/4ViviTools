@@ -8,3 +8,9 @@ public interface IPlugin
     string Version { get; }
     Task InitializeAsync();
 }
+
+/// <summary>A plugin that wants access to the host's services on initialize.</summary>
+public interface IPluginWithServices : IPlugin
+{
+    void Configure(IServiceProvider services);
+}

@@ -22,6 +22,7 @@
           <StackPanel><TextBlock Text="Return at weight %" Classes="muted"/><NumericUpDown Width="130" Minimum="0" Maximum="100" Value="{Binding ReturnAtWeightPercent}"/></StackPanel>
           <StackPanel><TextBlock Text="Rotation ms" Classes="muted"/><NumericUpDown Width="110" Minimum="80" Maximum="5000" Value="{Binding RotationMs}"/></StackPanel>
           <CheckBox Content="Click to move" IsChecked="{Binding ClickToMove}" VerticalAlignment="Bottom"/>
+          <CheckBox Content="Click to attack" IsChecked="{Binding ClickAttack}" VerticalAlignment="Bottom"/>
           <StackPanel><TextBlock Text="Move radius px" Classes="muted"/><NumericUpDown Width="120" Minimum="20" Maximum="600" Value="{Binding MoveRadius}"/></StackPanel>
         </StackPanel>
       </StackPanel>

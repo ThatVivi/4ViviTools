@@ -61,6 +61,13 @@ public partial class App : Application
         s.AddSingleton<GameSession>();
         s.AddSingleton<EngineHub>();
         s.AddSingleton<ProcessWatcher>();
+        s.AddSingleton<FourRVivi.Core.Events.IEventBus, FourRVivi.Core.Events.EventBus>();
+        s.AddSingleton<FourRVivi.Core.Services.IUpdateService, FourRVivi.Core.Services.UpdateService>();
+        s.AddSingleton<ScreenshotService>();
+        s.AddSingleton<IPluginLoader, PluginLoader>();
+        s.AddSingleton<FourRVivi.Core.Configuration.IConfigService, FourRVivi.Core.Configuration.ConfigService>();
+        s.AddSingleton<FourRVivi.Core.Services.IProfileService, FourRVivi.Core.Services.ProfileService>();
+        s.AddSingleton<NotificationService>();
 
         // App services
         s.AddSingleton<ProcessService>();

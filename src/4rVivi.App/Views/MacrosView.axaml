@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels" xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
              x:Class="FourRVivi.App.Views.MacrosView" x:DataType="vm:MacrosViewModel">
   <StackPanel Spacing="14">
     <TextBlock Text="Macros" Classes="h1"/>
@@ -10,7 +10,10 @@
           <Border Classes="card" Margin="0,0,0,8">
             <Grid ColumnDefinitions="180,*,80,110,Auto,Auto" VerticalAlignment="Center">
               <TextBox Grid.Column="0" Text="{Binding Name}" Margin="0,0,8,0"/>
-              <TextBox Grid.Column="1" Text="{Binding KeysCsv}" Watermark="F9, ENTER, ENTER" Margin="0,0,8,0"/>
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="0,0,8,0">
+                <TextBox Width="180" Text="{Binding KeysCsv}" Watermark="F9, ENTER, ENTER"/>
+                <ctrl:SequenceRecorder Sequence="{Binding KeysCsv}"/>
+              </StackPanel>
               <CheckBox Grid.Column="2" Content="Loop" IsChecked="{Binding LoopWhileOn}"/>
               <NumericUpDown Grid.Column="3" Minimum="200" Maximum="600000" Value="{Binding IntervalMs}" Margin="0,0,8,0"/>
               <Button Grid.Column="4" Classes="accent" Content="Play"
@@ -27,7 +30,8 @@
     <Border Classes="card">
       <StackPanel Spacing="10">
         <StackPanel Orientation="Horizontal" Spacing="10">
-          <TextBox Width="260" Text="{Binding Sequence}" Watermark="ENTER, ENTER"/>
+          <TextBox Width="220" Text="{Binding Sequence}" Watermark="ENTER, ENTER"/>
+          <ctrl:SequenceRecorder Sequence="{Binding Sequence}" VerticalAlignment="Bottom"/>
           <StackPanel><TextBlock Text="Gap ms" Classes="muted"/><NumericUpDown Width="100" Minimum="20" Maximum="5000" Value="{Binding GapMs}"/></StackPanel>
           <Button Classes="accent" Content="Play login" VerticalAlignment="Bottom" Command="{Binding PlayLoginCommand}"/>
         </StackPanel>

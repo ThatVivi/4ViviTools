@@ -20,6 +20,7 @@ public sealed partial class SmartBotViewModel : ViewModelBase
     [ObservableProperty] private int _returnAtWeightPercent;
     [ObservableProperty] private int _rotationMs;
     [ObservableProperty] private bool _clickToMove;
+    [ObservableProperty] private bool _clickAttack;
     [ObservableProperty] private int _moveRadius;
     [ObservableProperty] private string _addressStatus = "";
 
@@ -32,7 +33,7 @@ public sealed partial class SmartBotViewModel : ViewModelBase
         _attackKey = b.AttackKey; _lootKey = b.LootKey; _teleportKey = b.TeleportKey; _returnKey = b.ReturnKey;
         _fleeAtHpPercent = b.FleeAtHpPercent; _stuckSeconds = b.StuckSeconds;
         _returnAtWeightPercent = b.ReturnAtWeightPercent; _rotationMs = b.RotationMs;
-        _clickToMove = b.ClickToMove; _moveRadius = b.MoveRadius;
+        _clickToMove = b.ClickToMove; _clickAttack = b.ClickAttack; _moveRadius = b.MoveRadius;
         RefreshAddresses();
     }
 
@@ -45,6 +46,7 @@ public sealed partial class SmartBotViewModel : ViewModelBase
     partial void OnReturnAtWeightPercentChanged(int value) => _hub.SmartBot.ReturnAtWeightPercent = value;
     partial void OnRotationMsChanged(int value) => _hub.SmartBot.RotationMs = Math.Max(80, value);
     partial void OnClickToMoveChanged(bool value) => _hub.SmartBot.ClickToMove = value;
+    partial void OnClickAttackChanged(bool value) => _hub.SmartBot.ClickAttack = value;
     partial void OnMoveRadiusChanged(int value) => _hub.SmartBot.MoveRadius = Math.Max(20, value);
 
     [RelayCommand] private void ApplyRotation()

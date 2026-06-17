@@ -49,16 +49,70 @@
       <Button Content="Unchanged" Command="{Binding UnchangedCommand}"/>
     </StackPanel>
 
-    <Grid Grid.Row="4" ColumnDefinitions="*,Auto,*">
-      <!-- found (left) -->
+    <Grid Grid.Row="4" ColumnDefinitions="*,Auto,*,Auto,*">
       <Border Grid.Column="0" Classes="card" Padding="0">
         <DockPanel>
           <TextBlock DockPanel.Dock="Top" Text="Found" Classes="section"/>
-          <Grid DockPanel.Dock="Top" ColumnDefinitions="150,*,80" Margin="8,0">
-            <TextBlock Grid.Column="0" Text="Address" Classes="muted"/>
-            <TextBlock Grid.Column="1" Text="Value" Classes="muted"/>
-            <TextBlock Grid.Column="2" Text="Type" Classes="muted"/>
-          </Grid>
+          <ListBox ItemsSource="{Binding Found}" SelectedItem="{Binding SelectedFound}" Background="Transparent">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:ScanRow">
+                <Grid ColumnDefinitions="150,*,70">
+                  <TextBlock Grid.Column="0" Text="{Binding AddressHex}"/>
+                  <TextBlock Grid.Column="1" Text="{Binding Value}" Classes="muted"/>
+                  <TextBlock Grid.Column="2" Text="{Binding Type}" Classes="muted"/>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </Border>
+      <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="8" Margin="8,0">
+        <Button Content="Snapshot" Command="{Binding SnapshotCommand}"/>
+        <Button Content="▶" Command="{Binding MoveFoundToCompareCommand}"/>
+      </StackPanel>
+      <Border Grid.Column="2" Classes="card" Padding="0">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="Compare (snapshot)" Classes="section"/>
+          <ListBox ItemsSource="{Binding Compare}" SelectedItem="{Binding SelectedCompare}" Background="Transparent">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:ScanRow">
+                <Grid ColumnDefinitions="150,*,70,30">
+                  <TextBlock Grid.Column="0" Text="{Binding AddressHex}"/>
+                  <TextBlock Grid.Column="1" Text="{Binding Value}" Classes="muted"/>
+                  <TextBlock Grid.Column="2" Text="{Binding Type}" Classes="muted"/>
+                  <Button Grid.Column="3" Content="✕"
+                          Command="{ReflectionBinding DataContext.RemoveCompareCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                          CommandParameter="{Binding}"/>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </Border>
+      <StackPanel Grid.Column="3" VerticalAlignment="Center" Spacing="8" Margin="8,0">
+        <Button Content="▶" Command="{Binding CompareToSavedCommand}"/>
+      </StackPanel>
+      <Border Grid.Column="4" Classes="card" Padding="0">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="Saved address list" Classes="section"/>
+          <ListBox ItemsSource="{Binding Saved}" SelectedItem="{Binding SelectedSaved}" Background="Transparent">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:ScanRow">
+                <Grid ColumnDefinitions="110,120,*,70,30">
+                  <TextBox Grid.Column="0" Text="{Binding Description}" Margin="0,0,4,0"/>
+                  <TextBlock Grid.Column="1" Text="{Binding AddressHex}" VerticalAlignment="Center"/>
+                  <TextBlock Grid.Column="2" Text="{Binding Value}" Classes="muted" VerticalAlignment="Center"/>
+                  <TextBlock Grid.Column="3" Text="{Binding Role}" VerticalAlignment="Center"/>
+                  <Button Grid.Column="4" Content="✕"
+                          Command="{ReflectionBinding DataContext.RemoveSavedRowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                          CommandParameter="{Binding}"/>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </Border>
+    </Grid>
           <ListBox ItemsSource="{Binding Found}" SelectedItem="{Binding SelectedFound}" Background="Transparent">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:ScanRow">
