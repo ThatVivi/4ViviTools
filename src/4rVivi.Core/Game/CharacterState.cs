@@ -35,7 +35,7 @@ public sealed class CharacterStateReader
 
     public CharacterState? Snapshot()
     {
-        if (_gs.Process is null) return null;
+        if (!_gs.Reader.Attached) return null;
 
         var s = new CharacterState
         {

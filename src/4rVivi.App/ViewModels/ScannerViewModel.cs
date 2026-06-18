@@ -40,6 +40,16 @@ public sealed partial class ScannerViewModel : ViewModelBase
     [ObservableProperty] private string _value = "";
     [ObservableProperty] private string _characterName = "";
     [ObservableProperty] private string _currentHp = "";
+    [ObservableProperty] private string _inMaxHp = "";
+    [ObservableProperty] private string _inSp = "";
+    [ObservableProperty] private string _inMaxSp = "";
+    [ObservableProperty] private string _inBaseLevel = "";
+    [ObservableProperty] private string _inJobLevel = "";
+    [ObservableProperty] private string _inWeight = "";
+    [ObservableProperty] private string _inMaxWeight = "";
+    [ObservableProperty] private string _inZeny = "";
+    [ObservableProperty] private string _inBaseExp = "";
+    [ObservableProperty] private string _inJobExp = "";
     [ObservableProperty] private string _selectedRole = "HP";
     [ObservableProperty] private ScanRow? _selectedFound;
     [ObservableProperty] private ScanRow? _selectedSaved;
@@ -78,6 +88,52 @@ public sealed partial class ScannerViewModel : ViewModelBase
     };
 
     private ScanType T() => Enum.Parse<ScanType>(SelectedType);
+
+    // ---- Multi-value auto-bind: type your current stats, find the struct, bind every role ----
+    [RelayCommand] private void FindAndBindAll()
+    {
+        if (!_session.Reader.Attached) _session.Reattach();
+        if (!_session.Reader.Attached) { Status = "Not attached. Pick your RO process in the top bar first."; return; }
+
+        var scanner = new MemoryScanner(_session.Reader);
+        var values = new Dictionary<string, int>();
+        void Add(string role, string box) { if (int.TryParse(box?.Trim(), out int v)) values[role] = v; }
+        Add(CoreRoles.Hp, CurrentHp);
+        Add(CoreRoles.MaxHp, InMaxHp);
+        Add(CoreRoles.Sp, InSp);
+        Add(CoreRoles.MaxSp, InMaxSp);
+        Add(CoreRoles.BaseLevel, InBaseLevel);
+        Add(CoreRoles.JobLevel, InJobLevel);
+        Add(CoreRoles.Weight, InWeight);
+        Add(CoreRoles.MaxWeight, InMaxWeight);
+        Add(CoreRoles.Zeny, InZeny);
+        Add(CoreRoles.Exp, InBaseExp);
+        Add(CoreRoles.JobExp, InJobExp);
+
+        if (values.Count < 2) { Status = "Type at least two of your CURRENT values (e.g. HP and MaxHP) exactly as the game shows."; return; }
+
+        var cands = new Dictionary<string, List<long>>();
+        foreach (var kv in values)
+            cands[kv.Key] = scanner.FirstScan(ScanType.Int32, kv.Value).Select(h => (long)h.Address).Take(60000).ToList();
+
+        var located = StructLocator.Locate(cands, 0x800);
+        // also bind any value that is globally unique on its own
+        foreach (var kv in cands)
+            if (!located.ContainsKey(kv.Key) && kv.Value.Count == 1) located[kv.Key] = kv.Value[0];
+
+        // optional: bind character name if given and (near-)unique
+        if (!string.IsNullOrWhiteSpace(CharacterName))
+        {
+            var nameHits = scanner.FirstScan(ScanType.String, CharacterName.Trim());
+            if (nameHits.Count is > 0 and <= 3) SaveRole(CoreRoles.CharName, nameHits[0].Address, "String");
+        }
+
+        if (located.Count == 0) { Status = "Couldn't pin a matching struct. Re-check the values are exactly what the game shows right now."; return; }
+
+        foreach (var kv in located) SaveRole(kv.Key, (IntPtr)kv.Value, "Int32");
+        HydrateSaved();
+        Status = $"Auto-bound {located.Count}: {string.Join(", ", located.Keys)}. Saved to profile — Discord + trackers now use them. Use Make permanent to keep them across restarts.";
+    }
 
     // ---- Auto-setup: find Name (string) + HP (int) quickly ----
     [RelayCommand] private void AutoSetup()

@@ -12,12 +12,22 @@
     <Border Grid.Row="1" Classes="card" Margin="0,12,0,8">
       <StackPanel Spacing="8">
         <TextBlock Text="{Binding BindBanner}" FontWeight="SemiBold"/>
-        <StackPanel Orientation="Horizontal" Spacing="10">
-          <StackPanel><TextBlock Text="Character name (String)" Classes="muted"/><TextBox Width="200" Text="{Binding CharacterName}"/></StackPanel>
-          <StackPanel><TextBlock Text="Current HP (Integer)" Classes="muted"/><TextBox Width="140" Text="{Binding CurrentHp}"/></StackPanel>
-          <Button Classes="accent" Content="Find name + HP" VerticalAlignment="Bottom" Command="{Binding AutoSetupCommand}"/>
-        </StackPanel>
-        <TextBlock Text="{Binding Tip}" Classes="muted"/>
+        <TextBlock Text="Type your CURRENT values exactly as the game shows, then Find &amp; bind all. The more you fill in, the more reliable." Classes="muted" TextWrapping="Wrap"/>
+        <WrapPanel>
+          <StackPanel Margin="0,0,10,6"><TextBlock Text="Character name" Classes="muted"/><TextBox Width="150" Text="{Binding CharacterName}"/></StackPanel>
+          <StackPanel Margin="0,0,10,6"><TextBlock Text="HP" Classes="muted"/><TextBox Width="90" Text="{Binding CurrentHp}"/></StackPanel>
+          <StackPanel Margin="0,0,10,6"><TextBlock Text="Max HP" Classes="muted"/><TextBox Width="90" Text="{Binding InMaxHp}"/></StackPanel>
+          <StackPanel Margin="0,0,10,6"><TextBlock Text="SP" Classes="muted"/><TextBox Width="90" Text="{Binding InSp}"/></StackPanel>
+          <StackPanel Margin="0,0,10,6"><TextBlock Text="Max SP" Classes="muted"/><TextBox Width="90" Text="{Binding InMaxSp}"/></StackPanel>
+          <StackPanel Margin="0,0,10,6"><TextBlock Text="Base Lv" Classes="muted"/><TextBox Width="80" Text="{Binding InBaseLevel}"/></StackPanel>
+          <StackPanel Margin="0,0,10,6"><TextBlock Text="Job Lv" Classes="muted"/><TextBox Width="80" Text="{Binding InJobLevel}"/></StackPanel>
+          <StackPanel Margin="0,0,10,6"><TextBlock Text="Weight" Classes="muted"/><TextBox Width="90" Text="{Binding InWeight}"/></StackPanel>
+          <StackPanel Margin="0,0,10,6"><TextBlock Text="Max Weight" Classes="muted"/><TextBox Width="90" Text="{Binding InMaxWeight}"/></StackPanel>
+          <StackPanel Margin="0,0,10,6"><TextBlock Text="Zeny" Classes="muted"/><TextBox Width="110" Text="{Binding InZeny}"/></StackPanel>
+          <StackPanel Margin="0,0,10,6"><TextBlock Text="Base EXP" Classes="muted"/><TextBox Width="120" Text="{Binding InBaseExp}"/></StackPanel>
+          <StackPanel Margin="0,0,10,6"><TextBlock Text="Job EXP" Classes="muted"/><TextBox Width="120" Text="{Binding InJobExp}"/></StackPanel>
+        </WrapPanel>
+        <Button Classes="accent" Content="Find &amp; bind all" HorizontalAlignment="Left" Command="{Binding FindAndBindAllCommand}"/>
       </StackPanel>
     </Border>
 
