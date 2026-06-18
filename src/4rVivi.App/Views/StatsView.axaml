@@ -11,6 +11,11 @@
       <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="EXP / hour" Classes="muted"/><TextBlock Text="{Binding ExpPerHour}" FontSize="20"/></StackPanel></Border>
       <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="Zeny / hour" Classes="muted"/><TextBlock Text="{Binding ZenyPerHour}" FontSize="20"/></StackPanel></Border>
       <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="EXP gained" Classes="muted"/><TextBlock Text="{Binding ExpGained}" FontSize="20"/></StackPanel></Border>
+      <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="Zeny gained" Classes="muted"/><TextBlock Text="{Binding ZenyGained}" FontSize="20"/></StackPanel></Border>
+      <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="Profit / hour" Classes="muted"/><TextBlock Text="{Binding ProfitPerHour}" FontSize="20"/></StackPanel></Border>
+      <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="Loot / hour" Classes="muted"/><TextBlock Text="{Binding LootPerHour}" FontSize="20"/></StackPanel></Border>
+      <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="Loot count" Classes="muted"/><TextBlock Text="{Binding LootCount}" FontSize="20"/></StackPanel></Border>
+      <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="Deaths" Classes="muted"/><TextBlock Text="{Binding Deaths}" FontSize="20"/></StackPanel></Border>
       <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="HP" Classes="muted"/><TextBlock Text="{Binding HpText}" FontSize="20"/></StackPanel></Border>
       <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="SP" Classes="muted"/><TextBlock Text="{Binding SpText}" FontSize="20"/></StackPanel></Border>
       <Border Classes="card" Width="170" Margin="0,0,12,12"><StackPanel><TextBlock Text="Weight" Classes="muted"/><TextBlock Text="{Binding WeightText}" FontSize="20"/></StackPanel></Border>

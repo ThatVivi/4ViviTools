@@ -59,6 +59,14 @@ public sealed partial class ScannerViewModel : ViewModelBase
 
     public ObservableCollection<string> Detected { get; } = new();
 
+    // OCR region + language (doc: dynamic region selection + multi-language)
+    public System.Collections.Generic.IReadOnlyList<OcrRegion> OcrPresets => _ocr.Presets;
+    public string[] OcrLanguages { get; } = OcrService.SupportedLanguages;
+    [ObservableProperty] private OcrRegion? _selectedOcrPreset;
+    [ObservableProperty] private string _selectedOcrLanguage = "eng";
+    partial void OnSelectedOcrPresetChanged(OcrRegion? value) { if (value != null) _ocr.SetRegion(value); }
+    partial void OnSelectedOcrLanguageChanged(string value) { _ocr.Language = string.IsNullOrWhiteSpace(value) ? "eng" : value; }
+
     public ScannerViewModel(GameSession session, SettingsStore settings, OcrService ocr)
     {
         _session = session; _settings = settings; _ocr = ocr;

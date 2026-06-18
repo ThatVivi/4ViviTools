@@ -23,6 +23,11 @@ public sealed partial class StatsViewModel : ViewModelBase
     [ObservableProperty] private string _hpText = "—";
     [ObservableProperty] private string _spText = "—";
     [ObservableProperty] private string _weightText = "—";
+    [ObservableProperty] private int _deaths;
+    [ObservableProperty] private string _zenyGained = "0";
+    [ObservableProperty] private string _lootCount = "0";
+    [ObservableProperty] private string _lootPerHour = "0";
+    [ObservableProperty] private string _profitPerHour = "0";
 
     public ObservableCollection<string> ExpLog { get; } = new();
 
@@ -44,6 +49,12 @@ public sealed partial class StatsViewModel : ViewModelBase
         ExpGained = _session.ExpGained.ToString("N0");
 
         int hp = _stat.Hp, maxHp = _stat.MaxHp, sp = _stat.Sp, maxSp = _stat.MaxSp, wt = _stat.Weight, maxWt = _stat.MaxWeight;
+        _session.Observe(hp);
+        Deaths = _session.Deaths;
+        ZenyGained = _session.ZenyGained.ToString("N0");
+        LootCount = _session.LootCount.ToString("N0");
+        LootPerHour = _session.LootPerHour.ToString("N0");
+        ProfitPerHour = _session.ProfitPerHour.ToString("N0");
         HpText = hp < 0 ? "—" : (maxHp > 0 ? $"{hp}/{maxHp}" : hp.ToString());
         SpText = sp < 0 ? "—" : (maxSp > 0 ? $"{sp}/{maxSp}" : sp.ToString());
         WeightText = wt < 0 ? "—" : (maxWt > 0 ? $"{wt}/{maxWt}" : wt.ToString());

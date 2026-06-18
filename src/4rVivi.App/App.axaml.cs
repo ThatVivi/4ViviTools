@@ -53,18 +53,21 @@ public partial class App : Application
             if (d is null || !d.Enabled || string.IsNullOrWhiteSpace(d.AppId)) return;
 
             var gs = Services.GetRequiredService<GameSession>();
+            var reader = new CharacterStateReader(gs);
             Services.GetRequiredService<DiscordPresenceUpdater>().Start(d.AppId, () =>
             {
-                if (gs.Process is null) return null;   // not attached -> no presence
+                var cs = reader.Snapshot();
+                if (cs is null) return null;   // not attached -> no presence
                 return new RoPresence
                 {
-                    CharName   = gs.ReadRoleString(Roles.CharName),
-                    ClassName  = gs.ReadRoleString(Roles.ClassName),
-                    BaseLevel  = gs.ReadRole(Roles.BaseLevel) ?? 0,
-                    JobLevel   = gs.ReadRole(Roles.JobLevel) ?? 0,
-                    MapName    = gs.ReadRoleString(Roles.MapName, 16),
-                    X          = gs.ReadRole(Roles.PosX) ?? 0,
-                    Y          = gs.ReadRole(Roles.PosY) ?? 0,
+                    CharName   = cs.Name,
+                    ClassName  = cs.ClassName,
+                    BaseLevel  = cs.BaseLevel,
+                    JobLevel   = cs.JobLevel,
+                    MapName    = cs.MapName,
+                    X = cs.X, Y = cs.Y,
+                    HpPct = cs.HpPct, SpPct = cs.SpPct,
+                    Activity = cs.Activity,
                     ServerName = d.ServerName,
                     WebsiteUrl = d.WebsiteUrl,
                     LargeImageKey = d.LargeImageKey,
@@ -83,7 +86,12 @@ public partial class App : Application
         s.AddSingleton<Loc>();
         s.AddSingleton(_ => new Lazy<GameDatabase>(() => new GameDatabase()));
         s.AddSingleton<MvpTracker>();
-        s.AddSingleton(sp => new SessionTracker(sp.GetRequiredService<GameSession>()));
+        s.AddSingleton(sp =>
+        {
+            var t = new SessionTracker(sp.GetRequiredService<GameSession>());
+            t.Loot = sp.GetRequiredService<LootLog>();
+            return t;
+        });
         s.AddSingleton<LootLog>();
         s.AddSingleton<MvpIconService>();
         s.AddSingleton<IconService>();

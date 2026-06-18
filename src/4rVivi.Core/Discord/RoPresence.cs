@@ -21,6 +21,9 @@ public sealed class RoPresence
     public int PartyMax { get; set; }
     public string LargeImageKey { get; set; } = "logo";
     public string SmallImageKey { get; set; } = "";
+    public int HpPct { get; set; }
+    public int SpPct { get; set; }
+    public string Activity { get; set; } = "";
     public string WebsiteUrl { get; set; } = "";
 
     public string DetailsLine
@@ -37,8 +40,9 @@ public sealed class RoPresence
         get
         {
             string map = string.IsNullOrWhiteSpace(MapDisplay) ? MapName : MapDisplay;
-            if (string.IsNullOrWhiteSpace(map)) return "";
-            return (X > 0 || Y > 0) ? $"{map} ({X},{Y})" : map;
+            string place = string.IsNullOrWhiteSpace(map) ? "" : ((X > 0 || Y > 0) ? $"{map} ({X},{Y})" : map);
+            string head = string.IsNullOrWhiteSpace(Activity) ? place : (string.IsNullOrWhiteSpace(place) ? Activity : $"{Activity} - {place}");
+            return head;
         }
     }
 }

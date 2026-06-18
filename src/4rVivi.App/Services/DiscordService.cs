@@ -36,13 +36,15 @@ public sealed class DiscordService : IDisposable
             string state = p.StateLine;
             if (string.IsNullOrWhiteSpace(details) && string.IsNullOrWhiteSpace(state)) return;
 
-            string sig = $"{details}|{state}|{p.PartySize}/{p.PartyMax}|{p.LargeImageKey}|{p.SmallImageKey}";
+            string sig = $"{details}|{state}|{p.HpPct}|{p.SpPct}|{p.PartySize}/{p.PartyMax}|{p.LargeImageKey}|{p.SmallImageKey}";
             if (sig == _last) return;
             _last = sig;
 
-            string largeText = !string.IsNullOrWhiteSpace(p.CharName) && !string.IsNullOrWhiteSpace(p.ServerName)
+            string who = !string.IsNullOrWhiteSpace(p.CharName) && !string.IsNullOrWhiteSpace(p.ServerName)
                 ? $"{p.CharName} - {p.ServerName}"
                 : (p.CharName + p.ServerName);
+            string vitals = (p.HpPct > 0 || p.SpPct > 0) ? $"HP {p.HpPct}% SP {p.SpPct}%" : "";
+            string largeText = string.Join(" | ", new[] { who, vitals }.Where(x => !string.IsNullOrWhiteSpace(x)));
 
             var rp = new RichPresence
             {
