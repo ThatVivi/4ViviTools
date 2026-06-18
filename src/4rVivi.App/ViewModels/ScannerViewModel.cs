@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Avalonia.Threading;
+using FourRVivi.App.Overlay;
 using FourRVivi.Core.Game;
 using FourRVivi.Core.Memory;
 using FourRVivi.Core.Signatures;
@@ -19,6 +21,8 @@ public sealed partial class ScanRow : ObservableObject
     [ObservableProperty] private string _value = "";
     [ObservableProperty] private string _description = "";
     [ObservableProperty] private string _role = "";
+    public int Score { get; set; }
+    public string ScoreText => Score > 0 ? Score + "%" : "";
 }
 
 public sealed partial class ScannerViewModel : ViewModelBase
@@ -28,6 +32,11 @@ public sealed partial class ScannerViewModel : ViewModelBase
     private readonly SignatureBinder _binder;
     private MemoryScanner? _scanner;
     private List<ScanHit> _current = new();
+    private readonly Dictionary<string, List<ScanHit>> _multi = new();
+    private readonly Dictionary<string, int> _typed = new();
+    private CaptureOverlayWindow? _captureOverlay;
+    private DispatcherTimer? _captureTimer;
+    private int _captureLeft;
 
     public string[] Types { get; } = Enum.GetNames<ScanType>();
     public string[] RoleList { get; } = CoreRoles.All;
@@ -89,15 +98,14 @@ public sealed partial class ScannerViewModel : ViewModelBase
 
     private ScanType T() => Enum.Parse<ScanType>(SelectedType);
 
-    // ---- Multi-value auto-bind: type your current stats, find the struct, bind every role ----
-    [RelayCommand] private void FindAndBindAll()
-    {
-        if (!_session.Reader.Attached) _session.Reattach();
-        if (!_session.Reader.Attached) { Status = "Not attached. Pick your RO process in the top bar first."; return; }
+    // ---- Multi-value, change-based auto-bind (uses the game's logic) ----
+    private static readonly HashSet<string> ConstantRoles = new(StringComparer.OrdinalIgnoreCase)
+    { CoreRoles.MaxHp, CoreRoles.MaxSp, CoreRoles.MaxWeight, CoreRoles.BaseLevel, CoreRoles.JobLevel };
 
-        var scanner = new MemoryScanner(_session.Reader);
-        var values = new Dictionary<string, int>();
-        void Add(string role, string box) { if (int.TryParse(box?.Trim(), out int v)) values[role] = v; }
+    private void CollectTyped()
+    {
+        _typed.Clear();
+        void Add(string role, string box) { if (int.TryParse(box?.Trim(), out int v)) _typed[role] = v; }
         Add(CoreRoles.Hp, CurrentHp);
         Add(CoreRoles.MaxHp, InMaxHp);
         Add(CoreRoles.Sp, InSp);
@@ -109,30 +117,148 @@ public sealed partial class ScannerViewModel : ViewModelBase
         Add(CoreRoles.Zeny, InZeny);
         Add(CoreRoles.Exp, InBaseExp);
         Add(CoreRoles.JobExp, InJobExp);
+    }
 
-        if (values.Count < 2) { Status = "Type at least two of your CURRENT values (e.g. HP and MaxHP) exactly as the game shows."; return; }
+    /// <summary>Step 1: first scan every typed value into its own candidate set.</summary>
+    [RelayCommand] private void ScanAll()
+    {
+        if (!_session.Reader.Attached) _session.Reattach();
+        if (!_session.Reader.Attached) { Status = "Not attached. Pick your RO process in the top bar first."; return; }
+        CollectTyped();
+        if (_typed.Count < 1) { Status = "Type at least your current HP, then a few more values."; return; }
 
-        var cands = new Dictionary<string, List<long>>();
-        foreach (var kv in values)
-            cands[kv.Key] = scanner.FirstScan(ScanType.Int32, kv.Value).Select(h => (long)h.Address).Take(60000).ToList();
+        var scanner = new MemoryScanner(_session.Reader);
+        _multi.Clear();
+        foreach (var kv in _typed) _multi[kv.Key] = scanner.FirstScan(ScanType.Int32, kv.Value);
 
-        var located = StructLocator.Locate(cands, 0x800);
-        // also bind any value that is globally unique on its own
-        foreach (var kv in cands)
-            if (!located.ContainsKey(kv.Key) && kv.Value.Count == 1) located[kv.Key] = kv.Value[0];
+        BindUniques();
+        Status = $"Scanned ({Summary()}). Now play: take damage, spend SP, gain EXP — then press \u201cRefine\u201d. Repeat 2\u20134x until each binds.";
+    }
 
-        // optional: bind character name if given and (near-)unique
-        if (!string.IsNullOrWhiteSpace(CharacterName))
+    /// <summary>Step 2: narrow by the game's logic — HP/SP/EXP/Weight change, Max/levels stay.
+    /// Press after you have actually changed those values in-game. Repeat until each is unique.</summary>
+    [RelayCommand] private void RefineBind()
+    {
+        if (_multi.Count == 0) { Status = "Press \u201cFirst scan all\u201d first."; return; }
+        RefineOnce();
+        Status = _multi.Count == 0
+            ? $"All values bound and saved ({Summary(true)}). Use \u201cMake permanent\u201d to keep them across restarts."
+            : $"Refined ({Summary()}). Keep playing + Refine until each reaches 1.";
+    }
+
+    private void RefineOnce()
+    {
+        if (_multi.Count == 0) return;
+        var scanner = new MemoryScanner(_session.Reader);
+        foreach (var role in _multi.Keys.ToList())
         {
-            var nameHits = scanner.FirstScan(ScanType.String, CharacterName.Trim());
-            if (nameHits.Count is > 0 and <= 3) SaveRole(CoreRoles.CharName, nameHits[0].Address, "String");
+            var filter = ConstantRoles.Contains(role) ? ScanFilter.Unchanged : ScanFilter.Changed;
+            var narrowed = scanner.NextScan(_multi[role], ScanType.Int32, filter, null);
+            if (narrowed.Count > 0) _multi[role] = narrowed;   // keep previous if a "changed" role didn't actually change
         }
+        BindUniques();
+    }
 
-        if (located.Count == 0) { Status = "Couldn't pin a matching struct. Re-check the values are exactly what the game shows right now."; return; }
+    /// <summary>Hands-free capture: scan, then for 15s narrow by the game's logic while the player
+    /// moves/fights, with an on-game countdown overlay. Binds values as they become unique.</summary>
+    [RelayCommand] private void AutoCapture()
+    {
+        if (!_session.Reader.Attached) _session.Reattach();
+        if (!_session.Reader.Attached) { Status = "Not attached. Pick your RO process first."; return; }
+        CollectTyped();
+        if (_typed.Count < 1) { Status = "Type at least your current HP before capturing."; return; }
 
-        foreach (var kv in located) SaveRole(kv.Key, (IntPtr)kv.Value, "Int32");
+        var scanner = new MemoryScanner(_session.Reader);
+        _multi.Clear();
+        foreach (var kv in _typed) _multi[kv.Key] = scanner.FirstScan(ScanType.Int32, kv.Value);
+        BindUniques();
+
+        _captureLeft = 15;
+        try { _captureOverlay = new CaptureOverlayWindow(_session); _captureOverlay.Show(); _captureOverlay.SetStatus(_captureLeft, CaptureLine()); } catch { _captureOverlay = null; }
+
+        _captureTimer?.Stop();
+        _captureTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _captureTimer.Tick += (_, _) => CaptureTick();
+        _captureTimer.Start();
+        Status = "Capturing 15s \u2014 move around, take damage, spend SP, gain EXP.";
+    }
+
+    private void CaptureTick()
+    {
+        RefineOnce();
+        _captureLeft--;
+        _captureOverlay?.SetStatus(_captureLeft, CaptureLine());
+        if (_captureLeft > 0 && _multi.Count > 0) return;
+        _captureTimer?.Stop();
+        try { _captureOverlay?.Close(); } catch { }
+        _captureOverlay = null;
+        RankRemaining();
+        Status = _multi.Count == 0
+            ? $"Capture done \u2014 bound: {string.Join(", ", _session.AddressBook.Entries.Keys)}."
+            : $"Capture done. Bound {_session.AddressBook.Entries.Count}. Remaining candidates ranked in Found \u2014 pick the top, move to Saved, assign role.";
+    }
+
+    private string CaptureLine()
+    {
+        string bound = string.Join(", ", _session.AddressBook.Entries.Keys);
+        string rem = string.Join("  ", _multi.Select(kv => $"{kv.Key}:{kv.Value.Count}"));
+        return $"Bound: {(bound.Length == 0 ? "-" : bound)}    Narrowing: {(rem.Length == 0 ? "-" : rem)}";
+    }
+
+    private void RankRemaining()
+    {
+        Found.Clear();
+        var rows = new List<ScanRow>();
+        foreach (var kv in _multi)
+            foreach (var h in kv.Value.Take(300))
+            {
+                long a = (long)h.Address;
+                rows.Add(new ScanRow { Address = a, Type = "Int32", Value = h.Display, Description = kv.Key, Score = ClusterScore(a) });
+            }
+        foreach (var r in rows.OrderByDescending(r => r.Score).ThenBy(r => r.Address).Take(500)) Found.Add(r);
+    }
+
+    /// <summary>Probability heuristic: an address next to already-bound roles is in the same struct.</summary>
+    private int ClusterScore(long addr)
+    {
+        int near = 0;
+        foreach (var e in _session.AddressBook.Entries.Values)
+            if (Math.Abs((long)e.Resolve(_session.Reader.ModuleBase) - addr) <= 0x800) near++;
+        return Math.Min(99, 35 + near * 20);
+    }
+
+    private string Summary(bool boundOnly = false)
+    {
+        if (boundOnly) return string.Join(", ", _session.AddressBook.Entries.Keys);
+        return string.Join(", ", _multi.Select(kv => $"{kv.Key}:{kv.Value.Count}"));
+    }
+
+    private void BindUniques()
+    {
+        foreach (var role in _multi.Keys.ToList())
+        {
+            if (_multi[role].Count == 1)
+            {
+                var addr = _multi[role][0].Address;
+                SaveRole(role, addr, "Int32");
+                _multi.Remove(role);
+                DeriveNeighbor(role, (long)addr);
+            }
+        }
         HydrateSaved();
-        Status = $"Auto-bound {located.Count}: {string.Join(", ", located.Keys)}. Saved to profile — Discord + trackers now use them. Use Make permanent to keep them across restarts.";
+    }
+
+    /// <summary>Once HP/SP is pinned, its Max sits a few bytes away — read neighbors for the typed Max.</summary>
+    private void DeriveNeighbor(string role, long addr)
+    {
+        string? maxRole = role == CoreRoles.Hp ? CoreRoles.MaxHp : role == CoreRoles.Sp ? CoreRoles.MaxSp : null;
+        if (maxRole is null || _session.AddressBook.Has(maxRole)) return;
+        if (!_typed.TryGetValue(maxRole, out int want)) return;
+        foreach (int off in new[] { 4, -4, 8, 12, -8, 16 })
+        {
+            var a = (IntPtr)(addr + off);
+            if (_session.Reader.ReadInt32(a) == want) { SaveRole(maxRole, a, "Int32"); _multi.Remove(maxRole); break; }
+        }
     }
 
     // ---- Auto-setup: find Name (string) + HP (int) quickly ----
