@@ -1,0 +1,37 @@
+name: Release 4rVivi
+on:
+  workflow_dispatch:
+  push:
+    tags: [ "v*" ]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        runtime: [ win-x64 ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet restore 4rVivi.sln
+      - shell: pwsh
+        run: >
+          dotnet publish src/4rVivi.App/4rVivi.App.csproj
+          -c Release -r ${{ matrix.runtime }} --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+          -o publish/${{ matrix.runtime }}
+      - shell: pwsh
+        run: Compress-Archive -Path publish/${{ matrix.runtime }}/* -DestinationPath 4rVivi-${{ matrix.runtime }}.zip -Force
+      - shell: pwsh
+        run: (Get-FileHash 4rVivi-${{ matrix.runtime }}.zip -Algorithm SHA256).Hash | Out-File 4rVivi-${{ matrix.runtime }}.sha256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 4rVivi-${{ matrix.runtime }}
+          path: |
+            4rVivi-${{ matrix.runtime }}.zip
+            4rVivi-${{ matrix.runtime }}.sha256.txt
+          if-no-files-found: error

@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.MarketplaceView" x:DataType="vm:MarketplaceViewModel">
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Margin="16">
+    <TextBlock Grid.Row="0" Text="Plugin marketplace" Classes="h1"/>
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,12">
+      <TextBox Width="500" Text="{Binding FeedUrl}"/>
+      <Button Classes="accent" Content="Load feed" Command="{Binding LoadCommand}"/>
+    </StackPanel>
+    <TextBlock Grid.Row="2" Classes="muted" Text="{Binding Status}" Margin="0,0,0,8"/>
+    <Border Grid.Row="3" Classes="card" Padding="0">
+      <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" Background="Transparent">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:PluginFeedItem">
+            <Grid ColumnDefinitions="200,80,*">
+              <TextBlock Grid.Column="0" Text="{Binding Name}"/>
+              <TextBlock Grid.Column="1" Text="{Binding Version}" Classes="muted"/>
+              <TextBlock Grid.Column="2" Text="{Binding Description}" Classes="muted"/>
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Border>
+    <Button Grid.Row="4" Classes="accent" Content="Install selected" Command="{Binding InstallCommand}" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+  </Grid>
+</UserControl>

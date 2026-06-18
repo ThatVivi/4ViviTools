@@ -44,7 +44,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         SmartBotViewModel smartBot, ClassSkillsViewModel classSkills, BotFarmViewModel botFarm, OverlayViewModel overlay, MacrosViewModel macros,
         MvpTrackerViewModel mvp, HudViewModel hud, LootViewModel loot,
         DatabaseViewModel database, CalculatorViewModel calc, HomunAiViewModel homun,
-        GrfViewModel grf, SpriteViewerViewModel sprite, ToolsLauncherViewModel tools,
+        GrfViewModel grf, SpriteViewerViewModel sprite, ToolsLauncherViewModel tools, MarketplaceViewModel marketplace,
         ScannerViewModel scanner, ServersViewModel servers, StatsViewModel stats, SettingsViewModel settingsVm)
     {
         _session = session; _hub = hub; _procs = procs; _settings = settings; _loc = loc; _nav = nav;
@@ -77,6 +77,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         AddPage("GRF Browser", grf);
         AddPage("Sprite Viewer", sprite);
         AddPage("External Editors", tools);
+        AddPage("Marketplace", marketplace);
 
         AddSection("SYSTEM");
         AddPage("Scanner", scanner);

@@ -8,6 +8,17 @@ public sealed class AppSettings
     public bool EnableOCR { get; set; } = true;
     public bool EnablePlugins { get; set; } = true;
     public UpdateSettings Update { get; set; } = new();
+    public DiscordSettings Discord { get; set; } = new();
+}
+
+public sealed class DiscordSettings
+{
+    public bool Enabled { get; set; }
+    public string AppId { get; set; } = "";
+    public string WebsiteUrl { get; set; } = "";
+    public int IntervalSeconds { get; set; } = 5;
+    public string LargeImageKey { get; set; } = "logo";
+    public string ServerName { get; set; } = "Eldrynn RO";
 }
 
 public sealed class UpdateSettings

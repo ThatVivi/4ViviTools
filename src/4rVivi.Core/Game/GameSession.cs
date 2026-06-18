@@ -57,6 +57,15 @@ public sealed class GameSession : IDisposable
         if (a is null || !Reader.Attached) return null;
         return Reader.ReadInt32(a.Resolve(Reader.ModuleBase));
     }
+
+    /// <summary>Read a fixed-length string from a bound role address (e.g. CharName, MapName).</summary>
+    public string ReadRoleString(string role, int len = 24)
+    {
+        var a = AddressBook.Get(role);
+        if (a is null || !Reader.Attached) return "";
+        return Reader.ReadString(a.Resolve(Reader.ModuleBase), len);
+    }
+
     public bool HasRole(string role) => AddressBook.Has(role);
 
     public IntPtr WindowHandle => Process?.WindowHandle ?? IntPtr.Zero;
