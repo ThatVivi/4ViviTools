@@ -88,6 +88,8 @@ public partial class App : Application
         s.AddSingleton<FourRVivi.Core.Configuration.IConfigService, FourRVivi.Core.Configuration.ConfigService>();
         s.AddSingleton<FourRVivi.Core.Services.IProfileService, FourRVivi.Core.Services.ProfileService>();
         s.AddSingleton<NotificationService>();
+        s.AddSingleton<FourRVivi.Core.Servers.ServerProfileDb>();
+        s.AddSingleton<FourRVivi.Core.Servers.ServerBinder>();
         s.AddSingleton<FourRVivi.Core.Signatures.ProfileStore>();
         s.AddSingleton<FourRVivi.Core.Signatures.SignatureBinder>();
         s.AddSingleton<DiscordService>();
@@ -124,6 +126,7 @@ public partial class App : Application
         s.AddSingleton<SpriteViewerViewModel>();
         s.AddSingleton<ToolsLauncherViewModel>();
         s.AddSingleton<MarketplaceViewModel>();
+        s.AddSingleton<AutoDetectViewModel>();
 
         return s.BuildServiceProvider();
     }

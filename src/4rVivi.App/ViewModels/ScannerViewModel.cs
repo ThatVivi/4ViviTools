@@ -105,7 +105,7 @@ public sealed partial class ScannerViewModel : ViewModelBase
     private void CollectTyped()
     {
         _typed.Clear();
-        void Add(string role, string box) { if (int.TryParse(box?.Trim(), out int v)) _typed[role] = v; }
+        void Add(string role, string box) { if (int.TryParse(box?.Trim(), out int v) && v != 0) _typed[role] = v; }
         Add(CoreRoles.Hp, CurrentHp);
         Add(CoreRoles.MaxHp, InMaxHp);
         Add(CoreRoles.Sp, InSp);
@@ -129,7 +129,13 @@ public sealed partial class ScannerViewModel : ViewModelBase
 
         var scanner = new MemoryScanner(_session.Reader);
         _multi.Clear();
-        foreach (var kv in _typed) _multi[kv.Key] = scanner.FirstScan(ScanType.Int32, kv.Value);
+        foreach (var kv in _typed)
+        {
+            var hits = scanner.FirstScan(ScanType.Int32, kv.Value);
+            if (kv.Key == CoreRoles.Weight || kv.Key == CoreRoles.MaxWeight)
+                hits = hits.Concat(scanner.FirstScan(ScanType.Int32, kv.Value * 10)).ToList();   // RO stores weight x10
+            _multi[kv.Key] = hits;
+        }
 
         BindUniques();
         Status = $"Scanned ({Summary()}). Now play: take damage, spend SP, gain EXP — then press \u201cRefine\u201d. Repeat 2\u20134x until each binds.";
@@ -170,7 +176,13 @@ public sealed partial class ScannerViewModel : ViewModelBase
 
         var scanner = new MemoryScanner(_session.Reader);
         _multi.Clear();
-        foreach (var kv in _typed) _multi[kv.Key] = scanner.FirstScan(ScanType.Int32, kv.Value);
+        foreach (var kv in _typed)
+        {
+            var hits = scanner.FirstScan(ScanType.Int32, kv.Value);
+            if (kv.Key == CoreRoles.Weight || kv.Key == CoreRoles.MaxWeight)
+                hits = hits.Concat(scanner.FirstScan(ScanType.Int32, kv.Value * 10)).ToList();
+            _multi[kv.Key] = hits;
+        }
         BindUniques();
 
         _captureLeft = 15;

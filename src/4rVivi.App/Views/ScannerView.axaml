@@ -53,7 +53,7 @@
       <Border Grid.Column="0" Classes="card" Padding="0">
         <DockPanel>
           <TextBlock DockPanel.Dock="Top" Text="Found" Classes="section"/>
-          <ListBox ItemsSource="{Binding Found}" SelectedItem="{Binding SelectedFound}" Background="Transparent"
+          <ListBox ItemsSource="{Binding Found}" SelectedItem="{Binding SelectedFound}" Background="Transparent" Height="340"
                    ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:ScanRow">
@@ -75,7 +75,7 @@
       <Border Grid.Column="2" Classes="card" Padding="0">
         <DockPanel>
           <TextBlock DockPanel.Dock="Top" Text="Compare (changed)" Classes="section"/>
-          <ListBox ItemsSource="{Binding Compare}" SelectedItem="{Binding SelectedCompare}" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+          <ListBox ItemsSource="{Binding Compare}" SelectedItem="{Binding SelectedCompare}" Background="Transparent" Height="340" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:ScanRow">
                 <Grid ColumnDefinitions="150,*,30">
@@ -96,7 +96,7 @@
       <Border Grid.Column="4" Classes="card" Padding="0">
         <DockPanel>
           <TextBlock DockPanel.Dock="Top" Text="Saved address list" Classes="section"/>
-          <ListBox ItemsSource="{Binding Saved}" SelectedItem="{Binding SelectedSaved}" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+          <ListBox ItemsSource="{Binding Saved}" SelectedItem="{Binding SelectedSaved}" Background="Transparent" Height="340" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:ScanRow">
                 <Grid ColumnDefinitions="110,120,*,70,30">

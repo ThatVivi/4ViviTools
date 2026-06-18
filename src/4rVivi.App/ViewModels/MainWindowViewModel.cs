@@ -45,7 +45,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         MvpTrackerViewModel mvp, HudViewModel hud, LootViewModel loot,
         DatabaseViewModel database, CalculatorViewModel calc, HomunAiViewModel homun,
         GrfViewModel grf, SpriteViewerViewModel sprite, ToolsLauncherViewModel tools, MarketplaceViewModel marketplace,
-        ScannerViewModel scanner, ServersViewModel servers, StatsViewModel stats, SettingsViewModel settingsVm)
+        ScannerViewModel scanner, AutoDetectViewModel autoDetect, ServersViewModel servers, StatsViewModel stats, SettingsViewModel settingsVm)
     {
         _session = session; _hub = hub; _procs = procs; _settings = settings; _loc = loc; _nav = nav;
 
@@ -80,6 +80,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         AddPage("Marketplace", marketplace);
 
         AddSection("SYSTEM");
+        AddPage("Auto-Detect", autoDetect);
         AddPage("Scanner", scanner);
         AddPage("Servers", servers);
         AddPage("Stats", stats);
