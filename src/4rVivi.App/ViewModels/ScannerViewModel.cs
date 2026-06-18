@@ -142,6 +142,49 @@ public sealed partial class ScannerViewModel : ViewModelBase
     }
     private object? SafeParse() { try { return MemoryScanner.ParseValue(T(), Value); } catch { return null; } }
 
+    /// <summary>Snapshot-free diff: after a First scan (e.g. exact 91), change the value in-game
+    /// (e.g. HP to 80) and press this. Every candidate whose value changed is listed in the
+    /// Compare table as "old -> new", and the live set is narrowed to those. The real address is
+    /// the row that went from your old value to your new value.</summary>
+    [RelayCommand] private void WhatChanged()
+    {
+        if (!_session.Reader.Attached) { Status = "Not attached. Pick your RO process first."; return; }
+        if (Found.Count == 0) { Status = "First scan a value (e.g. exact 91). Then change it in-game and press What changed."; return; }
+        Compare.Clear();
+        int changed = 0;
+        foreach (var r in Found)
+        {
+            string now = ReadValueAt(r.Address, r.Type);
+            if (now.Length > 0 && now != r.Value)
+            {
+                Compare.Add(new ScanRow { Address = r.Address, Type = r.Type, Value = now, Description = $"{r.Value} \u2192 {now}" });
+                changed++;
+            }
+        }
+        if (_scanner is not null) { _current = _scanner.NextScan(_current, T(), ScanFilter.Changed, null); PublishFound(); }
+        Status = changed == 0
+            ? "Nothing changed. Lower/raise the value in-game first, then press What changed."
+            : $"{changed} address(es) changed \u2014 see Compare (old \u2192 new). The real one matches your old\u2192new value.";
+    }
+
+    private string ReadValueAt(long addr, string type)
+    {
+        var p = (IntPtr)addr; var rd = _session.Reader;
+        try
+        {
+            return type switch
+            {
+                "Int16" => rd.ReadInt16(p).ToString(),
+                "Int64" => rd.ReadInt64(p).ToString(),
+                "Float" => rd.ReadFloat(p).ToString(),
+                "Double" => rd.ReadDouble(p).ToString(),
+                "String" => rd.ReadString(p, 24),
+                _ => rd.ReadInt32(p).ToString(),
+            };
+        }
+        catch { return ""; }
+    }
+
     [RelayCommand] private void NextExact() => Refine(ScanFilter.Exact);
     [RelayCommand] private void Decreased() => Refine(ScanFilter.Decreased);
     [RelayCommand] private void Increased() => Refine(ScanFilter.Increased);

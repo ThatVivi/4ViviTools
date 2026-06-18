@@ -32,9 +32,10 @@ public sealed class DiscordService : IDisposable
         {
             if (_client is null || _client.IsDisposed || p is null) return;
 
-            string details = p.DetailsLine;
+            // Always present something (mirrors a known-good RPC mod): fall back when no game data yet.
+            string details = string.IsNullOrWhiteSpace(p.DetailsLine) ? "Playing Ragnarok Online" : p.DetailsLine;
             string state = p.StateLine;
-            if (string.IsNullOrWhiteSpace(details) && string.IsNullOrWhiteSpace(state)) return;
+            if (string.IsNullOrWhiteSpace(state)) state = string.IsNullOrWhiteSpace(p.Activity) ? "Idle" : p.Activity;
 
             string sig = $"{details}|{state}|{p.HpPct}|{p.SpPct}|{p.PartySize}/{p.PartyMax}|{p.LargeImageKey}|{p.SmallImageKey}";
             if (sig == _last) return;

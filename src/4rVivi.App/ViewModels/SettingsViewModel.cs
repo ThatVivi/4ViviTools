@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FourRVivi.Core.Settings;
 using FourRVivi.App.Services;
+using FourRVivi.Core.Game;
 
 namespace FourRVivi.App.ViewModels;
 
@@ -11,6 +12,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
 {
     private readonly SettingsStore _settings;
     private readonly IconImageService _icons;
+    private readonly DiscordPresenceUpdater _discord;
+    private readonly GameSession _game;
 
     public string[] Languages { get; } = { "en", "ar" };
 
@@ -22,11 +25,15 @@ public sealed partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private string _gameFolder = "";
     [ObservableProperty] private string _grfPath = "";
     [ObservableProperty] private string _divinePrideApiKey = "";
+    [ObservableProperty] private bool _discordEnabled;
+    [ObservableProperty] private string _discordAppId = "";
+    [ObservableProperty] private string _discordWebsiteUrl = "";
+    [ObservableProperty] private string _discordServerName = "Eldrynn RO";
     [ObservableProperty] private string _status = "Edit your preferences, then Save.";
 
-    public SettingsViewModel(SettingsStore settings, IconImageService icons)
+    public SettingsViewModel(SettingsStore settings, IconImageService icons, DiscordPresenceUpdater discord, GameSession game)
     {
-        _settings = settings; _icons = icons;
+        _settings = settings; _icons = icons; _discord = discord; _game = game;
         var c = settings.Current;
         Language = c.Language;
         AccentHex = c.AccentHex;
@@ -36,6 +43,10 @@ public sealed partial class SettingsViewModel : ViewModelBase
         GameFolder = c.GameFolder;
         GrfPath = c.GrfPath;
         DivinePrideApiKey = c.DivinePrideApiKey;
+        DiscordEnabled = c.DiscordEnabled;
+        DiscordAppId = c.DiscordAppId;
+        DiscordWebsiteUrl = c.DiscordWebsiteUrl;
+        DiscordServerName = c.DiscordServerName;
     }
 
     [RelayCommand]
@@ -50,9 +61,16 @@ public sealed partial class SettingsViewModel : ViewModelBase
         c.GameFolder = GameFolder.Trim();
         c.GrfPath = GrfPath.Trim();
         c.DivinePrideApiKey = DivinePrideApiKey.Trim();
+        c.DiscordEnabled = DiscordEnabled;
+        c.DiscordAppId = DiscordAppId.Trim();
+        c.DiscordWebsiteUrl = DiscordWebsiteUrl.Trim();
+        c.DiscordServerName = string.IsNullOrWhiteSpace(DiscordServerName) ? "Eldrynn RO" : DiscordServerName.Trim();
         _settings.Save();
 
         try { _icons.SetGameFolder(c.GameFolder); _icons.SetGrf(c.GrfPath); } catch { }
-        Status = "Saved. Some changes (theme, language) apply on next launch.";
+        try { DiscordPresenceBootstrap.Apply(_discord, _game, c); } catch { }
+        Status = DiscordEnabled
+            ? "Saved. Discord presence (re)connected. Make sure Discord desktop is running."
+            : "Saved. Discord presence off. Some changes (theme, language) apply on next launch.";
     }
 }

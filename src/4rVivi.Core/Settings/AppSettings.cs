@@ -37,6 +37,10 @@ public sealed class AppSettings
     public string DivinePrideApiKey { get; set; } = "";
     public string GameFolder { get; set; } = "";
     public string GrfPath { get; set; } = "";
+    public bool DiscordEnabled { get; set; } = false;
+    public string DiscordAppId { get; set; } = "";
+    public string DiscordWebsiteUrl { get; set; } = "";
+    public string DiscordServerName { get; set; } = "Eldrynn RO";
     public List<ChainMacro> Macros { get; set; } = new();
     public List<BuffTimer> BuffTimers { get; set; } = new();
 

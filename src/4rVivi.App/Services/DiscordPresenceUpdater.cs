@@ -16,7 +16,7 @@ public sealed class DiscordPresenceUpdater : IDisposable
         _provider = provider;
         _discord.Connect(appId);
         _timer?.Dispose();
-        _timer = new System.Threading.Timer(_ => Tick(), null, 1000, Math.Max(1, intervalSeconds) * 1000);
+        _timer = new System.Threading.Timer(_ => Tick(), null, 250, Math.Max(1, intervalSeconds) * 1000);
     }
 
     private void Tick()
@@ -27,6 +27,14 @@ public sealed class DiscordPresenceUpdater : IDisposable
             if (p != null) _discord.Apply(p);
         }
         catch { }
+    }
+
+    /// <summary>Stop polling and clear any shown presence (used when the user disables Discord).</summary>
+    public void StopAndClear()
+    {
+        _timer?.Dispose(); _timer = null;
+        _discord.Clear();
+        _discord.Dispose();
     }
 
     public void Dispose()

@@ -62,6 +62,7 @@
       <Button Content="Increased" Command="{Binding IncreasedCommand}"/>
       <Button Content="Changed" Command="{Binding ChangedCommand}"/>
       <Button Content="Unchanged" Command="{Binding UnchangedCommand}"/>
+      <Button Classes="accent" Content="What changed" Command="{Binding WhatChangedCommand}"/>
     </StackPanel>
 
     <Grid Grid.Row="4" ColumnDefinitions="*,Auto,*,Auto,*">

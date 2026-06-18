@@ -49,30 +49,10 @@ public partial class App : Application
     {
         try
         {
-            var d = Program.Settings.Discord;
-            if (d is null || !d.Enabled || string.IsNullOrWhiteSpace(d.AppId)) return;
-
             var gs = Services.GetRequiredService<GameSession>();
-            var reader = new CharacterStateReader(gs);
-            Services.GetRequiredService<DiscordPresenceUpdater>().Start(d.AppId, () =>
-            {
-                var cs = reader.Snapshot();
-                if (cs is null) return null;   // not attached -> no presence
-                return new RoPresence
-                {
-                    CharName   = cs.Name,
-                    ClassName  = cs.ClassName,
-                    BaseLevel  = cs.BaseLevel,
-                    JobLevel   = cs.JobLevel,
-                    MapName    = cs.MapName,
-                    X = cs.X, Y = cs.Y,
-                    HpPct = cs.HpPct, SpPct = cs.SpPct,
-                    Activity = cs.Activity,
-                    ServerName = d.ServerName,
-                    WebsiteUrl = d.WebsiteUrl,
-                    LargeImageKey = d.LargeImageKey,
-                };
-            }, d.IntervalSeconds);
+            var updater = Services.GetRequiredService<DiscordPresenceUpdater>();
+            var settings = Services.GetRequiredService<SettingsStore>();
+            DiscordPresenceBootstrap.Apply(updater, gs, settings.Current);
         }
         catch (Exception ex) { FourRVivi.App.Services.AppLog.Crash("Discord presence", ex); }
     }

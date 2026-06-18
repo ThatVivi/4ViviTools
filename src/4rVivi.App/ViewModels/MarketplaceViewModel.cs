@@ -26,10 +26,15 @@ public sealed partial class MarketplaceViewModel : ViewModelBase
         try
         {
             Items.Clear();
-            var json = await Http.GetStringAsync(FeedUrl);
+            using var resp = await Http.GetAsync(FeedUrl);
+            if (resp.StatusCode == System.Net.HttpStatusCode.NotFound)
+            { Status = "No plugin feed published yet (404). This is normal until plugins are added."; return; }
+            if (!resp.IsSuccessStatusCode)
+            { Status = $"Feed returned {(int)resp.StatusCode}. Check the URL."; return; }
+            var json = await resp.Content.ReadAsStringAsync();
             var list = JsonSerializer.Deserialize<List<PluginFeedItem>>(json, JsonOpt);
             if (list != null) foreach (var i in list) Items.Add(i);
-            Status = $"{Items.Count} plugin(s) in the feed.";
+            Status = Items.Count == 0 ? "Feed loaded — no plugins listed yet." : $"{Items.Count} plugin(s) in the feed.";
         }
         catch (Exception e) { Status = "Load failed: " + e.Message; }
     }

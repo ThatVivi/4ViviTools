@@ -21,6 +21,16 @@
           <StackPanel><TextBlock Text="divine-pride API key (optional)" Classes="muted"/><TextBox Text="{Binding DivinePrideApiKey}"/></StackPanel>
         </StackPanel>
       </Border>
+      <Border Classes="card">
+        <StackPanel Spacing="10">
+          <TextBlock Text="Discord Rich Presence" Classes="section"/>
+          <CheckBox Content="Enable Discord presence" IsChecked="{Binding DiscordEnabled}"/>
+          <StackPanel><TextBlock Text="Discord Application (Client) ID" Classes="muted"/><TextBox Text="{Binding DiscordAppId}" Watermark="from discord.com/developers"/></StackPanel>
+          <StackPanel><TextBlock Text="Server name (shown on the card)" Classes="muted"/><TextBox Width="220" Text="{Binding DiscordServerName}"/></StackPanel>
+          <StackPanel><TextBlock Text="Join Server button URL (optional)" Classes="muted"/><TextBox Text="{Binding DiscordWebsiteUrl}" Watermark="https://your-server.com"/></StackPanel>
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="Create an app at discord.com/developers, paste its Application ID here, upload an asset named 'logo' under Rich Presence > Art Assets, and keep the Discord desktop app running. Save applies it instantly."/>
+        </StackPanel>
+      </Border>
       <StackPanel Orientation="Horizontal" Spacing="10">
         <Button Classes="accent" Content="Save" Command="{Binding SaveCommand}"/>
         <TextBlock Text="{Binding Status}" Classes="muted" VerticalAlignment="Center"/>
