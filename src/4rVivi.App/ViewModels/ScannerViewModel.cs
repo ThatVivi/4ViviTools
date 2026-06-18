@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FourRVivi.Core.Game;
 using FourRVivi.Core.Memory;
+using FourRVivi.Core.Signatures;
 using FourRVivi.Core.Settings;
 using FourRVivi.App.Services;
 using System.Security.Principal;
@@ -24,8 +25,7 @@ public sealed partial class ScannerViewModel : ViewModelBase
 {
     private readonly GameSession _session;
     private readonly SettingsStore _settings;
-    private readonly OcrService _ocr;
-    private Dictionary<string,int> _ocrValues = new();
+    private readonly SignatureBinder _binder;
     private MemoryScanner? _scanner;
     private List<ScanHit> _current = new();
 
@@ -47,6 +47,7 @@ public sealed partial class ScannerViewModel : ViewModelBase
     [ObservableProperty] private bool _canRefine;
     [ObservableProperty] private string _status = "Pick your process in the top bar. Then use Auto-setup, or scan manually.";
     [ObservableProperty] private string _tip = TipFor("Int32");
+    [ObservableProperty] private string _bindBanner = "Attach to auto-bind from a saved client profile.";
     [ObservableProperty] private string _adminStatus = IsElevated() ? "Admin: yes" : "Admin: NO \u2014 close and Run as administrator";
 
     private static bool IsElevated()
@@ -57,22 +58,14 @@ public sealed partial class ScannerViewModel : ViewModelBase
 
 
 
-    public ObservableCollection<string> Detected { get; } = new();
 
     // OCR region + language (doc: dynamic region selection + multi-language)
-    public System.Collections.Generic.IReadOnlyList<OcrRegion> OcrPresets => _ocr.Presets;
-    public string[] OcrLanguages { get; } = OcrService.SupportedLanguages;
-    [ObservableProperty] private OcrRegion? _selectedOcrPreset;
-    [ObservableProperty] private string _selectedOcrLanguage = "eng";
-    partial void OnSelectedOcrPresetChanged(OcrRegion? value) { if (value != null) _ocr.SetRegion(value); }
-    partial void OnSelectedOcrLanguageChanged(string value) { _ocr.Language = string.IsNullOrWhiteSpace(value) ? "eng" : value; }
 
-    public ScannerViewModel(GameSession session, SettingsStore settings, OcrService ocr)
+    public ScannerViewModel(GameSession session, SettingsStore settings, SignatureBinder binder)
     {
-        _session = session; _settings = settings; _ocr = ocr;
-        // hydrate saved table from the active profile's address book
-        foreach (var kv in settings.Current.GetActiveProfile().Addresses.Entries)
-            Saved.Add(new ScanRow { Address = kv.Value.Runtime, Type = kv.Value.Type, Role = kv.Key, Description = kv.Key });
+        _session = session; _settings = settings; _binder = binder;
+        HydrateSaved();
+        AutoBind();
     }
 
     partial void OnSelectedTypeChanged(string value) => Tip = TipFor(value);
@@ -240,60 +233,43 @@ public sealed partial class ScannerViewModel : ViewModelBase
     [RelayCommand] private void Reattach()
     {
         var r = _session.Reattach();
-        Status = r.Ok ? "Re-attached. Now scan." : r.Error!;
+        if (r.Ok) { AutoBind(); Status = "Re-attached. " + BindBanner; }
+        else Status = r.Error!;
     }
 
-    [RelayCommand] private async Task AutoFindHp()
+    [RelayCommand] private async Task MakePermanent()
     {
-        try { await AutoFindHpCore(); }
-        catch (Exception ex) { Status = "Auto-find stopped: " + (ex.InnerException?.Message ?? ex.Message); }
-    }
-
-    private async Task AutoFindHpCore()
-    {
-        if (!_session.Reader.Attached) _session.Reattach();
-        if (!_session.Reader.Attached) { Status = "Attach to your RO process first."; return; }
-        Status = "Auto-find: getting OCR ready…";
-        if (!await _ocr.EnsureDataAsync()) { Status = "Couldn't get OCR data (no internet?)."; return; }
-
-        _scanner = new MemoryScanner(_session.Reader);
-        List<ScanHit>? cur = null; int last = -1;
-        for (int i = 0; i < 30; i++)
+        var row = SelectedSaved;
+        if (row is null || string.IsNullOrEmpty(row.Role)) { Status = "Select a Saved row that has a role assigned, then Make permanent."; return; }
+        if (!_session.Reader.Attached) { Status = "Not attached."; return; }
+        Status = $"Pointer-scanning for a stable path to {row.Role}\u2026 this can take a moment.";
+        var path = await Task.Run(() =>
         {
-            var vals = _ocr.Parse(await Task.Run(() => _ocr.Read(_session.WindowHandle, 0, 0, 0, 0)));
-            if (!vals.TryGetValue("HP", out int hp)) { Status = "Auto-find: can't read HP — move the Basic Info box to the top-left."; await Task.Delay(900); continue; }
-            if (cur is null) { cur = _scanner.FirstScan(ScanType.Int32, hp); last = hp; }
-            else if (hp != last) { cur = _scanner.NextScan(cur, ScanType.Int32, ScanFilter.Exact, hp); last = hp; }
-            Status = $"Auto-find: HP {hp} — {cur.Count} candidates. Keep playing so HP changes…";
-            if (cur.Count == 1) { SaveRole("HP", cur[0].Address, "Int32"); Status = $"HP locked at {cur[0].AddressHex} and saved to your profile!"; _current = cur; PublishFound(); return; }
-            await Task.Delay(1000);
-        }
-        if (cur is not null) { _current = cur; PublishFound(); CanRefine = true; Status = $"Narrowed to {cur.Count}. Let HP change more and retry, or pick from Found."; }
+            var sc = new PointerScanner(_session.Reader);
+            return sc.Find((IntPtr)row.Address, new PointerScanOptions()).FirstOrDefault();
+        });
+        if (path is null) { Status = $"No stable pointer found for {row.Role}. It still works this session; retry after a relaunch."; return; }
+        _binder.SaveBinding(_session, row.Role, path, row.Type);
+        BindBanner = $"{row.Role} pinned to a pointer \u2014 auto-binds next launch.";
+        Status = $"Saved pointer for {row.Role}: {path}";
     }
 
-    [RelayCommand] private async Task ReadScreen()
+    private void AutoBind()
     {
-        if (_session.WindowHandle == IntPtr.Zero) { Status = "Attach to your RO process first."; return; }
-        Status = "Reading the game's Basic Info box (downloading OCR data on first run)…";
-        if (!await _ocr.EnsureDataAsync()) { Status = "Could not get OCR data (no internet?)."; return; }
-        try
-        {
-            string text = await Task.Run(() => _ocr.Read(_session.WindowHandle, 0, 0, 0, 0));
-            _ocrValues = _ocr.Parse(text);
-            Detected.Clear();
-            foreach (var kv in _ocrValues) Detected.Add($"{kv.Key} = {kv.Value}");
-            if (_ocrValues.TryGetValue("HP", out int hp)) { Value = hp.ToString(); SelectedType = "Int32"; }
-            Status = _ocrValues.Count > 0
-                ? $"Read {_ocrValues.Count} values. HP pre-filled — hit First scan, change HP in-game, then Next to pin the address."
-                : "OCR found no values. Move the Basic Info box to the top-left, or set a region.";
-        }
-        catch (Exception ex) { Status = "OCR error: " + (ex.InnerException?.Message ?? ex.Message); }
+        if (!_session.Reader.Attached) { BindBanner = "Attach to auto-bind from a saved client profile."; return; }
+        var r = _binder.TryAutoBind(_session);
+        BindBanner = r.Message;
+        if (r.Bound.Count > 0) HydrateSaved();
     }
 
-    [RelayCommand] private void UseDetected(string entry)
+    private void HydrateSaved()
     {
-        var key = entry.Split('=')[0].Trim();
-        if (_ocrValues.TryGetValue(key, out int v)) { Value = v.ToString(); SelectedType = "Int32"; SelectedRole = key; Status = $"Value set to {key}={v}. First scan, then refine."; }
+        Saved.Clear();
+        foreach (var kv in _session.AddressBook.Entries)
+            Saved.Add(new ScanRow { Address = (long)kv.Value.Resolve(_session.Reader.ModuleBase), Type = kv.Value.Type, Role = kv.Key, Description = kv.Key });
+        if (Saved.Count == 0)
+            foreach (var kv in _settings.Current.GetActiveProfile().Addresses.Entries)
+                Saved.Add(new ScanRow { Address = kv.Value.Runtime, Type = kv.Value.Type, Role = kv.Key, Description = kv.Key });
     }
 
     [RelayCommand] private void ApplyRole()

@@ -9,16 +9,20 @@ namespace FourRVivi.App.Services;
 /// "Apply" on the Settings page, so toggling Discord takes effect without a restart.</summary>
 public static class DiscordPresenceBootstrap
 {
+    /// <summary>Built-in default Discord Application ID so RPC works with zero setup.</summary>
+    public const string DefaultAppId = "1517200569486413954";
+
     public static void Apply(DiscordPresenceUpdater updater, GameSession gs, AppSettings s)
     {
-        if (!s.DiscordEnabled || string.IsNullOrWhiteSpace(s.DiscordAppId))
+        if (!s.DiscordEnabled)
         {
             updater.StopAndClear();
             return;
         }
+        string appId = string.IsNullOrWhiteSpace(s.DiscordAppId) ? DefaultAppId : s.DiscordAppId.Trim();
 
         var reader = new CharacterStateReader(gs);
-        updater.Start(s.DiscordAppId, () =>
+        updater.Start(appId, () =>
         {
             var cs = reader.Snapshot();
             if (cs is null)

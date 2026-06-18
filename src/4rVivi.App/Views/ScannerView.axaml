@@ -1,6 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels" xmlns:sys="clr-namespace:System;assembly=System.Runtime"
-             xmlns:svc="clr-namespace:FourRVivi.App.Services"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
              x:Class="FourRVivi.App.Views.ScannerView" x:DataType="vm:ScannerViewModel" x:Name="Root">
   <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
     <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12">
@@ -12,39 +11,13 @@
 
     <Border Grid.Row="1" Classes="card" Margin="0,12,0,8">
       <StackPanel Spacing="8">
-        <TextBlock Text="Auto-setup (like 4RTools)" FontWeight="SemiBold"/>
+        <TextBlock Text="{Binding BindBanner}" FontWeight="SemiBold"/>
         <StackPanel Orientation="Horizontal" Spacing="10">
           <StackPanel><TextBlock Text="Character name (String)" Classes="muted"/><TextBox Width="200" Text="{Binding CharacterName}"/></StackPanel>
           <StackPanel><TextBlock Text="Current HP (Integer)" Classes="muted"/><TextBox Width="140" Text="{Binding CurrentHp}"/></StackPanel>
-          <Button Classes="accent" Content="Auto-setup" VerticalAlignment="Bottom" Command="{Binding AutoSetupCommand}"/>
-          <Button Content="Read values (OCR)" VerticalAlignment="Bottom" Command="{Binding ReadScreenCommand}"/>
-          <Button Classes="accent" Content="Auto-find HP (OCR)" VerticalAlignment="Bottom" Command="{Binding AutoFindHpCommand}"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="10">
-          <StackPanel>
-            <TextBlock Text="OCR region" Classes="muted"/>
-            <ComboBox Width="200" ItemsSource="{Binding OcrPresets}" SelectedItem="{Binding SelectedOcrPreset}">
-              <ComboBox.ItemTemplate>
-                <DataTemplate x:DataType="svc:OcrRegion"><TextBlock Text="{Binding Name}"/></DataTemplate>
-              </ComboBox.ItemTemplate>
-            </ComboBox>
-          </StackPanel>
-          <StackPanel>
-            <TextBlock Text="OCR language" Classes="muted"/>
-            <ComboBox Width="120" ItemsSource="{Binding OcrLanguages}" SelectedItem="{Binding SelectedOcrLanguage}"/>
-          </StackPanel>
+          <Button Classes="accent" Content="Find name + HP" VerticalAlignment="Bottom" Command="{Binding AutoSetupCommand}"/>
         </StackPanel>
         <TextBlock Text="{Binding Tip}" Classes="muted"/>
-        <ItemsControl ItemsSource="{Binding Detected}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="sys:String">
-              <Button Content="{Binding}" Margin="0,2,6,0"
-                      Command="{ReflectionBinding DataContext.UseDetectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                      CommandParameter="{Binding}"/>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-          <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-        </ItemsControl>
       </StackPanel>
     </Border>
 
@@ -58,11 +31,8 @@
 
     <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8" IsEnabled="{Binding CanRefine}" Margin="0,0,0,8">
       <Button Content="Next (exact)" Command="{Binding NextExactCommand}"/>
-      <Button Content="Decreased" Command="{Binding DecreasedCommand}"/>
-      <Button Content="Increased" Command="{Binding IncreasedCommand}"/>
-      <Button Content="Changed" Command="{Binding ChangedCommand}"/>
-      <Button Content="Unchanged" Command="{Binding UnchangedCommand}"/>
       <Button Classes="accent" Content="What changed" Command="{Binding WhatChangedCommand}"/>
+      <Button Classes="accent" Content="Make permanent" Command="{Binding MakePermanentCommand}"/>
     </StackPanel>
 
     <Grid Grid.Row="4" ColumnDefinitions="*,Auto,*,Auto,*">
@@ -83,20 +53,18 @@
         </DockPanel>
       </Border>
       <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="8" Margin="8,0">
-        <Button Content="Snapshot" Command="{Binding SnapshotCommand}"/>
         <Button Content="▶" Command="{Binding MoveFoundToCompareCommand}"/>
       </StackPanel>
       <Border Grid.Column="2" Classes="card" Padding="0">
         <DockPanel>
-          <TextBlock DockPanel.Dock="Top" Text="Compare (snapshot)" Classes="section"/>
+          <TextBlock DockPanel.Dock="Top" Text="Compare (changed)" Classes="section"/>
           <ListBox ItemsSource="{Binding Compare}" SelectedItem="{Binding SelectedCompare}" Background="Transparent">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:ScanRow">
-                <Grid ColumnDefinitions="150,*,70,30">
+                <Grid ColumnDefinitions="150,*,30">
                   <TextBlock Grid.Column="0" Text="{Binding AddressHex}"/>
-                  <TextBlock Grid.Column="1" Text="{Binding Value}" Classes="muted"/>
-                  <TextBlock Grid.Column="2" Text="{Binding Type}" Classes="muted"/>
-                  <Button Grid.Column="3" Content="✕"
+                  <TextBlock Grid.Column="1" Text="{Binding Description}" Classes="muted"/>
+                  <Button Grid.Column="2" Content="✕"
                           Command="{ReflectionBinding DataContext.RemoveCompareCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                           CommandParameter="{Binding}"/>
                 </Grid>

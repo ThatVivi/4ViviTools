@@ -88,6 +88,8 @@ public partial class App : Application
         s.AddSingleton<FourRVivi.Core.Configuration.IConfigService, FourRVivi.Core.Configuration.ConfigService>();
         s.AddSingleton<FourRVivi.Core.Services.IProfileService, FourRVivi.Core.Services.ProfileService>();
         s.AddSingleton<NotificationService>();
+        s.AddSingleton<FourRVivi.Core.Signatures.ProfileStore>();
+        s.AddSingleton<FourRVivi.Core.Signatures.SignatureBinder>();
         s.AddSingleton<DiscordService>();
         s.AddSingleton<DiscordPresenceUpdater>();
 

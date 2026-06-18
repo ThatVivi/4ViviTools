@@ -46,5 +46,8 @@
     <Content Include="..\..\Config\appsettings.json" Link="Config\appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Signatures\signatures.json" Link="Signatures\signatures.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>
