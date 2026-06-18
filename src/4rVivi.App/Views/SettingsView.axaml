@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.SettingsView" x:DataType="vm:SettingsViewModel">
+  <ScrollViewer>
+    <StackPanel Spacing="12" Margin="4">
+      <TextBlock Text="Settings" Classes="h1"/>
+      <Border Classes="card">
+        <StackPanel Spacing="10">
+          <StackPanel><TextBlock Text="Language" Classes="muted"/><ComboBox Width="120" ItemsSource="{Binding Languages}" SelectedItem="{Binding Language}"/></StackPanel>
+          <StackPanel><TextBlock Text="Accent colour (hex)" Classes="muted"/><TextBox Width="160" Text="{Binding AccentHex}"/></StackPanel>
+          <StackPanel><TextBlock Text="Window opacity (70-100)" Classes="muted"/><NumericUpDown Width="140" Minimum="70" Maximum="100" Value="{Binding WindowOpacity}"/></StackPanel>
+          <CheckBox Content="Humanize input timing" IsChecked="{Binding HumanizeTiming}"/>
+          <CheckBox Content="Acrylic backdrop" IsChecked="{Binding AcrylicBackdrop}"/>
+        </StackPanel>
+      </Border>
+      <Border Classes="card">
+        <StackPanel Spacing="10">
+          <TextBlock Text="Game data" Classes="section"/>
+          <StackPanel><TextBlock Text="Game folder" Classes="muted"/><TextBox Text="{Binding GameFolder}" Watermark="C:\Games\RO"/></StackPanel>
+          <StackPanel><TextBlock Text="GRF path (optional)" Classes="muted"/><TextBox Text="{Binding GrfPath}" Watermark="data.grf"/></StackPanel>
+          <StackPanel><TextBlock Text="divine-pride API key (optional)" Classes="muted"/><TextBox Text="{Binding DivinePrideApiKey}"/></StackPanel>
+        </StackPanel>
+      </Border>
+      <StackPanel Orientation="Horizontal" Spacing="10">
+        <Button Classes="accent" Content="Save" Command="{Binding SaveCommand}"/>
+        <TextBlock Text="{Binding Status}" Classes="muted" VerticalAlignment="Center"/>
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
