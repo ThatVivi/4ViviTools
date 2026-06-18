@@ -3,6 +3,7 @@ using System.IO;
 using Avalonia;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using FourRVivi.App.Services;
 
 namespace FourRVivi.App;
 
