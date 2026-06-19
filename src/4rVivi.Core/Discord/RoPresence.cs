@@ -24,6 +24,12 @@ public sealed class RoPresence
     public string SmallImageKey { get; set; } = "";
     public int HpPct { get; set; }
     public int SpPct { get; set; }
+    public int Hp { get; set; }
+    public int MaxHp { get; set; }
+    public int Sp { get; set; }
+    public int MaxSp { get; set; }
+    public int BaseExpPct { get; set; }
+    public int JobExpPct { get; set; }
     public string Activity { get; set; } = "";
     public string WebsiteUrl { get; set; } = "";
 
@@ -31,8 +37,11 @@ public sealed class RoPresence
     {
         get
         {
-            string lv = (BaseLevel > 0 || JobLevel > 0) ? $"Lv {BaseLevel}/{JobLevel}" : "";
-            return string.Join(" ", new[] { lv, ClassName }.Where(p => !string.IsNullOrWhiteSpace(p)));
+            var parts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(CharName)) parts.Add(CharName);
+            if (BaseLevel > 0 || JobLevel > 0) parts.Add($"Lv {BaseLevel}/{JobLevel}");
+            if (!string.IsNullOrWhiteSpace(ClassName)) parts.Add(ClassName);
+            return parts.Count > 0 ? string.Join(" \u2022 ", parts) : "Playing Ragnarok Online";
         }
     }
 
@@ -44,8 +53,10 @@ public sealed class RoPresence
             string place = string.IsNullOrWhiteSpace(map) ? "" : ((X > 0 || Y > 0) ? $"{map} ({X},{Y})" : map);
             var parts = new List<string>();
             if (!string.IsNullOrWhiteSpace(Activity)) parts.Add(Activity);
+            if (MaxHp > 0) parts.Add($"HP {Hp}/{MaxHp}");
+            if (MaxSp > 0) parts.Add($"SP {Sp}/{MaxSp}");
+            if (BaseExpPct > 0 || JobExpPct > 0) parts.Add($"EXP {BaseExpPct}%/{JobExpPct}%");
             if (place.Length > 0) parts.Add(place);
-            if (HpPct > 0 || SpPct > 0) parts.Add($"HP {HpPct}% SP {SpPct}%");
             return string.Join(" | ", parts);
         }
     }

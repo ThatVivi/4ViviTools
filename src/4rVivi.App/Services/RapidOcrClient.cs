@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -17,13 +18,12 @@ public sealed class RapidOcrClient : IDisposable
 
     private static string? FindServer()
     {
-        string b = AppContext.BaseDirectory;
-        foreach (var p in new[]
-        {
-            Path.Combine(b, "OcrServer", "4rVivi.OcrServer.exe"),
-            Path.Combine(b, "4rVivi.OcrServer.exe"),
-        })
-            if (File.Exists(p)) return p;
+        var dirs = new List<string>();
+        try { var p = Environment.ProcessPath; if (!string.IsNullOrEmpty(p)) dirs.Add(Path.GetDirectoryName(p)!); } catch { }  // real exe dir (single-file safe)
+        dirs.Add(AppContext.BaseDirectory);
+        foreach (var d in dirs)
+            foreach (var c in new[] { Path.Combine(d, "OcrServer", "4rVivi.OcrServer.exe"), Path.Combine(d, "4rVivi.OcrServer.exe") })
+                if (File.Exists(c)) return c;
         return null;
     }
 

@@ -35,7 +35,7 @@
         <TextBlock Text="OCR filter" Classes="muted" VerticalAlignment="Center"/>
         <ComboBox Width="130" ItemsSource="{Binding PreprocessModes}" SelectedItem="{Binding PreprocessMode}"/>
         <TextBlock Text="Sharpness" Classes="muted" VerticalAlignment="Center"/>
-        <Slider Width="120" Minimum="0" Maximum="3" Value="{Binding Sharpness}" VerticalAlignment="Center"/>
+        <Slider Width="120" Minimum="0" Maximum="8" Value="{Binding Sharpness}" VerticalAlignment="Center"/>
       </StackPanel>
       <Border Classes="card" Padding="0" Height="460">
         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
@@ -88,6 +88,7 @@
         <ListBox ItemsSource="{Binding LiveReadout}" Background="Transparent" FontFamily="Consolas,monospace"
                  ScrollViewer.VerticalScrollBarVisibility="Auto"/>
       </Border>
+      <TextBlock Text="{Binding EngineInfo}" FontWeight="SemiBold"/>
       <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap"/>
     </StackPanel>
   </Grid>

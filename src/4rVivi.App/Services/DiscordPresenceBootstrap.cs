@@ -47,6 +47,8 @@ public static class DiscordPresenceBootstrap
                 Y = cs.Y,
                 HpPct = cs.HpPct,
                 SpPct = cs.SpPct,
+                Hp = cs.Hp, MaxHp = cs.MaxHp, Sp = cs.Sp, MaxSp = cs.MaxSp,
+                BaseExpPct = cs.BaseExpPct, JobExpPct = cs.JobExpPct,
                 Activity = cs.Activity,
                 ServerName = s.DiscordServerName,
                 WebsiteUrl = s.DiscordWebsiteUrl,

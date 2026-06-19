@@ -69,7 +69,7 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
         "HP / MaxHP", "SP / MaxSP", "Weight / MaxWeight",
         "BaseLevel", "JobLevel",
         "HP", "MaxHP", "SP", "MaxSP",
-        "HpPercent", "SpPercent", "BaseExpBar", "JobExpBar",
+        "BaseExpBar", "JobExpBar", "Character",
         "Weight", "MaxWeight", "Zeny", "Loot", "PosX", "PosY", "CharName", "ClassName"
     };
 
@@ -87,6 +87,8 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     [ObservableProperty] private bool _calibrating;
     [ObservableProperty] private bool _calibrateUntilComplete;
     private volatile bool _calibCancel;
+    private byte[]? _lastChar;
+    [ObservableProperty] private string _engineInfo = "engine: -";
     [ObservableProperty] private string _status = "1) Load a screenshot. 2) Pick a stat, drag a box over it. 3) Save. 4) Start.";
 
     public OcrReaderViewModel(GameSession session, OcrService ocr, SettingsStore settings, DiscordPresenceUpdater discord)
@@ -132,8 +134,9 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     {
         if (w <= 0 || h <= 0) return;
         bool isText = role == "CharName" || role == "ClassName" || role == "BasicInfo";
-        bool isBar = role is "HpPercent" or "SpPercent" or "BaseExpBar" or "JobExpBar";
-        Marks.Add(new OcrMark { Role = role, X = x, Y = y, W = w, H = h, IsText = isText, IsBar = isBar });
+        bool isBar = role is "BaseExpBar" or "JobExpBar";
+        bool isChar = role == "Character";
+        Marks.Add(new OcrMark { Role = role, X = x, Y = y, W = w, H = h, IsText = isText, IsBar = isBar, IsChar = isChar });
         Status = $"Marked {role}. Mark the rest, then Save.";
     }
 
@@ -305,6 +308,23 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
             var readout = new List<string>();
             foreach (var m in _activeMarks)
             {
+                if (m.IsChar)
+                {
+                    var g = frame != null ? _ocr.CropGray(frame, m.X, m.Y, m.W, m.H, EffTop, EffSide) : null;
+                    int motion = 0;
+                    if (g != null)
+                    {
+                        if (_lastChar != null && _lastChar.Length == g.Length)
+                        {
+                            long d = 0; for (int i = 0; i < g.Length; i++) d += Math.Abs(g[i] - _lastChar[i]);
+                            motion = (int)Math.Clamp((d / (double)g.Length) * 2.5, 0, 100);
+                        }
+                        _lastChar = g;
+                        LiveStats.Instance.SetNumber("CharMotion", motion);
+                    }
+                    readout.Add($"Character motion = {motion}");
+                    continue;
+                }
                 if (m.IsBar)
                 {
                     int pct = frame != null ? _ocr.ReadBarPercentFrom(frame, m.X, m.Y, m.W, m.H, EffTop, EffSide) : _ocr.ReadBarPercent(hwnd, m.X, m.Y, m.W, m.H, TopPx, SidePx);
@@ -335,8 +355,10 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
                 }
             }
 
+            string eng = _ocr.LastEngine;
             Dispatcher.UIThread.Post(() =>
             {
+                EngineInfo = "engine: " + eng;
                 LiveReadout.Clear();
                 foreach (var s2 in readout) LiveReadout.Add(s2);
                 if (_overlay != null) _overlay.SetInfo(Marks.ToList(), _session.Reader.Target?.ProcessName ?? "client", TopPx, SidePx);

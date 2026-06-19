@@ -99,6 +99,13 @@ jobs:
               exit $LASTEXITCODE
           }
 
+      - name: Publish OcrServer (PaddleOCR worker)
+        shell: pwsh
+        run: >
+          dotnet publish src/4rVivi.OcrServer/4rVivi.OcrServer.csproj
+          -c Release -r win-x64 --self-contained true
+          -o publish/OcrServer
+
       - name: Upload Publish Log
         if: always()
         uses: actions/upload-artifact@v4

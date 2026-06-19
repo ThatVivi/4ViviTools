@@ -32,6 +32,7 @@ public sealed class OcrService
     public string Language { get; set; } = "eng";
     public string PreprocessMode { get; set; } = "Auto";   // Auto | Light text | Dark text | Invert | Grayscale | Red | Green | Blue | High contrast
     public double Sharpen { get; set; } = 1.0;   // 0 = none, higher = sharper edges (helps every digit/letter)
+    public string LastEngine { get; private set; } = "-";   // which engine produced the last read
 
     public IReadOnlyList<OcrRegion> Presets { get; } = new List<OcrRegion>
     {
@@ -185,11 +186,11 @@ public sealed class OcrService
         {
             // 1) PaddleOCR PP-OCRv5 (out-of-process worker) — best accuracy
             var rapid = _rapid.Recognize(png);
-            if (!string.IsNullOrWhiteSpace(rapid)) return rapid;
+            if (!string.IsNullOrWhiteSpace(rapid)) { LastEngine = "PaddleOCR"; return rapid; }
 
             // 2) Windows OCR
             var win = _winOcr.Recognize(png);
-            if (!string.IsNullOrWhiteSpace(win)) return win;
+            if (!string.IsNullOrWhiteSpace(win)) { LastEngine = "Windows OCR"; return win; }
 
             string lang = Language;
             if (string.IsNullOrEmpty(_tessDir) || !File.Exists(Path.Combine(_tessDir, lang + ".traineddata")))
@@ -201,9 +202,30 @@ public sealed class OcrService
             if (numeric) eng.SetVariable("tessedit_char_whitelist", "0123456789/ ");
             using var img = Pix.LoadFromMemory(png);
             using var page = eng.Process(img, numeric ? PageSegMode.SingleLine : PageSegMode.Auto);
-            return page.GetText();
+            var txt = page.GetText();
+            if (!string.IsNullOrWhiteSpace(txt)) LastEngine = "Tesseract";
+            return txt;
         }
         catch { return ""; }
+    }
+
+    /// <summary>Downsample a region to 32x32 grayscale bytes for cheap frame-to-frame motion diffing.</summary>
+    public byte[]? CropGray(System.Drawing.Bitmap full, double fx, double fy, double fw, double fh, int topOffset, int sideOffset)
+    {
+        try
+        {
+            var rect = ClientRect(full.Width, full.Height, fx, fy, fw, fh, topOffset, sideOffset);
+            using var sub = full.Clone(rect, full.PixelFormat);
+            using var small = new System.Drawing.Bitmap(32, 32);
+            using (var g = Graphics.FromImage(small)) { g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.DrawImage(sub, 0, 0, 32, 32); }
+            var b = new byte[32 * 32];
+            int i = 0;
+            for (int y = 0; y < 32; y++)
+                for (int x = 0; x < 32; x++)
+                { var c = small.GetPixel(x, y); b[i++] = (byte)(0.299 * c.R + 0.587 * c.G + 0.114 * c.B); }
+            return b;
+        }
+        catch { return null; }
     }
 
     /// <summary>Capture the whole target window via PrintWindow (works when occluded / on many GPU
