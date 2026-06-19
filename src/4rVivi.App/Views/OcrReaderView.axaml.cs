@@ -9,29 +9,57 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using FourRVivi.App.ViewModels;
-using FourRVivi.Core.Ocr;
+using FourRVivi.App.Services;
 
 namespace FourRVivi.App.Views;
 
 public partial class OcrReaderView : UserControl
 {
+    private Canvas? _canvas;
+    private Image? _img;
     private Bitmap? _bmp;
     private Point _start;
     private Rectangle? _temp;
     private bool _drawing;
+    private bool _wired;
 
     public OcrReaderView()
     {
         AvaloniaXamlLoader.Load(this);
-        LoadBtn.Click += async (_, _) => await LoadImage();
-        PasteBtn.Click += async (_, _) => await PasteImage();
-        DrawCanvas.PointerPressed += OnPressed;
-        DrawCanvas.PointerMoved += OnMoved;
-        DrawCanvas.PointerReleased += OnReleased;
-        AttachedToVisualTree += (_, _) => RenderMarks();
+        Focusable = true;
+        Loaded += OnViewLoaded;
+        KeyDown += OnKeyDown;
+        PointerPressed += (_, _) => Focus();
     }
 
     private OcrReaderViewModel? Vm => DataContext as OcrReaderViewModel;
+
+    private void OnViewLoaded(object? sender, RoutedEventArgs e)
+    {
+        if (_wired) { RenderMarks(); return; }
+        try
+        {
+            _canvas = this.FindControl<Canvas>("DrawCanvas");
+            _img = this.FindControl<Image>("Img");
+            if (_canvas != null)
+            {
+                _canvas.PointerPressed += OnPressed;
+                _canvas.PointerMoved += OnMoved;
+                _canvas.PointerReleased += OnReleased;
+            }
+            _wired = true;
+            RenderMarks();
+        }
+        catch { }
+    }
+
+    private void OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.V && e.KeyModifiers.HasFlag(KeyModifiers.Control)) { _ = PasteImage(); e.Handled = true; }
+    }
+
+    private async void OnLoadClick(object? sender, RoutedEventArgs e) => await LoadImage();
+    private async void OnPasteClick(object? sender, RoutedEventArgs e) => await PasteImage();
 
     private async System.Threading.Tasks.Task LoadImage()
     {
@@ -73,29 +101,31 @@ public partial class OcrReaderView : UserControl
 
     private void SetBitmap(Bitmap bmp)
     {
+        if (_canvas is null || _img is null) return;
         _bmp = bmp;
-        Img.Source = bmp;
+        _img.Source = bmp;
         double w = 720;
         double h = bmp.PixelSize.Width > 0 ? w * bmp.PixelSize.Height / bmp.PixelSize.Width : 405;
-        DrawCanvas.Width = w; DrawCanvas.Height = h;
-        Img.Width = w; Img.Height = h;
+        _canvas.Width = w; _canvas.Height = h;
+        _img.Width = w; _img.Height = h;
         RenderMarks();
     }
 
     private void OnPressed(object? s, PointerPressedEventArgs e)
     {
-        if (_bmp is null) return;
-        _start = e.GetPosition(DrawCanvas);
-        _temp = new Rectangle { Stroke = Brushes.Aqua, StrokeThickness = 2, Fill = new SolidColorBrush(Color.FromArgb(40, 0, 255, 255)) };
+        if (_bmp is null || _canvas is null) return;
+        _start = e.GetPosition(_canvas);
+        var rc = RolePalette.ColorFor(Vm?.SelectedRole ?? "HP");
+        _temp = new Rectangle { Stroke = new SolidColorBrush(rc), StrokeThickness = 2, Fill = new SolidColorBrush(Color.FromArgb(48, rc.R, rc.G, rc.B)) };
         Canvas.SetLeft(_temp, _start.X); Canvas.SetTop(_temp, _start.Y);
-        DrawCanvas.Children.Add(_temp);
+        _canvas.Children.Add(_temp);
         _drawing = true;
     }
 
     private void OnMoved(object? s, PointerEventArgs e)
     {
-        if (!_drawing || _temp is null) return;
-        var p = e.GetPosition(DrawCanvas);
+        if (!_drawing || _temp is null || _canvas is null) return;
+        var p = e.GetPosition(_canvas);
         double x = Math.Min(p.X, _start.X), y = Math.Min(p.Y, _start.Y);
         Canvas.SetLeft(_temp, x); Canvas.SetTop(_temp, y);
         _temp.Width = Math.Abs(p.X - _start.X); _temp.Height = Math.Abs(p.Y - _start.Y);
@@ -103,11 +133,11 @@ public partial class OcrReaderView : UserControl
 
     private void OnReleased(object? s, PointerReleasedEventArgs e)
     {
-        if (!_drawing || _temp is null) { _drawing = false; return; }
+        if (!_drawing || _temp is null || _canvas is null) { _drawing = false; return; }
         _drawing = false;
-        double cw = DrawCanvas.Width, ch = DrawCanvas.Height;
+        double cw = _canvas.Width, ch = _canvas.Height;
         double x = Canvas.GetLeft(_temp), y = Canvas.GetTop(_temp), w = _temp.Width, h = _temp.Height;
-        DrawCanvas.Children.Remove(_temp); _temp = null;
+        _canvas.Children.Remove(_temp); _temp = null;
         if (cw <= 0 || ch <= 0 || w < 4 || h < 4) return;
         Vm?.AddMark(Vm.SelectedRole, x / cw, y / ch, w / cw, h / ch);
         RenderMarks();
@@ -115,19 +145,19 @@ public partial class OcrReaderView : UserControl
 
     private void RenderMarks()
     {
-        for (int i = DrawCanvas.Children.Count - 1; i >= 0; i--)
-            if (DrawCanvas.Children[i] is not Image) DrawCanvas.Children.RemoveAt(i);
+        if (_canvas is null || Vm is null || _canvas.Width <= 0) return;
+        for (int i = _canvas.Children.Count - 1; i >= 0; i--)
+            if (_canvas.Children[i] is not Image) _canvas.Children.RemoveAt(i);
 
-        if (Vm is null || DrawCanvas.Width <= 0) return;
-        double cw = DrawCanvas.Width, ch = DrawCanvas.Height;
+        double cw = _canvas.Width, ch = _canvas.Height;
         foreach (var m in Vm.Marks)
         {
-            var box = new Rectangle { Stroke = Brushes.Lime, StrokeThickness = 2, Width = m.W * cw, Height = m.H * ch };
+            var box = new Rectangle { Stroke = RolePalette.Brush(m.Role), StrokeThickness = 2, Width = m.W * cw, Height = m.H * ch };
             Canvas.SetLeft(box, m.X * cw); Canvas.SetTop(box, m.Y * ch);
-            DrawCanvas.Children.Add(box);
-            var lbl = new TextBlock { Text = m.Role, Foreground = Brushes.Lime, FontSize = 11 };
+            _canvas.Children.Add(box);
+            var lbl = new TextBlock { Text = m.Role, Foreground = RolePalette.Brush(m.Role), FontSize = 11, FontWeight = FontWeight.Bold };
             Canvas.SetLeft(lbl, m.X * cw + 2); Canvas.SetTop(lbl, m.Y * ch);
-            DrawCanvas.Children.Add(lbl);
+            _canvas.Children.Add(lbl);
         }
     }
 }

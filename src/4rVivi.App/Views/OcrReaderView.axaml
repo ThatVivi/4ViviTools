@@ -1,15 +1,19 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
              xmlns:ocr="clr-namespace:FourRVivi.Core.Ocr;assembly=4rVivi.Core"
+             xmlns:conv="clr-namespace:FourRVivi.App.Converters"
              x:Class="FourRVivi.App.Views.OcrReaderView" x:DataType="vm:OcrReaderViewModel">
+  <UserControl.Resources>
+    <conv:RoleToBrushConverter x:Key="RoleToBrush"/>
+  </UserControl.Resources>
   <Grid ColumnDefinitions="*,300" Margin="4">
     <StackPanel Grid.Column="0" Spacing="10">
       <TextBlock Text="OCR Reader (screen-based, Gepard-proof)" Classes="h1"/>
       <TextBlock Classes="muted" TextWrapping="Wrap"
-                 Text="Load a screenshot of your client. Pick a stat, then drag a box over it on the image. Save. Press Start — it reads those spots off the live window non-stop and feeds the top bar, Stats and Discord. It can't get map/coords (RO doesn't show them)."/>
+                 Text="Paste a screenshot with Ctrl+V (or Load it). Pick a stat, then drag a box over it on the image — each role has its own colour. Save. Press Start — it reads those spots off the live window non-stop and feeds the top bar, Stats and Discord. It can't get map/coords (RO doesn't show them)."/>
       <StackPanel Orientation="Horizontal" Spacing="10">
-        <Button x:Name="LoadBtn" Classes="accent" Content="Load screenshot"/>
-        <Button x:Name="PasteBtn" Content="Paste image"/>
+        <Button Classes="accent" Content="Load screenshot" Click="OnLoadClick"/>
+        <Button Content="Paste image" Click="OnPasteClick"/>
         <TextBlock Text="Marking as:" Classes="muted" VerticalAlignment="Center"/>
         <ComboBox Width="140" ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}"/>
       </StackPanel>
@@ -27,9 +31,10 @@
                  ScrollViewer.VerticalScrollBarVisibility="Auto">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="ocr:OcrMark">
-              <Grid ColumnDefinitions="*,28">
-                <TextBlock Grid.Column="0" Text="{Binding Role}" VerticalAlignment="Center"/>
-                <Button Grid.Column="1" Content="✕"
+              <Grid ColumnDefinitions="16,*,28">
+                <Rectangle Grid.Column="0" Width="12" Height="12" VerticalAlignment="Center" Fill="{Binding Role, Converter={StaticResource RoleToBrush}}"/>
+                <TextBlock Grid.Column="1" Text="{Binding Role}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                <Button Grid.Column="2" Content="✕"
                         Command="{ReflectionBinding DataContext.RemoveMarkCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         CommandParameter="{Binding}"/>
               </Grid>
