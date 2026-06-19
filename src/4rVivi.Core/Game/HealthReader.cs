@@ -15,8 +15,8 @@ public sealed class HealthReader
     public int Sp => Read("SP");
     public int MaxSp => Read("MaxSP");
 
-    public double HpPercent => Percent(Hp, MaxHp);
-    public double SpPercent => Percent(Sp, MaxSp);
+    public double HpPercent => LiveStats.Instance.TryGetNumber("HpPercent", out var p) ? p : Percent(Hp, MaxHp);
+    public double SpPercent => LiveStats.Instance.TryGetNumber("SpPercent", out var p) ? p : Percent(Sp, MaxSp);
 
     private static double Percent(int cur, int max) => max > 0 ? Math.Clamp(cur * 100.0 / max, 0, 100) : -1;
 

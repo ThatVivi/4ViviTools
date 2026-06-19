@@ -19,8 +19,8 @@ public sealed class CharacterState
     public long Zeny { get; set; }
     public string Activity { get; set; } = "Idle";
 
-    public int HpPct => MaxHp > 0 ? (int)Math.Round(Hp * 100.0 / MaxHp) : 0;
-    public int SpPct => MaxSp > 0 ? (int)Math.Round(Sp * 100.0 / MaxSp) : 0;
+    public int HpPct => LiveStats.Instance.TryGetNumber("HpPercent", out var p) ? p : (MaxHp > 0 ? (int)Math.Round(Hp * 100.0 / MaxHp) : 0);
+    public int SpPct => LiveStats.Instance.TryGetNumber("SpPercent", out var p) ? p : (MaxSp > 0 ? (int)Math.Round(Sp * 100.0 / MaxSp) : 0);
 }
 
 /// <summary>Builds a validated <see cref="CharacterState"/> from the bound memory roles and

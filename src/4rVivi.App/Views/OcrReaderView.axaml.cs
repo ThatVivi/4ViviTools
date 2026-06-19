@@ -9,6 +9,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using FourRVivi.App.ViewModels;
+using System.ComponentModel;
 using FourRVivi.App.Services;
 
 namespace FourRVivi.App.Views;
@@ -48,14 +49,35 @@ public partial class OcrReaderView : UserControl
                 _canvas.PointerReleased += OnReleased;
             }
             _wired = true;
-            RenderMarks();
+            if (Vm != null) Vm.PropertyChanged += OnVmPropertyChanged;
+            ApplySize();
         }
         catch { }
     }
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.Key == Key.V && e.KeyModifiers.HasFlag(KeyModifiers.Control)) { _ = PasteImage(); e.Handled = true; }
+        if (e.Key == Key.V && e.KeyModifiers.HasFlag(KeyModifiers.Control)) { _ = PasteImage(); e.Handled = true; return; }
+        if (Vm != null && !string.IsNullOrEmpty(Vm.OverlayHotkey) &&
+            string.Equals(e.Key.ToString(), Vm.OverlayHotkey, StringComparison.OrdinalIgnoreCase))
+        { Vm.ToggleOverlayCommand.Execute(null); e.Handled = true; }
+    }
+
+    private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == "Zoom") ApplySize();
+    }
+
+    private const double BaseWidth = 900;
+    private void ApplySize()
+    {
+        if (_canvas is null) return;
+        double z = Vm?.Zoom ?? 1.0; if (z <= 0) z = 1;
+        double w = BaseWidth * z;
+        double h = (_bmp != null && _bmp.PixelSize.Width > 0) ? w * _bmp.PixelSize.Height / _bmp.PixelSize.Width : 506 * z;
+        _canvas.Width = w; _canvas.Height = h;
+        if (_img != null) { _img.Width = w; _img.Height = h; }
+        RenderMarks();
     }
 
     private async void OnLoadClick(object? sender, RoutedEventArgs e) => await LoadImage();
@@ -104,11 +126,7 @@ public partial class OcrReaderView : UserControl
         if (_canvas is null || _img is null) return;
         _bmp = bmp;
         _img.Source = bmp;
-        double w = 720;
-        double h = bmp.PixelSize.Width > 0 ? w * bmp.PixelSize.Height / bmp.PixelSize.Width : 405;
-        _canvas.Width = w; _canvas.Height = h;
-        _img.Width = w; _img.Height = h;
-        RenderMarks();
+        ApplySize();
     }
 
     private void OnPressed(object? s, PointerPressedEventArgs e)

@@ -33,7 +33,7 @@ public sealed class SessionTracker
     public long ZenyPerHour => (long)(ZenyGained / Hours);
 
     // loot + profit analytics (doc: Loot/Hour, Profit/Hour, Deaths)
-    public int LootCount => Loot?.TotalCount ?? 0;
+    public int LootCount => LiveStats.Instance.TryGetNumber("Loot", out var l) ? l : (Loot?.TotalCount ?? 0);
     public long LootValue => Loot?.TotalValue ?? 0;
     public long LootPerHour => (long)(LootCount / Hours);
     public long ProfitGained => ZenyGained + LootValue;

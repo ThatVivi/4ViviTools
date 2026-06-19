@@ -21,12 +21,32 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     private OcrOverlayWindow? _overlay;
     private readonly Dictionary<string, (string val, int count)> _pending = new();
     [ObservableProperty] private int _intervalMs = 300;
+    public string[] WindowModes { get; } = { "Fullscreen", "Windowed" };
+    [ObservableProperty] private string _windowMode = "Windowed";
+    [ObservableProperty] private int _topOffset = 31;   // title bar height (windowed)
+    [ObservableProperty] private int _sideOffset = 8;   // window border (windowed)
+    [ObservableProperty] private bool _overlayOn;
+    [ObservableProperty] private string _overlayHotkey = "F8";
+    [ObservableProperty] private double _zoom = 1.0;
+
+    private int TopPx => WindowMode == "Windowed" ? TopOffset : 0;
+    private int SidePx => WindowMode == "Windowed" ? SideOffset : 0;
 
     // role keys the user can mark (CharName is text; the rest are numbers)
     public string[] Roles { get; } =
     {
-        "HP", "MaxHP", "SP", "MaxSP", "BaseLevel", "JobLevel",
-        "Weight", "MaxWeight", "Zeny", "BaseEXP", "JobEXP", "CharName"
+        "HP / MaxHP", "SP / MaxSP", "Weight / MaxWeight",
+        "BaseLevel", "JobLevel",
+        "HP", "MaxHP", "SP", "MaxSP",
+        "HpPercent", "SpPercent", "BaseExpPct", "JobExpPct",
+        "Weight", "MaxWeight", "Zeny", "BaseEXP", "JobEXP", "Loot", "PosX", "PosY", "CharName", "ClassName"
+    };
+
+    private static readonly Dictionary<string, (string a, string b)> Combined = new()
+    {
+        ["HP / MaxHP"] = ("HP", "MaxHP"),
+        ["SP / MaxSP"] = ("SP", "MaxSP"),
+        ["Weight / MaxWeight"] = ("Weight", "MaxWeight"),
     };
 
     public ObservableCollection<OcrMark> Marks { get; } = new();
@@ -45,7 +65,9 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     public void AddMark(string role, double x, double y, double w, double h)
     {
         if (w <= 0 || h <= 0) return;
-        Marks.Add(new OcrMark { Role = role, X = x, Y = y, W = w, H = h, IsText = role == "CharName" });
+        bool isText = role == "CharName" || role == "ClassName";
+        bool isBar = role is "HpPercent" or "SpPercent" or "BaseExpPct" or "JobExpPct";
+        Marks.Add(new OcrMark { Role = role, X = x, Y = y, W = w, H = h, IsText = isText, IsBar = isBar });
         Status = $"Marked {role}. Mark the rest, then Save.";
     }
 
@@ -69,13 +91,8 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
         _pending.Clear();
         LiveStats.Instance.Active = true;
         Running = true;
-        try
-        {
-            _overlay = new OcrOverlayWindow(_session);
-            _overlay.SetInfo(Marks.ToList(), _session.Reader.Target?.ProcessName ?? "client");
-            _overlay.Show();
-        }
-        catch { _overlay = null; }
+        OverlayOn = true;
+        ShowOverlay();
         _timer?.Stop();
         _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(Math.Max(120, IntervalMs)) };
         _timer.Tick += (_, _) => Tick();
@@ -88,19 +105,58 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
         _timer?.Stop();
         Running = false;
         LiveStats.Instance.Active = false;
+        OverlayOn = false;
+        HideOverlay();
+        Status = "OCR stopped. Back to memory mode.";
+    }
+
+    [RelayCommand] private void ToggleOverlay()
+    {
+        OverlayOn = !OverlayOn;
+        if (OverlayOn) ShowOverlay(); else HideOverlay();
+    }
+
+    private void ShowOverlay()
+    {
+        try
+        {
+            _overlay ??= new OcrOverlayWindow(_session);
+            _overlay.SetInfo(Marks.ToList(), _session.Reader.Target?.ProcessName ?? "client", TopPx, SidePx);
+            _overlay.Show();
+        }
+        catch { _overlay = null; }
+    }
+
+    private void HideOverlay()
+    {
         try { _overlay?.Close(); } catch { }
         _overlay = null;
-        Status = "OCR stopped. Back to memory mode.";
     }
 
     private void Tick()
     {
         var hwnd = _session.WindowHandle;
         if (hwnd == IntPtr.Zero) { Status = "Lost the game window — is it still open?"; return; }
+        if (_overlay != null) _overlay.SetInfo(Marks.ToList(), _session.Reader.Target?.ProcessName ?? "client", TopPx, SidePx);
         LiveReadout.Clear();
         foreach (var m in Marks)
         {
-            string raw = _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: !m.IsText);
+            if (m.IsBar)
+            {
+                int pct = _ocr.ReadBarPercent(hwnd, m.X, m.Y, m.W, m.H, TopPx, SidePx);
+                if (pct >= 0) LiveStats.Instance.SetNumber(m.Role, pct);
+                LiveReadout.Add($"{m.Role} = {(pct < 0 ? "?" : pct + "%")}");
+                continue;
+            }
+            if (Combined.TryGetValue(m.Role, out var pair))
+            {
+                string two = _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: true, topOffset: TopPx, sideOffset: SidePx);
+                var parsed = OcrService.ParseTwoInts(two);
+                if (parsed is { } pv) { LiveStats.Instance.SetNumber(pair.a, pv.Item1); LiveStats.Instance.SetNumber(pair.b, pv.Item2); }
+                LiveReadout.Add($"{m.Role} = {(parsed is { } q ? $"{q.Item1} / {q.Item2}" : "?")}");
+                continue;
+            }
+            string raw = _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: !m.IsText, topOffset: TopPx, sideOffset: SidePx);
             if (m.IsText)
             {
                 string t = raw.Trim();

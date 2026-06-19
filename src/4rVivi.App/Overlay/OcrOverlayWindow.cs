@@ -38,9 +38,9 @@ public sealed class OcrOverlayWindow : Window
         Closed += (_, _) => _timer.Stop();
     }
 
-    public void SetInfo(System.Collections.Generic.IReadOnlyList<OcrMark> marks, string label)
+    public void SetInfo(System.Collections.Generic.IReadOnlyList<OcrMark> marks, string label, int topOffset = 0, int sideOffset = 0)
     {
-        _canvas.Marks = marks; _canvas.Label = label; _canvas.InvalidateVisual();
+        _canvas.Marks = marks; _canvas.Label = label; _canvas.TopOffset = topOffset; _canvas.SideOffset = sideOffset; _canvas.InvalidateVisual();
     }
 
     private void MakeClickThrough()
@@ -69,17 +69,19 @@ public sealed class OcrStatusCanvas : Control
 {
     public System.Collections.Generic.IReadOnlyList<OcrMark> Marks = System.Array.Empty<OcrMark>();
     public string Label = "";
+    public int TopOffset, SideOffset;
 
     public override void Render(DrawingContext ctx)
     {
-        double w = Bounds.Width, h = Bounds.Height;
+        double fw = Bounds.Width, fh = Bounds.Height;
+        double cx = SideOffset, cy = TopOffset, cw = Math.Max(1, fw - 2 * SideOffset), ch = Math.Max(1, fh - TopOffset - SideOffset);
         var accent = new SolidColorBrush(Color.FromArgb(255, 90, 220, 120));
         var pen = new Pen(accent, 3);
-        ctx.DrawRectangle(null, pen, new Rect(1.5, 1.5, w - 3, h - 3));
+        ctx.DrawRectangle(null, pen, new Rect(cx + 1.5, cy + 1.5, cw - 3, ch - 3));
 
         var boxPen = new Pen(new SolidColorBrush(Color.FromArgb(220, 90, 220, 120)), 2);
         foreach (var m in Marks)
-            ctx.DrawRectangle(null, boxPen, new Rect(m.X * w, m.Y * h, m.W * w, m.H * h));
+            ctx.DrawRectangle(null, boxPen, new Rect(cx + m.X * cw, cy + m.Y * ch, m.W * cw, m.H * ch));
 
         var bg = new SolidColorBrush(Color.FromArgb(210, 18, 20, 28));
         ctx.DrawRectangle(bg, null, new Rect(8, 8, 300, 26), 6, 6);

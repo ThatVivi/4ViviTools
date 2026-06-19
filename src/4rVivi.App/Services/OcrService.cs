@@ -73,14 +73,63 @@ public sealed class OcrService
     }
 
     /// <summary>OCR a window-relative fractional rectangle (0..1). Used by the calibrated OCR loop.</summary>
-    public string ReadRect(IntPtr hwnd, double fx, double fy, double fw, double fh, bool numeric = false)
+    public string ReadRect(IntPtr hwnd, double fx, double fy, double fw, double fh, bool numeric = false, int topOffset = 0, int sideOffset = 0)
     {
         if (hwnd == IntPtr.Zero || !GetWindowRect(hwnd, out var r)) return "";
         int W = r.Right - r.Left, H = r.Bottom - r.Top;
         if (W <= 0 || H <= 0) return "";
-        int x = r.Left + (int)(fx * W), y = r.Top + (int)(fy * H);
-        int w = Math.Max(1, (int)(fw * W)), h = Math.Max(1, (int)(fh * H));
+        // windowed: skip the title bar / borders so fractions map to the client area
+        int left = r.Left + sideOffset, top = r.Top + topOffset;
+        int cw = Math.Max(1, W - 2 * sideOffset), ch = Math.Max(1, H - topOffset - sideOffset);
+        int x = left + (int)(fx * cw), y = top + (int)(fy * ch);
+        int w = Math.Max(1, (int)(fw * cw)), h = Math.Max(1, (int)(fh * ch));
         return Read(IntPtr.Zero, x, y, w, h, numeric);
+    }
+
+    /// <summary>Measure how full a HP/SP/EXP bar is (0..100) by the colored fill width — no OCR.</summary>
+    public int ReadBarPercent(IntPtr hwnd, double fx, double fy, double fw, double fh, int topOffset = 0, int sideOffset = 0)
+    {
+        try
+        {
+            if (hwnd == IntPtr.Zero || !GetWindowRect(hwnd, out var r)) return -1;
+            int W = r.Right - r.Left, H = r.Bottom - r.Top;
+            if (W <= 0 || H <= 0) return -1;
+            int left = r.Left + sideOffset, top = r.Top + topOffset;
+            int cw = Math.Max(1, W - 2 * sideOffset), ch = Math.Max(1, H - topOffset - sideOffset);
+            int x = left + (int)(fx * cw), y = top + (int)(fy * ch);
+            int w = Math.Max(2, (int)(fw * cw)), h = Math.Max(2, (int)(fh * ch));
+
+            using var bmp = new System.Drawing.Bitmap(w, h);
+            using (var g = Graphics.FromImage(bmp)) g.CopyFromScreen(x, y, 0, 0, new System.Drawing.Size(w, h));
+
+            int y0 = h / 4, y1 = Math.Max(y0 + 1, h * 3 / 4);
+            var col = new double[w];
+            double min = double.MaxValue, max = double.MinValue;
+            for (int cx = 0; cx < w; cx++)
+            {
+                double sum = 0; int n = 0;
+                for (int cy = y0; cy < y1; cy++) { var c = bmp.GetPixel(cx, cy); sum += 0.299 * c.R + 0.587 * c.G + 0.114 * c.B; n++; }
+                col[cx] = n > 0 ? sum / n : 0;
+                if (col[cx] < min) min = col[cx];
+                if (col[cx] > max) max = col[cx];
+            }
+            if (max - min < 12) return 0;   // flat = empty bar
+            double thr = min + 0.5 * (max - min);
+            int lastFilled = -1;
+            for (int cx = 1; cx < w - 1; cx++) if (col[cx] >= thr) lastFilled = cx;   // rightmost bright = fill boundary
+            if (lastFilled < 0) return 0;
+            return Math.Clamp((int)Math.Round((lastFilled + 1) * 100.0 / w), 0, 100);
+        }
+        catch { return -1; }
+    }
+
+    /// <summary>Two integers separated by '/' (e.g. "96 / 96", "670 / 2030"). Null if not two found.</summary>
+    public static (int, int)? ParseTwoInts(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return null;
+        var m = System.Text.RegularExpressions.Regex.Match(text.Replace(",", ""), @"(\d+)\D+(\d+)");
+        if (m.Success && int.TryParse(m.Groups[1].Value, out int a) && int.TryParse(m.Groups[2].Value, out int b)) return (a, b);
+        return null;
     }
 
     /// <summary>First integer found in OCR text (handles "91", "91 / 91", " 1,234 ").</summary>
