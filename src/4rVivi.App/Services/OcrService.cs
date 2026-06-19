@@ -223,6 +223,19 @@ public sealed class OcrService
         catch { return null; }
     }
 
+    /// <summary>Capture a raw screen rectangle (a whole monitor). Caller disposes.</summary>
+    public System.Drawing.Bitmap? CaptureMonitor(int x, int y, int w, int h)
+    {
+        try
+        {
+            if (w <= 0 || h <= 0) return null;
+            var bmp = new System.Drawing.Bitmap(w, h, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            using (var g = Graphics.FromImage(bmp)) g.CopyFromScreen(x, y, 0, 0, new System.Drawing.Size(w, h));
+            return bmp;
+        }
+        catch { return null; }
+    }
+
     private static System.Drawing.Rectangle ClientRect(int W, int H, double fx, double fy, double fw, double fh, int topOffset, int sideOffset)
     {
         int cw = Math.Max(1, W - 2 * sideOffset), ch = Math.Max(1, H - topOffset - sideOffset);

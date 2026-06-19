@@ -50,6 +50,7 @@ public partial class OcrReaderView : UserControl
             }
             _wired = true;
             if (Vm != null) Vm.PropertyChanged += OnVmPropertyChanged;
+            PopulateMonitors();
             ApplySize();
         }
         catch { }
@@ -78,6 +79,48 @@ public partial class OcrReaderView : UserControl
         _canvas.Width = w; _canvas.Height = h;
         if (_img != null) { _img.Width = w; _img.Height = h; }
         RenderMarks();
+    }
+
+    private void PopulateMonitors()
+    {
+        try
+        {
+            var top = TopLevel.GetTopLevel(this);
+            var screens = top?.Screens;
+            if (screens == null || Vm == null || Vm.Monitors.Count > 0) return;
+            int i = 1;
+            foreach (var sc in screens.All)
+            {
+                var b = sc.Bounds;
+                Vm.Monitors.Add(new MonitorInfo { Name = $"Screen {i} — {b.Width}x{b.Height}", X = b.X, Y = b.Y, W = b.Width, H = b.Height });
+                i++;
+            }
+            if (Vm.SelectedMonitor == null && Vm.Monitors.Count > 0) Vm.SelectedMonitor = Vm.Monitors[0];
+        }
+        catch { }
+    }
+
+    private async void OnCaptureMonitorClick(object? sender, RoutedEventArgs e)
+    {
+        var win = TopLevel.GetTopLevel(this) as Window;
+        var prev = win?.WindowState ?? WindowState.Normal;
+        try
+        {
+            if (Vm?.SelectedMonitor == null) { if (Vm != null) Vm.Status = "Pick a monitor first."; return; }
+            if (win != null) win.WindowState = WindowState.Minimized;   // hide our tool before the shot
+            await System.Threading.Tasks.Task.Delay(350);
+            var sd = Vm.GrabMonitor();
+            if (win != null) { win.WindowState = prev; win.Activate(); }
+            if (sd != null)
+            {
+                using var ms = new System.IO.MemoryStream();
+                sd.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                ms.Position = 0;
+                SetBitmap(new Bitmap(ms));
+                sd.Dispose();
+            }
+        }
+        catch { if (win != null) win.WindowState = prev; }
     }
 
     private async void OnLoadClick(object? sender, RoutedEventArgs e) => await LoadImage();

@@ -19,6 +19,11 @@
         <ComboBox Width="140" ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}"/>
       </StackPanel>
       <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+        <CheckBox Content="Use monitor (full screen)" IsChecked="{Binding UseMonitor}" VerticalAlignment="Center"/>
+        <ComboBox Width="200" ItemsSource="{Binding Monitors}" SelectedItem="{Binding SelectedMonitor}"/>
+        <Button Content="Capture monitor" Click="OnCaptureMonitorClick"/>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
         <TextBlock Text="Window:" Classes="muted" VerticalAlignment="Center"/>
         <ComboBox Width="120" ItemsSource="{Binding WindowModes}" SelectedItem="{Binding WindowMode}"/>
         <TextBlock Text="Top offset" Classes="muted" VerticalAlignment="Center"/>

@@ -45,6 +45,22 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
 
     private int TopPx => WindowMode == "Windowed" ? TopOffset : 0;
     private int SidePx => WindowMode == "Windowed" ? SideOffset : 0;
+    private int EffTop => UseMonitor ? 0 : TopPx;     // monitor capture = no title-bar offset
+    private int EffSide => UseMonitor ? 0 : SidePx;
+
+    public System.Collections.ObjectModel.ObservableCollection<MonitorInfo> Monitors { get; } = new();
+    [ObservableProperty] private MonitorInfo? _selectedMonitor;
+    [ObservableProperty] private bool _useMonitor;
+
+    /// <summary>Capture either the whole selected monitor or the game window, per the chosen mode.</summary>
+    private System.Drawing.Bitmap? CaptureFrame(IntPtr hwnd)
+        => (UseMonitor && SelectedMonitor != null)
+            ? _ocr.CaptureMonitor(SelectedMonitor.X, SelectedMonitor.Y, SelectedMonitor.W, SelectedMonitor.H)
+            : _ocr.CaptureWindow(hwnd);
+
+    /// <summary>For the calibration screenshot button (View grabs the selected monitor).</summary>
+    public System.Drawing.Bitmap? GrabMonitor()
+        => SelectedMonitor != null ? _ocr.CaptureMonitor(SelectedMonitor.X, SelectedMonitor.Y, SelectedMonitor.W, SelectedMonitor.H) : null;
 
     // role keys the user can mark (CharName is text; the rest are numbers)
     public string[] Roles { get; } =
@@ -134,7 +150,8 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     [RelayCommand] private async Task Start()
     {
         if (Marks.Count == 0) { Status = "Mark at least HP first."; return; }
-        if (_session.WindowHandle == IntPtr.Zero) { Status = "Pick your RO process in the top bar and keep the game visible."; return; }
+        if (UseMonitor && SelectedMonitor == null) { Status = "Pick a monitor first."; return; }
+        if (!UseMonitor && _session.WindowHandle == IntPtr.Zero) { Status = "Pick your RO process (or switch to Monitor capture)."; return; }
         Status = "Preparing OCR (first run downloads language data)…";
         if (!await _ocr.EnsureDataAsync()) { Status = "Couldn't get OCR data (no internet?)."; return; }
 
@@ -161,73 +178,73 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
         Status = "OCR stopped. Back to memory mode.";
     }
 
-    /// <summary>Cycle filters to pick the best, then grow the search radius — nudging boxes live — until
-    /// every field reads (when "until all data" is on) or you press it again to stop.</summary>
+    /// <summary>Cycle through EVERY filter (and grow the search radius) nudging boxes, recording which
+    /// filter+offset reads each field; then lock in the filter that covers the most. Press again to stop.</summary>
     [RelayCommand] private async Task Calibrate()
     {
         if (Calibrating) { _calibCancel = true; Status = "Stopping calibration…"; return; }
         if (Marks.Count == 0) { Status = "Mark your stats first."; return; }
-        if (_session.WindowHandle == IntPtr.Zero) { Status = "Attach your RO process and keep the game visible."; return; }
+        if (UseMonitor && SelectedMonitor == null) { Status = "Pick a monitor first."; return; }
+        if (!UseMonitor && _session.WindowHandle == IntPtr.Zero) { Status = "Attach your RO process (or use Monitor capture)."; return; }
         if (Running) { Status = "Stop OCR before calibrating."; return; }
         if (!await _ocr.EnsureDataAsync()) { Status = "Couldn't get OCR data (no internet?)."; return; }
 
         Calibrating = true; _calibCancel = false;
         var marks = Marks.ToList();
-        var pending = marks.Where(m => !m.IsBar).ToList();
-        int fields = pending.Count;
+        var fieldMarks = marks.Where(m => !m.IsBar).ToList();
+        int fields = fieldMarks.Count;
+        IntPtr hwnd = _session.WindowHandle;
 
         await Task.Run(() =>
         {
-            // Phase 1: pick the filter that reads the most at the marked positions
-            string bestMode = "Auto"; int bestN = -1;
-            foreach (var mode in PreprocessModes)
-            {
-                if (_calibCancel) break;
-                _ocr.PreprocessMode = mode;
-                int n = 0;
-                using (var f = _ocr.CaptureWindow(_session.WindowHandle))
-                    if (f != null) foreach (var m in pending) if (TryRead(f, m, 0, 0)) n++;
-                if (n > bestN) { bestN = n; bestMode = mode; }
-            }
-            _ocr.PreprocessMode = bestMode;
-            Dispatcher.UIThread.Post(() => { PreprocessMode = bestMode; Status = $"Filter \u201c{bestMode}\u201d. Locating boxes…"; });
+            // found[filter][mark] = winning offset
+            var found = new Dictionary<string, Dictionary<OcrMark, (double dx, double dy)>>();
+            foreach (var mode in PreprocessModes) found[mode] = new Dictionary<OcrMark, (double, double)>();
 
-            // Phase 2: grow the radius until all fields read (or stop / time cap)
-            long cap = Environment.TickCount64 + (CalibrateUntilComplete ? 180000 : 20000);
+            long cap = Environment.TickCount64 + (CalibrateUntilComplete ? 180000 : 30000);
             int radius = 1;
-            while (pending.Count > 0 && !_calibCancel && Environment.TickCount64 < cap)
+            while (!_calibCancel && Environment.TickCount64 < cap)
             {
                 var grid = BuildGrid(radius);
-                using (var frame = _ocr.CaptureWindow(_session.WindowHandle))
+                foreach (var mode in PreprocessModes)
                 {
-                    if (frame != null)
-                        foreach (var m in pending.ToList())
-                        {
-                            foreach (var (dx, dy) in grid)
-                                if (TryRead(frame, m, dx, dy))
-                                {
-                                    var mm = m; double ddx = dx, ddy = dy;
-                                    Dispatcher.UIThread.Post(() => { mm.X = Math.Clamp(mm.X + ddx, 0, 1); mm.Y = Math.Clamp(mm.Y + ddy, 0, 1); });
-                                    pending.Remove(m);
-                                    break;
-                                }
-                        }
+                    if (_calibCancel) break;
+                    _ocr.PreprocessMode = mode;
+                    Dispatcher.UIThread.Post(() => { PreprocessMode = mode; Status = $"Trying filter \u201c{mode}\u201d (radius {radius})…"; });
+                    using var frame = CaptureFrame(hwnd);
+                    if (frame == null) { System.Threading.Thread.Sleep(120); continue; }
+                    foreach (var m in fieldMarks)
+                    {
+                        if (found[mode].ContainsKey(m)) continue;
+                        foreach (var (dx, dy) in grid)
+                            if (TryRead(frame, m, dx, dy)) { found[mode][m] = (dx, dy); break; }
+                    }
+                    int cov = found[mode].Count;
+                    Dispatcher.UIThread.Post(() => Status = $"Filter \u201c{mode}\u201d: {cov}/{fields} (radius {radius})");
+                    System.Threading.Thread.Sleep(60);
                 }
-                int got = fields - pending.Count;
-                string miss = string.Join(", ", pending.Select(p => p.Role));
-                Dispatcher.UIThread.Post(() => Status = $"Found {got}/{fields} (radius {radius}). Missing: {(miss.Length == 0 ? "-" : miss)}");
+                if (found.Values.Any(d => d.Count >= fields)) break;   // a filter covers everything
                 if (!CalibrateUntilComplete) break;
                 radius++;
-                System.Threading.Thread.Sleep(120);
             }
 
+            string bestMode = found.OrderByDescending(kv => kv.Value.Count).First().Key;
             Dispatcher.UIThread.Post(() =>
             {
+                _ocr.PreprocessMode = bestMode; PreprocessMode = bestMode;
+                int moved = 0;
+                foreach (var kv in found[bestMode])
+                {
+                    var (dx, dy) = kv.Value;
+                    if (dx != 0 || dy != 0) { kv.Key.X = Math.Clamp(kv.Key.X + dx, 0, 1); kv.Key.Y = Math.Clamp(kv.Key.Y + dy, 0, 1); moved++; }
+                }
                 _settings.Current.OcrMarks = Marks.ToList(); _settings.Save();
+                int got = found[bestMode].Count;
+                var miss = fieldMarks.Where(m => !found[bestMode].ContainsKey(m)).Select(m => m.Role);
                 Calibrating = false;
-                Status = pending.Count == 0
-                    ? $"Calibration complete — all {fields} fields read with \u201c{PreprocessMode}\u201d. Saved. Press Start."
-                    : $"Calibration stopped. {pending.Count} unread: {string.Join(", ", pending.Select(p => p.Role))}. Try another filter / more sharpness / re-mark.";
+                Status = got >= fields
+                    ? $"Done — filter \u201c{bestMode}\u201d read all {fields} fields; nudged {moved}. Saved. Press Start."
+                    : $"Best filter \u201c{bestMode}\u201d read {got}/{fields}; nudged {moved}. Missing: {string.Join(", ", miss)}.";
             });
         });
     }
@@ -245,9 +262,9 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     private bool TryRead(System.Drawing.Bitmap frame, OcrMark m, double dx, double dy)
     {
         double fx = Math.Clamp(m.X + dx, 0, 1), fy = Math.Clamp(m.Y + dy, 0, 1);
-        if (Combined.ContainsKey(m.Role)) return OcrService.ParseTwoInts(_ocr.ReadRectFrom(frame, fx, fy, m.W, m.H, true, TopPx, SidePx)) != null;
-        if (m.IsText) return _ocr.ReadRectFrom(frame, fx, fy, m.W, m.H, false, TopPx, SidePx).Trim().Length >= 2;
-        return OcrService.ParseFirstInt(_ocr.ReadRectFrom(frame, fx, fy, m.W, m.H, true, TopPx, SidePx)) >= 0;
+        if (Combined.ContainsKey(m.Role)) return OcrService.ParseTwoInts(_ocr.ReadRectFrom(frame, fx, fy, m.W, m.H, true, EffTop, EffSide)) != null;
+        if (m.IsText) return _ocr.ReadRectFrom(frame, fx, fy, m.W, m.H, false, EffTop, EffSide).Trim().Length >= 2;
+        return OcrService.ParseFirstInt(_ocr.ReadRectFrom(frame, fx, fy, m.W, m.H, true, EffTop, EffSide)) >= 0;
     }
 
     [RelayCommand] private void ToggleOverlay()
@@ -258,6 +275,7 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
 
     private void ShowOverlay()
     {
+        if (UseMonitor) { Status = "Overlay disabled in Monitor mode (it would be captured). Boxes show on the calibration image."; return; }
         try
         {
             _overlay ??= new OcrOverlayWindow(_session);
@@ -283,26 +301,26 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
             if (hwnd == IntPtr.Zero) { Dispatcher.UIThread.Post(() => Status = "Lost the game window — is it still open?"); return; }
 
             LiveStats.Instance.Touch();   // heartbeat so consumers stay "live" even if a read fails
-            using var frame = _ocr.CaptureWindow(hwnd);   // one PrintWindow capture, crop each region from it
+            using var frame = CaptureFrame(hwnd);   // monitor or window
             var readout = new List<string>();
             foreach (var m in _activeMarks)
             {
                 if (m.IsBar)
                 {
-                    int pct = frame != null ? _ocr.ReadBarPercentFrom(frame, m.X, m.Y, m.W, m.H, TopPx, SidePx) : _ocr.ReadBarPercent(hwnd, m.X, m.Y, m.W, m.H, TopPx, SidePx);
+                    int pct = frame != null ? _ocr.ReadBarPercentFrom(frame, m.X, m.Y, m.W, m.H, EffTop, EffSide) : _ocr.ReadBarPercent(hwnd, m.X, m.Y, m.W, m.H, TopPx, SidePx);
                     if (pct >= 0) LiveStats.Instance.SetNumber(m.Role, pct);
                     readout.Add($"{m.Role} = {(pct < 0 ? "?" : pct + "%")}");
                     continue;
                 }
                 if (Combined.TryGetValue(m.Role, out var pair))
                 {
-                    string two = frame != null ? _ocr.ReadRectFrom(frame, m.X, m.Y, m.W, m.H, true, TopPx, SidePx) : _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: true, topOffset: TopPx, sideOffset: SidePx);
+                    string two = frame != null ? _ocr.ReadRectFrom(frame, m.X, m.Y, m.W, m.H, true, EffTop, EffSide) : _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: true, topOffset: TopPx, sideOffset: SidePx);
                     var parsed = OcrService.ParseTwoInts(two);
                     if (parsed is { } pv) { LiveStats.Instance.SetNumber(pair.a, pv.Item1); LiveStats.Instance.SetNumber(pair.b, pv.Item2); }
                     readout.Add($"{m.Role} = {(parsed is { } q ? $"{q.Item1} / {q.Item2}" : "? [" + two.Trim() + "]")}");
                     continue;
                 }
-                string raw = frame != null ? _ocr.ReadRectFrom(frame, m.X, m.Y, m.W, m.H, !m.IsText, TopPx, SidePx) : _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: !m.IsText, topOffset: TopPx, sideOffset: SidePx);
+                string raw = frame != null ? _ocr.ReadRectFrom(frame, m.X, m.Y, m.W, m.H, !m.IsText, EffTop, EffSide) : _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: !m.IsText, topOffset: TopPx, sideOffset: SidePx);
                 if (m.IsText)
                 {
                     string t = raw.Trim();
