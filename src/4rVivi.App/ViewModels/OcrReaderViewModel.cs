@@ -47,8 +47,8 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
         "HP / MaxHP", "SP / MaxSP", "Weight / MaxWeight",
         "BaseLevel", "JobLevel",
         "HP", "MaxHP", "SP", "MaxSP",
-        "HpPercent", "SpPercent", "BaseExpPct", "JobExpPct",
-        "Weight", "MaxWeight", "Zeny", "BaseEXP", "JobEXP", "Loot", "PosX", "PosY", "CharName", "ClassName"
+        "HpPercent", "SpPercent", "BaseExpBar", "JobExpBar",
+        "Weight", "MaxWeight", "Zeny", "Loot", "PosX", "PosY", "CharName", "ClassName"
     };
 
     private static readonly Dictionary<string, (string a, string b)> Combined = new()
@@ -107,7 +107,7 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     {
         if (w <= 0 || h <= 0) return;
         bool isText = role == "CharName" || role == "ClassName";
-        bool isBar = role is "HpPercent" or "SpPercent" or "BaseExpPct" or "JobExpPct";
+        bool isBar = role is "HpPercent" or "SpPercent" or "BaseExpBar" or "JobExpBar";
         Marks.Add(new OcrMark { Role = role, X = x, Y = y, W = w, H = h, IsText = isText, IsBar = isBar });
         Status = $"Marked {role}. Mark the rest, then Save.";
     }

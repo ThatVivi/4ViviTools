@@ -276,16 +276,15 @@ public sealed class OcrService
         }
         if (max - min < 12) return 0;
         double thr = min + 0.5 * (max - min);
-        int lastFilled = -1;
-        for (int cx = 1; cx < w - 1; cx++) if (col[cx] >= thr) lastFilled = cx;
-        if (lastFilled < 0) return 0;
-        return Math.Clamp((int)Math.Round((lastFilled + 1) * 100.0 / w), 0, 100);
+        int bright = 0, total = 0;
+        for (int cx = 1; cx < w - 1; cx++) { total++; if (col[cx] >= thr) bright++; }
+        return total > 0 ? Math.Clamp((int)Math.Round(bright * 100.0 / total), 0, 100) : 0;
     }
 
     /// <summary>Grayscale → 2x upscale → binary threshold. Greatly improves OCR on small HUD text.</summary>
     private static System.Drawing.Bitmap Preprocess(System.Drawing.Bitmap src)
     {
-        int w = src.Width * 3, h = src.Height * 3;
+        int w = src.Width * 4, h = src.Height * 4;
         var big = new System.Drawing.Bitmap(w, h);
         using (var g = Graphics.FromImage(big))
         {
