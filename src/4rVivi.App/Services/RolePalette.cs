@@ -18,7 +18,7 @@ public static class RolePalette
         ["JobEXP"] = Color.Parse("#FF6CD4"),  ["CharName"] = Color.Parse("#FFFFFF"),
         ["Loot"] = Color.Parse("#FF8C42"),
         ["PosX"] = Color.Parse("#4CD9C0"),    ["PosY"] = Color.Parse("#9CD94C"),
-        ["ClassName"] = Color.Parse("#C0A0FF"),
+        ["ClassName"] = Color.Parse("#C0A0FF"), ["BasicInfo"] = Color.Parse("#8899AA"),
     };
 
     public static Color ColorFor(string role) => Map.TryGetValue(role ?? "", out var c) ? c : Colors.Aqua;

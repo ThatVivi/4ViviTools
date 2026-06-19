@@ -64,7 +64,7 @@ public sealed class CharacterStateReader
     private string DeriveActivity(CharacterState s)
     {
         bool moved = s.X != _last.X || s.Y != _last.Y;
-        bool fighting = s.Hp < _last.Hp || s.Sp < _last.Sp;
+        bool fighting = s.Hp < _last.Hp || s.Sp < _last.Sp || s.HpPct < _last.HpPct || s.SpPct < _last.SpPct;
         if (moved) { _lastMoveUtc = DateTime.UtcNow; return fighting ? "Grinding" : "Walking"; }
         if (fighting) return "Grinding";
         if ((DateTime.UtcNow - _lastMoveUtc).TotalMinutes >= 15) return "AFK";

@@ -29,6 +29,7 @@ public sealed class OcrService
 
     public static readonly string[] SupportedLanguages = { "eng", "por", "spa", "jpn", "kor", "chi_sim", "chi_tra" };
     public string Language { get; set; } = "eng";
+    public string PreprocessMode { get; set; } = "Auto";   // Auto | Light text | Dark text | Invert | Grayscale | Red | Green | Blue | High contrast
 
     public IReadOnlyList<OcrRegion> Presets { get; } = new List<OcrRegion>
     {
@@ -276,13 +277,20 @@ public sealed class OcrService
         }
         if (max - min < 12) return 0;
         double thr = min + 0.5 * (max - min);
+        // The fill is always the LEFT part. Find the strongest colour transition = fill boundary.
+        // (Polarity-independent: works whether the fill is brighter OR darker than the empty part.)
+        double bestDiff = 0; int boundary = -1;
+        for (int cx = 2; cx < w - 1; cx++) { double d = Math.Abs(col[cx] - col[cx - 1]); if (d > bestDiff) { bestDiff = d; boundary = cx; } }
+        if (boundary > 0 && bestDiff >= (max - min) * 0.35)
+            return Math.Clamp((int)Math.Round(boundary * 100.0 / (w - 1)), 0, 100);
+        // uniform-ish bar (near 0 or 100): fall back to bright-count
         int bright = 0, total = 0;
         for (int cx = 1; cx < w - 1; cx++) { total++; if (col[cx] >= thr) bright++; }
         return total > 0 ? Math.Clamp((int)Math.Round(bright * 100.0 / total), 0, 100) : 0;
     }
 
     /// <summary>Grayscale → 2x upscale → binary threshold. Greatly improves OCR on small HUD text.</summary>
-    private static System.Drawing.Bitmap Preprocess(System.Drawing.Bitmap src)
+    private System.Drawing.Bitmap Preprocess(System.Drawing.Bitmap src)
     {
         int w = src.Width * 4, h = src.Height * 4;
         var big = new System.Drawing.Bitmap(w, h);
@@ -291,22 +299,54 @@ public sealed class OcrService
             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
             g.DrawImage(src, 0, 0, w, h);
         }
-        var lumMap = new int[w * h];
+
+        string mode = PreprocessMode ?? "Auto";
+        // pick the channel/value each pixel is scored on
+        Func<System.Drawing.Color, int> val = mode switch
+        {
+            "Red" => c => c.R,
+            "Green" => c => c.G,
+            "Blue" => c => c.B,
+            _ => c => (int)(0.299 * c.R + 0.587 * c.G + 0.114 * c.B),
+        };
+
+        var map = new int[w * h];
         var hist = new int[256];
+        int min = 255, max = 0;
         for (int yy = 0; yy < h; yy++)
             for (int xx = 0; xx < w; xx++)
             {
-                var c = big.GetPixel(xx, yy);
-                int lum = (int)(0.299 * c.R + 0.587 * c.G + 0.114 * c.B);
-                lumMap[yy * w + xx] = lum; hist[lum]++;
+                int v = Math.Clamp(val(big.GetPixel(xx, yy)), 0, 255);
+                map[yy * w + xx] = v; hist[v]++;
+                if (v < min) min = v; if (v > max) max = v;
             }
+
+        // Grayscale: no threshold — just hand OCR the (channel) grayscale, contrast-stretched
+        if (mode == "Grayscale" || mode == "High contrast")
+        {
+            double range = Math.Max(1, max - min);
+            for (int yy = 0; yy < h; yy++)
+                for (int xx = 0; xx < w; xx++)
+                {
+                    int v = (int)Math.Clamp((map[yy * w + xx] - min) * 255.0 / range, 0, 255);
+                    big.SetPixel(xx, yy, System.Drawing.Color.FromArgb(v, v, v));
+                }
+            return big;
+        }
+
         int t = Otsu(hist, w * h);
-        int light = 0; for (int i = 0; i < lumMap.Length; i++) if (lumMap[i] >= t) light++;
-        bool textIsLight = light * 2 < lumMap.Length;   // light pixels are the minority -> text is the light part (RO HUD)
+        int light = 0; for (int i = 0; i < map.Length; i++) if (map[i] >= t) light++;
+        bool textIsLight = mode switch
+        {
+            "Light text" => true,
+            "Dark text" => false,
+            "Invert" => !(light * 2 < map.Length),
+            _ => light * 2 < map.Length,   // Auto / Red / Green / Blue: text = the minority side
+        };
         for (int yy = 0; yy < h; yy++)
             for (int xx = 0; xx < w; xx++)
             {
-                bool bright = lumMap[yy * w + xx] >= t;
+                bool bright = map[yy * w + xx] >= t;
                 bool isText = textIsLight ? bright : !bright;   // OCR wants BLACK text on WHITE
                 big.SetPixel(xx, yy, isText ? System.Drawing.Color.Black : System.Drawing.Color.White);
             }

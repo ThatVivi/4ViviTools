@@ -26,7 +26,9 @@
         <TextBlock Text="Side" Classes="muted" VerticalAlignment="Center"/>
         <NumericUpDown Width="80" Minimum="0" Maximum="100" Value="{Binding SideOffset}"/>
         <TextBlock Text="Zoom" Classes="muted" VerticalAlignment="Center"/>
-        <Slider Width="140" Minimum="0.5" Maximum="3.0" Value="{Binding Zoom}" VerticalAlignment="Center"/>
+        <Slider Width="120" Minimum="0.5" Maximum="3.0" Value="{Binding Zoom}" VerticalAlignment="Center"/>
+        <TextBlock Text="OCR filter" Classes="muted" VerticalAlignment="Center"/>
+        <ComboBox Width="130" ItemsSource="{Binding PreprocessModes}" SelectedItem="{Binding PreprocessMode}"/>
       </StackPanel>
       <Border Classes="card" Padding="0" Height="460">
         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">

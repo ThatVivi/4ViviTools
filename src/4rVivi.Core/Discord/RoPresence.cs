@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 namespace FourRVivi.Core.Discord;
 
 /// <summary>Live character snapshot used to build a Discord Rich Presence. All values come
@@ -41,8 +42,11 @@ public sealed class RoPresence
         {
             string map = string.IsNullOrWhiteSpace(MapDisplay) ? MapName : MapDisplay;
             string place = string.IsNullOrWhiteSpace(map) ? "" : ((X > 0 || Y > 0) ? $"{map} ({X},{Y})" : map);
-            string head = string.IsNullOrWhiteSpace(Activity) ? place : (string.IsNullOrWhiteSpace(place) ? Activity : $"{Activity} - {place}");
-            return head;
+            var parts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(Activity)) parts.Add(Activity);
+            if (place.Length > 0) parts.Add(place);
+            if (HpPct > 0 || SpPct > 0) parts.Add($"HP {HpPct}% SP {SpPct}%");
+            return string.Join(" | ", parts);
         }
     }
 }

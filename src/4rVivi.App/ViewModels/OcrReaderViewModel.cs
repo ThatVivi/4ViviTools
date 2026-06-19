@@ -37,6 +37,9 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern short GetAsyncKeyState(int vKey);
     private static bool Down(int vk) => (GetAsyncKeyState(vk) & 0x8000) != 0;
     [ObservableProperty] private double _zoom = 1.0;
+    public string[] PreprocessModes { get; } = { "Auto", "Light text", "Dark text", "Invert", "Grayscale", "High contrast", "Red", "Green", "Blue" };
+    [ObservableProperty] private string _preprocessMode = "Auto";
+    partial void OnPreprocessModeChanged(string value) => _ocr.PreprocessMode = string.IsNullOrEmpty(value) ? "Auto" : value;
 
     private int TopPx => WindowMode == "Windowed" ? TopOffset : 0;
     private int SidePx => WindowMode == "Windowed" ? SideOffset : 0;
@@ -44,6 +47,7 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     // role keys the user can mark (CharName is text; the rest are numbers)
     public string[] Roles { get; } =
     {
+        "BasicInfo",
         "HP / MaxHP", "SP / MaxSP", "Weight / MaxWeight",
         "BaseLevel", "JobLevel",
         "HP", "MaxHP", "SP", "MaxSP",
@@ -106,7 +110,7 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     public void AddMark(string role, double x, double y, double w, double h)
     {
         if (w <= 0 || h <= 0) return;
-        bool isText = role == "CharName" || role == "ClassName";
+        bool isText = role == "CharName" || role == "ClassName" || role == "BasicInfo";
         bool isBar = role is "HpPercent" or "SpPercent" or "BaseExpBar" or "JobExpBar";
         Marks.Add(new OcrMark { Role = role, X = x, Y = y, W = w, H = h, IsText = isText, IsBar = isBar });
         Status = $"Marked {role}. Mark the rest, then Save.";
