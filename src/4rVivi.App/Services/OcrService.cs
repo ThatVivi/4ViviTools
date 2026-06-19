@@ -53,6 +53,7 @@ public sealed class OcrService
     }
 
     [DllImport("user32.dll")] private static extern bool GetWindowRect(IntPtr h, out RECT r);
+    [DllImport("user32.dll")] private static extern bool PrintWindow(IntPtr hwnd, IntPtr hdcBlt, uint nFlags);
     [StructLayout(LayoutKind.Sequential)] private struct RECT { public int Left, Top, Right, Bottom; }
 
     public Task<bool> EnsureDataAsync() => EnsureLanguageAsync(Language);
@@ -169,11 +170,19 @@ public sealed class OcrService
                 png = ms.ToArray();
             }
 
-            // 1) Windows OCR (fast, accurate, no download)
+            return Recognize(png, numeric);
+        }
+        catch { return ""; }
+    }
+
+    /// <summary>OCR a preprocessed PNG: Windows OCR first, Tesseract (digit-tuned) fallback.</summary>
+    private string Recognize(byte[] png, bool numeric)
+    {
+        try
+        {
             var win = _winOcr.Recognize(png);
             if (!string.IsNullOrWhiteSpace(win)) return win;
 
-            // 2) Tesseract fallback (digit whitelist + single-line for numeric fields)
             string lang = Language;
             if (string.IsNullOrEmpty(_tessDir) || !File.Exists(Path.Combine(_tessDir, lang + ".traineddata")))
             {
@@ -189,10 +198,94 @@ public sealed class OcrService
         catch { return ""; }
     }
 
+    /// <summary>Capture the whole target window via PrintWindow (works when occluded / on many GPU
+    /// windows where CopyFromScreen returns black). Falls back to CopyFromScreen. Caller disposes.</summary>
+    public System.Drawing.Bitmap? CaptureWindow(IntPtr hwnd)
+    {
+        try
+        {
+            if (hwnd == IntPtr.Zero || !GetWindowRect(hwnd, out var r)) return null;
+            int w = r.Right - r.Left, h = r.Bottom - r.Top;
+            if (w <= 0 || h <= 0) return null;
+            var bmp = new System.Drawing.Bitmap(w, h, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            using (var g = Graphics.FromImage(bmp))
+            {
+                IntPtr hdc = g.GetHdc();
+                bool ok;
+                try { ok = PrintWindow(hwnd, hdc, 2 /* PW_RENDERFULLCONTENT */); }
+                finally { g.ReleaseHdc(hdc); }
+                if (!ok) g.CopyFromScreen(r.Left, r.Top, 0, 0, new System.Drawing.Size(w, h));
+            }
+            return bmp;
+        }
+        catch { return null; }
+    }
+
+    private static System.Drawing.Rectangle ClientRect(int W, int H, double fx, double fy, double fw, double fh, int topOffset, int sideOffset)
+    {
+        int cw = Math.Max(1, W - 2 * sideOffset), ch = Math.Max(1, H - topOffset - sideOffset);
+        int x = Math.Clamp(sideOffset + (int)(fx * cw), 0, W - 1);
+        int y = Math.Clamp(topOffset + (int)(fy * ch), 0, H - 1);
+        int w = Math.Clamp((int)(fw * cw), 1, W - x);
+        int h = Math.Clamp((int)(fh * ch), 1, H - y);
+        return new System.Drawing.Rectangle(x, y, w, h);
+    }
+
+    /// <summary>OCR a fractional region cropped from a pre-captured full-window bitmap.</summary>
+    public string ReadRectFrom(System.Drawing.Bitmap full, double fx, double fy, double fw, double fh, bool numeric, int topOffset, int sideOffset)
+    {
+        try
+        {
+            var rect = ClientRect(full.Width, full.Height, fx, fy, fw, fh, topOffset, sideOffset);
+            using var sub = full.Clone(rect, full.PixelFormat);
+            using var pre = Preprocess(sub);
+            using var ms = new MemoryStream();
+            pre.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            return Recognize(ms.ToArray(), numeric);
+        }
+        catch { return ""; }
+    }
+
+    /// <summary>Bar fill % cropped from a pre-captured full-window bitmap.</summary>
+    public int ReadBarPercentFrom(System.Drawing.Bitmap full, double fx, double fy, double fw, double fh, int topOffset, int sideOffset)
+    {
+        try
+        {
+            var rect = ClientRect(full.Width, full.Height, fx, fy, fw, fh, topOffset, sideOffset);
+            using var sub = full.Clone(rect, full.PixelFormat);
+            return BarFill(sub);
+        }
+        catch { return -1; }
+    }
+
+    /// <summary>Fraction (0..100) of a bar that is filled (bright/colored), left-anchored.</summary>
+    private static int BarFill(System.Drawing.Bitmap bmp)
+    {
+        int w = bmp.Width, h = bmp.Height;
+        if (w < 2 || h < 2) return -1;
+        int y0 = h / 4, y1 = Math.Max(y0 + 1, h * 3 / 4);
+        var col = new double[w];
+        double min = double.MaxValue, max = double.MinValue;
+        for (int cx = 0; cx < w; cx++)
+        {
+            double sum = 0; int n = 0;
+            for (int cy = y0; cy < y1; cy++) { var c = bmp.GetPixel(cx, cy); sum += 0.299 * c.R + 0.587 * c.G + 0.114 * c.B; n++; }
+            col[cx] = n > 0 ? sum / n : 0;
+            if (col[cx] < min) min = col[cx];
+            if (col[cx] > max) max = col[cx];
+        }
+        if (max - min < 12) return 0;
+        double thr = min + 0.5 * (max - min);
+        int lastFilled = -1;
+        for (int cx = 1; cx < w - 1; cx++) if (col[cx] >= thr) lastFilled = cx;
+        if (lastFilled < 0) return 0;
+        return Math.Clamp((int)Math.Round((lastFilled + 1) * 100.0 / w), 0, 100);
+    }
+
     /// <summary>Grayscale → 2x upscale → binary threshold. Greatly improves OCR on small HUD text.</summary>
     private static System.Drawing.Bitmap Preprocess(System.Drawing.Bitmap src)
     {
-        int w = src.Width * 2, h = src.Height * 2;
+        int w = src.Width * 3, h = src.Height * 3;
         var big = new System.Drawing.Bitmap(w, h);
         using (var g = Graphics.FromImage(big))
         {
@@ -209,11 +302,14 @@ public sealed class OcrService
                 lumMap[yy * w + xx] = lum; hist[lum]++;
             }
         int t = Otsu(hist, w * h);
+        int light = 0; for (int i = 0; i < lumMap.Length; i++) if (lumMap[i] >= t) light++;
+        bool textIsLight = light * 2 < lumMap.Length;   // light pixels are the minority -> text is the light part (RO HUD)
         for (int yy = 0; yy < h; yy++)
             for (int xx = 0; xx < w; xx++)
             {
-                var v = lumMap[yy * w + xx] < t ? System.Drawing.Color.Black : System.Drawing.Color.White;
-                big.SetPixel(xx, yy, v);
+                bool bright = lumMap[yy * w + xx] >= t;
+                bool isText = textIsLight ? bright : !bright;   // OCR wants BLACK text on WHITE
+                big.SetPixel(xx, yy, isText ? System.Drawing.Color.Black : System.Drawing.Color.White);
             }
         return big;
     }

@@ -14,6 +14,7 @@ public sealed class LiveStats
 
     public bool IsFresh => Active && (DateTime.UtcNow - UpdatedUtc).TotalSeconds < 3.0;
 
+    public void Touch() { lock (_lock) { UpdatedUtc = DateTime.UtcNow; } }
     public void SetNumber(string role, int value) { lock (_lock) { _num[role] = value; UpdatedUtc = DateTime.UtcNow; } }
     public void SetText(string role, string value) { lock (_lock) { _txt[role] = value; UpdatedUtc = DateTime.UtcNow; } }
 

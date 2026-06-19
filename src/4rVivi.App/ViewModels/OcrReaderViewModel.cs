@@ -32,6 +32,10 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     [ObservableProperty] private int _sideOffset = 8;   // window border (windowed)
     [ObservableProperty] private bool _overlayOn;
     [ObservableProperty] private string _overlayHotkey = "F8";
+    [ObservableProperty] private string _ocrHotkey = "F9";
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern short GetAsyncKeyState(int vKey);
+    private static bool Down(int vk) => (GetAsyncKeyState(vk) & 0x8000) != 0;
     [ObservableProperty] private double _zoom = 1.0;
 
     private int TopPx => WindowMode == "Windowed" ? TopOffset : 0;
@@ -69,16 +73,33 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
 
     private void OnGlobalKey(int vk)
     {
-        if (vk == VkFor(OverlayHotkey)) Dispatcher.UIThread.Post(() => ToggleOverlayCommand.Execute(null));
+        // ignore modifier-only keys (we read their state instead)
+        if (vk is 0x10 or 0x11 or 0x12 or 0xA0 or 0xA1 or 0xA2 or 0xA3 or 0x5B or 0x5C) return;
+        string name = KeyName(vk);
+        if (name.Length == 0) return;
+        string combo = (Down(0x11) ? "Ctrl+" : "") + (Down(0x12) ? "Alt+" : "") + (Down(0x10) ? "Shift+" : "") + name;
+        if (Match(combo, OverlayHotkey)) Dispatcher.UIThread.Post(() => ToggleOverlayCommand.Execute(null));
+        else if (Match(combo, OcrHotkey)) Dispatcher.UIThread.Post(ToggleOcr);
     }
 
-    private static int VkFor(string name)
+    private static bool Match(string combo, string assigned)
+        => !string.IsNullOrWhiteSpace(assigned) && string.Equals(combo, assigned.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private void ToggleOcr() { if (Running) Stop(); else StartCommand.Execute(null); }
+
+    private static string KeyName(int vk)
     {
-        if (string.IsNullOrWhiteSpace(name)) return -1;
-        name = name.Trim().ToUpperInvariant();
-        if (name.Length == 1) { char c = name[0]; if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) return c; }
-        if (name[0] == 'F' && int.TryParse(name.Substring(1), out int fn) && fn >= 1 && fn <= 12) return 0x70 + (fn - 1);
-        return -1;
+        if (vk >= 0x41 && vk <= 0x5A) return ((char)vk).ToString();          // A-Z
+        if (vk >= 0x30 && vk <= 0x39) return ((char)vk).ToString();          // 0-9
+        if (vk >= 0x70 && vk <= 0x87) return "F" + (vk - 0x6F);              // F1-F24
+        if (vk >= 0x60 && vk <= 0x69) return "NumPad" + (vk - 0x60);          // NumPad0-9
+        return vk switch
+        {
+            0x20 => "Space", 0x0D => "Enter", 0x09 => "Tab", 0x2D => "Insert", 0x2E => "Delete",
+            0x24 => "Home", 0x23 => "End", 0x21 => "PageUp", 0x22 => "PageDown",
+            0x6A => "Multiply", 0x6B => "Add", 0x6D => "Subtract", 0x6F => "Divide",
+            _ => ""
+        };
     }
 
     /// <summary>Called by the view when the user finishes dragging a box (fractions 0..1).</summary>
@@ -163,25 +184,27 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
             var hwnd = _session.WindowHandle;
             if (hwnd == IntPtr.Zero) { Dispatcher.UIThread.Post(() => Status = "Lost the game window — is it still open?"); return; }
 
+            LiveStats.Instance.Touch();   // heartbeat so consumers stay "live" even if a read fails
+            using var frame = _ocr.CaptureWindow(hwnd);   // one PrintWindow capture, crop each region from it
             var readout = new List<string>();
             foreach (var m in _activeMarks)
             {
                 if (m.IsBar)
                 {
-                    int pct = _ocr.ReadBarPercent(hwnd, m.X, m.Y, m.W, m.H, TopPx, SidePx);
+                    int pct = frame != null ? _ocr.ReadBarPercentFrom(frame, m.X, m.Y, m.W, m.H, TopPx, SidePx) : _ocr.ReadBarPercent(hwnd, m.X, m.Y, m.W, m.H, TopPx, SidePx);
                     if (pct >= 0) LiveStats.Instance.SetNumber(m.Role, pct);
                     readout.Add($"{m.Role} = {(pct < 0 ? "?" : pct + "%")}");
                     continue;
                 }
                 if (Combined.TryGetValue(m.Role, out var pair))
                 {
-                    string two = _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: true, topOffset: TopPx, sideOffset: SidePx);
+                    string two = frame != null ? _ocr.ReadRectFrom(frame, m.X, m.Y, m.W, m.H, true, TopPx, SidePx) : _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: true, topOffset: TopPx, sideOffset: SidePx);
                     var parsed = OcrService.ParseTwoInts(two);
                     if (parsed is { } pv) { LiveStats.Instance.SetNumber(pair.a, pv.Item1); LiveStats.Instance.SetNumber(pair.b, pv.Item2); }
-                    readout.Add($"{m.Role} = {(parsed is { } q ? $"{q.Item1} / {q.Item2}" : "?")}");
+                    readout.Add($"{m.Role} = {(parsed is { } q ? $"{q.Item1} / {q.Item2}" : "? [" + two.Trim() + "]")}");
                     continue;
                 }
-                string raw = _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: !m.IsText, topOffset: TopPx, sideOffset: SidePx);
+                string raw = frame != null ? _ocr.ReadRectFrom(frame, m.X, m.Y, m.W, m.H, !m.IsText, TopPx, SidePx) : _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: !m.IsText, topOffset: TopPx, sideOffset: SidePx);
                 if (m.IsText)
                 {
                     string t = raw.Trim();
@@ -192,7 +215,7 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
                 {
                     int n = OcrService.ParseFirstInt(raw);
                     if (n >= 0 && Stable(m.Role, n.ToString())) LiveStats.Instance.SetNumber(m.Role, n);
-                    readout.Add($"{m.Role} = {(n < 0 ? "?" : n.ToString())}");
+                    readout.Add($"{m.Role} = {(n < 0 ? "? [" + raw.Trim() + "]" : n.ToString())}");
                 }
             }
 
