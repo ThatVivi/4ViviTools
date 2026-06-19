@@ -25,6 +25,7 @@ public sealed class OcrRegion
 public sealed class OcrService
 {
     private readonly string _tessDir = ResolveTessDir();
+    private readonly WindowsOcrEngine _winOcr = new();
 
     public static readonly string[] SupportedLanguages = { "eng", "por", "spa", "jpn", "kor", "chi_sim", "chi_tra" };
     public string Language { get; set; } = "eng";
@@ -71,6 +72,25 @@ public sealed class OcrService
         catch { return false; }
     }
 
+    /// <summary>OCR a window-relative fractional rectangle (0..1). Used by the calibrated OCR loop.</summary>
+    public string ReadRect(IntPtr hwnd, double fx, double fy, double fw, double fh, bool numeric = false)
+    {
+        if (hwnd == IntPtr.Zero || !GetWindowRect(hwnd, out var r)) return "";
+        int W = r.Right - r.Left, H = r.Bottom - r.Top;
+        if (W <= 0 || H <= 0) return "";
+        int x = r.Left + (int)(fx * W), y = r.Top + (int)(fy * H);
+        int w = Math.Max(1, (int)(fw * W)), h = Math.Max(1, (int)(fh * H));
+        return Read(IntPtr.Zero, x, y, w, h, numeric);
+    }
+
+    /// <summary>First integer found in OCR text (handles "91", "91 / 91", " 1,234 ").</summary>
+    public static int ParseFirstInt(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return -1;
+        var m = System.Text.RegularExpressions.Regex.Match(text.Replace(",", ""), @"\d+");
+        return m.Success && int.TryParse(m.Value, out int v) ? v : -1;
+    }
+
     /// <summary>OCR the configured region, interpreted relative to the window top-left.</summary>
     public string ReadRegion(IntPtr hwnd)
     {
@@ -80,7 +100,7 @@ public sealed class OcrService
     }
 
     /// <summary>OCR a region; if w/h are 0 it grabs the configured region of the game window.</summary>
-    public string Read(IntPtr hwnd, int x, int y, int w, int h)
+    public string Read(IntPtr hwnd, int x, int y, int w, int h, bool numeric = false)
     {
         try
         {
@@ -90,20 +110,31 @@ public sealed class OcrService
                 { x = r.Left + CurrentRegion.X; y = r.Top + CurrentRegion.Y; w = CurrentRegion.Width; h = CurrentRegion.Height; }
                 else return "";
             }
+            byte[] png;
+            using (var raw = new System.Drawing.Bitmap(w, h))
+            {
+                using (var g = Graphics.FromImage(raw)) g.CopyFromScreen(x, y, 0, 0, new System.Drawing.Size(w, h));
+                using var pre = Preprocess(raw);
+                using var ms = new MemoryStream();
+                pre.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                png = ms.ToArray();
+            }
+
+            // 1) Windows OCR (fast, accurate, no download)
+            var win = _winOcr.Recognize(png);
+            if (!string.IsNullOrWhiteSpace(win)) return win;
+
+            // 2) Tesseract fallback (digit whitelist + single-line for numeric fields)
             string lang = Language;
             if (string.IsNullOrEmpty(_tessDir) || !File.Exists(Path.Combine(_tessDir, lang + ".traineddata")))
             {
                 if (File.Exists(Path.Combine(_tessDir, "eng.traineddata"))) lang = "eng";
                 else return "";
             }
-            using var raw = new System.Drawing.Bitmap(w, h);
-            using (var g = Graphics.FromImage(raw)) g.CopyFromScreen(x, y, 0, 0, new System.Drawing.Size(w, h));
-            using var pre = Preprocess(raw);
-            using var ms = new MemoryStream();
-            pre.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
             using var eng = new TesseractEngine(_tessDir, lang, EngineMode.Default);
-            using var img = Pix.LoadFromMemory(ms.ToArray());
-            using var page = eng.Process(img);
+            if (numeric) eng.SetVariable("tessedit_char_whitelist", "0123456789/ ");
+            using var img = Pix.LoadFromMemory(png);
+            using var page = eng.Process(img, numeric ? PageSegMode.SingleLine : PageSegMode.Auto);
             return page.GetText();
         }
         catch { return ""; }
@@ -119,15 +150,40 @@ public sealed class OcrService
             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
             g.DrawImage(src, 0, 0, w, h);
         }
+        var lumMap = new int[w * h];
+        var hist = new int[256];
         for (int yy = 0; yy < h; yy++)
             for (int xx = 0; xx < w; xx++)
             {
                 var c = big.GetPixel(xx, yy);
                 int lum = (int)(0.299 * c.R + 0.587 * c.G + 0.114 * c.B);
-                var v = lum < 130 ? System.Drawing.Color.Black : System.Drawing.Color.White;
+                lumMap[yy * w + xx] = lum; hist[lum]++;
+            }
+        int t = Otsu(hist, w * h);
+        for (int yy = 0; yy < h; yy++)
+            for (int xx = 0; xx < w; xx++)
+            {
+                var v = lumMap[yy * w + xx] < t ? System.Drawing.Color.Black : System.Drawing.Color.White;
                 big.SetPixel(xx, yy, v);
             }
         return big;
+    }
+
+    /// <summary>Otsu's method: pick the luminance threshold that best separates text from background.</summary>
+    private static int Otsu(int[] hist, int total)
+    {
+        long sum = 0; for (int i = 0; i < 256; i++) sum += (long)i * hist[i];
+        long sumB = 0; int wB = 0; double max = 0; int thr = 130;
+        for (int i = 0; i < 256; i++)
+        {
+            wB += hist[i]; if (wB == 0) continue;
+            int wF = total - wB; if (wF == 0) break;
+            sumB += (long)i * hist[i];
+            double mB = (double)sumB / wB, mF = (double)(sum - sumB) / wF;
+            double between = (double)wB * wF * (mB - mF) * (mB - mF);
+            if (between > max) { max = between; thr = i; }
+        }
+        return thr;
     }
 
     // ---- parsing ----------------------------------------------------------

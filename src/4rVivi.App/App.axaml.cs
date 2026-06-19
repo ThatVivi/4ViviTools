@@ -127,6 +127,7 @@ public partial class App : Application
         s.AddSingleton<ToolsLauncherViewModel>();
         s.AddSingleton<MarketplaceViewModel>();
         s.AddSingleton<AutoDetectViewModel>();
+        s.AddSingleton<OcrReaderViewModel>();
 
         return s.BuildServiceProvider();
     }

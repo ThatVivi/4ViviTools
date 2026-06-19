@@ -53,6 +53,7 @@ public sealed class GameSession : IDisposable
     /// <summary>Read an Int32 from a bound role address, or null if unknown/not attached.</summary>
     public int? ReadRole(string role)
     {
+        if (LiveStats.Instance.TryGetNumber(role, out int live)) return live;   // OCR mode wins when fresh
         var a = AddressBook.Get(role);
         if (a is null || !Reader.Attached) return null;
         return Reader.ReadInt32(a.Resolve(Reader.ModuleBase));
@@ -61,6 +62,8 @@ public sealed class GameSession : IDisposable
     /// <summary>Read a fixed-length string from a bound role address (e.g. CharName, MapName).</summary>
     public string ReadRoleString(string role, int len = 24)
     {
+        var live = LiveStats.Instance.GetText(role);
+        if (!string.IsNullOrEmpty(live)) return live;   // OCR mode
         var a = AddressBook.Get(role);
         if (a is null || !Reader.Attached) return "";
         return Reader.ReadString(a.Resolve(Reader.ModuleBase), len);

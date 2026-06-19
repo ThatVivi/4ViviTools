@@ -35,7 +35,7 @@ public sealed class CharacterStateReader
 
     public CharacterState? Snapshot()
     {
-        if (!_gs.Reader.Attached) return null;
+        if (!_gs.Reader.Attached && !LiveStats.Instance.IsFresh) return null;
 
         var s = new CharacterState
         {

@@ -41,6 +41,7 @@ public sealed class AppSettings
     public string DiscordAppId { get; set; } = "";
     public string DiscordWebsiteUrl { get; set; } = "";
     public string DiscordServerName { get; set; } = "Eldrynn RO";
+    public List<FourRVivi.Core.Ocr.OcrMark> OcrMarks { get; set; } = new();
     public List<ChainMacro> Macros { get; set; } = new();
     public List<BuffTimer> BuffTimers { get; set; } = new();
 

@@ -22,6 +22,7 @@ public sealed class HealthReader
 
     private int Read(string role)
     {
+        if (LiveStats.Instance.TryGetNumber(role, out int live)) return live;   // OCR mode
         var a = _book.Get(role);
         if (a is null || !_reader.Attached) return -1;
         return _reader.ReadInt32(a.Resolve(_reader.ModuleBase));
