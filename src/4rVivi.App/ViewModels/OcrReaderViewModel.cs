@@ -40,6 +40,8 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     public string[] PreprocessModes { get; } = { "Auto", "Light text", "Dark text", "Invert", "Grayscale", "High contrast", "Red", "Green", "Blue" };
     [ObservableProperty] private string _preprocessMode = "Auto";
     partial void OnPreprocessModeChanged(string value) => _ocr.PreprocessMode = string.IsNullOrEmpty(value) ? "Auto" : value;
+    [ObservableProperty] private double _sharpness = 1.0;
+    partial void OnSharpnessChanged(double value) => _ocr.Sharpen = value;
 
     private int TopPx => WindowMode == "Windowed" ? TopOffset : 0;
     private int SidePx => WindowMode == "Windowed" ? SideOffset : 0;
@@ -66,6 +68,9 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     public ObservableCollection<string> LiveReadout { get; } = new();
     [ObservableProperty] private string _selectedRole = "HP";
     [ObservableProperty] private bool _running;
+    [ObservableProperty] private bool _calibrating;
+    [ObservableProperty] private bool _calibrateUntilComplete;
+    private volatile bool _calibCancel;
     [ObservableProperty] private string _status = "1) Load a screenshot. 2) Pick a stat, drag a box over it. 3) Save. 4) Start.";
 
     public OcrReaderViewModel(GameSession session, OcrService ocr, SettingsStore settings, DiscordPresenceUpdater discord)
@@ -154,6 +159,95 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
         OverlayOn = false;
         HideOverlay();
         Status = "OCR stopped. Back to memory mode.";
+    }
+
+    /// <summary>Cycle filters to pick the best, then grow the search radius — nudging boxes live — until
+    /// every field reads (when "until all data" is on) or you press it again to stop.</summary>
+    [RelayCommand] private async Task Calibrate()
+    {
+        if (Calibrating) { _calibCancel = true; Status = "Stopping calibration…"; return; }
+        if (Marks.Count == 0) { Status = "Mark your stats first."; return; }
+        if (_session.WindowHandle == IntPtr.Zero) { Status = "Attach your RO process and keep the game visible."; return; }
+        if (Running) { Status = "Stop OCR before calibrating."; return; }
+        if (!await _ocr.EnsureDataAsync()) { Status = "Couldn't get OCR data (no internet?)."; return; }
+
+        Calibrating = true; _calibCancel = false;
+        var marks = Marks.ToList();
+        var pending = marks.Where(m => !m.IsBar).ToList();
+        int fields = pending.Count;
+
+        await Task.Run(() =>
+        {
+            // Phase 1: pick the filter that reads the most at the marked positions
+            string bestMode = "Auto"; int bestN = -1;
+            foreach (var mode in PreprocessModes)
+            {
+                if (_calibCancel) break;
+                _ocr.PreprocessMode = mode;
+                int n = 0;
+                using (var f = _ocr.CaptureWindow(_session.WindowHandle))
+                    if (f != null) foreach (var m in pending) if (TryRead(f, m, 0, 0)) n++;
+                if (n > bestN) { bestN = n; bestMode = mode; }
+            }
+            _ocr.PreprocessMode = bestMode;
+            Dispatcher.UIThread.Post(() => { PreprocessMode = bestMode; Status = $"Filter \u201c{bestMode}\u201d. Locating boxes…"; });
+
+            // Phase 2: grow the radius until all fields read (or stop / time cap)
+            long cap = Environment.TickCount64 + (CalibrateUntilComplete ? 180000 : 20000);
+            int radius = 1;
+            while (pending.Count > 0 && !_calibCancel && Environment.TickCount64 < cap)
+            {
+                var grid = BuildGrid(radius);
+                using (var frame = _ocr.CaptureWindow(_session.WindowHandle))
+                {
+                    if (frame != null)
+                        foreach (var m in pending.ToList())
+                        {
+                            foreach (var (dx, dy) in grid)
+                                if (TryRead(frame, m, dx, dy))
+                                {
+                                    var mm = m; double ddx = dx, ddy = dy;
+                                    Dispatcher.UIThread.Post(() => { mm.X = Math.Clamp(mm.X + ddx, 0, 1); mm.Y = Math.Clamp(mm.Y + ddy, 0, 1); });
+                                    pending.Remove(m);
+                                    break;
+                                }
+                        }
+                }
+                int got = fields - pending.Count;
+                string miss = string.Join(", ", pending.Select(p => p.Role));
+                Dispatcher.UIThread.Post(() => Status = $"Found {got}/{fields} (radius {radius}). Missing: {(miss.Length == 0 ? "-" : miss)}");
+                if (!CalibrateUntilComplete) break;
+                radius++;
+                System.Threading.Thread.Sleep(120);
+            }
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                _settings.Current.OcrMarks = Marks.ToList(); _settings.Save();
+                Calibrating = false;
+                Status = pending.Count == 0
+                    ? $"Calibration complete — all {fields} fields read with \u201c{PreprocessMode}\u201d. Saved. Press Start."
+                    : $"Calibration stopped. {pending.Count} unread: {string.Join(", ", pending.Select(p => p.Role))}. Try another filter / more sharpness / re-mark.";
+            });
+        });
+    }
+
+    private static System.Collections.Generic.List<(double dx, double dy)> BuildGrid(int radius)
+    {
+        var g = new System.Collections.Generic.List<(double, double)>();
+        const double step = 0.006;
+        for (int sy = -radius; sy <= radius; sy++)
+            for (int sx = -radius; sx <= radius; sx++)
+                g.Add((Math.Clamp(sx * step, -0.15, 0.15), Math.Clamp(sy * step, -0.15, 0.15)));
+        return g;
+    }
+
+    private bool TryRead(System.Drawing.Bitmap frame, OcrMark m, double dx, double dy)
+    {
+        double fx = Math.Clamp(m.X + dx, 0, 1), fy = Math.Clamp(m.Y + dy, 0, 1);
+        if (Combined.ContainsKey(m.Role)) return OcrService.ParseTwoInts(_ocr.ReadRectFrom(frame, fx, fy, m.W, m.H, true, TopPx, SidePx)) != null;
+        if (m.IsText) return _ocr.ReadRectFrom(frame, fx, fy, m.W, m.H, false, TopPx, SidePx).Trim().Length >= 2;
+        return OcrService.ParseFirstInt(_ocr.ReadRectFrom(frame, fx, fy, m.W, m.H, true, TopPx, SidePx)) >= 0;
     }
 
     [RelayCommand] private void ToggleOverlay()

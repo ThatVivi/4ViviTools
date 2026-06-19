@@ -30,6 +30,7 @@ public sealed class OcrService
     public static readonly string[] SupportedLanguages = { "eng", "por", "spa", "jpn", "kor", "chi_sim", "chi_tra" };
     public string Language { get; set; } = "eng";
     public string PreprocessMode { get; set; } = "Auto";   // Auto | Light text | Dark text | Invert | Grayscale | Red | Green | Blue | High contrast
+    public double Sharpen { get; set; } = 1.0;   // 0 = none, higher = sharper edges (helps every digit/letter)
 
     public IReadOnlyList<OcrRegion> Presets { get; } = new List<OcrRegion>
     {
@@ -301,7 +302,6 @@ public sealed class OcrService
         }
 
         string mode = PreprocessMode ?? "Auto";
-        // pick the channel/value each pixel is scored on
         Func<System.Drawing.Color, int> val = mode switch
         {
             "Red" => c => c.R,
@@ -310,18 +310,27 @@ public sealed class OcrService
             _ => c => (int)(0.299 * c.R + 0.587 * c.G + 0.114 * c.B),
         };
 
+        var raw = new int[w * h];
+        for (int yy = 0; yy < h; yy++)
+            for (int xx = 0; xx < w; xx++)
+                raw[yy * w + xx] = Math.Clamp(val(big.GetPixel(xx, yy)), 0, 255);
+
+        // Unsharp mask: sharpens digit edges so loops in 8/0/9 survive thresholding
         var map = new int[w * h];
         var hist = new int[256];
         int min = 255, max = 0;
         for (int yy = 0; yy < h; yy++)
             for (int xx = 0; xx < w; xx++)
             {
-                int v = Math.Clamp(val(big.GetPixel(xx, yy)), 0, 255);
-                map[yy * w + xx] = v; hist[v]++;
+                int i = yy * w + xx, c = raw[i];
+                int up = yy > 0 ? raw[i - w] : c, dn = yy < h - 1 ? raw[i + w] : c;
+                int lf = xx > 0 ? raw[i - 1] : c, rt = xx < w - 1 ? raw[i + 1] : c;
+                int lap = 4 * c - up - dn - lf - rt;
+                int v = Math.Clamp(c + (int)(Sharpen * lap), 0, 255);
+                map[i] = v; hist[v]++;
                 if (v < min) min = v; if (v > max) max = v;
             }
 
-        // Grayscale: no threshold — just hand OCR the (channel) grayscale, contrast-stretched
         if (mode == "Grayscale" || mode == "High contrast")
         {
             double range = Math.Max(1, max - min);
@@ -341,13 +350,13 @@ public sealed class OcrService
             "Light text" => true,
             "Dark text" => false,
             "Invert" => !(light * 2 < map.Length),
-            _ => light * 2 < map.Length,   // Auto / Red / Green / Blue: text = the minority side
+            _ => light * 2 < map.Length,
         };
         for (int yy = 0; yy < h; yy++)
             for (int xx = 0; xx < w; xx++)
             {
                 bool bright = map[yy * w + xx] >= t;
-                bool isText = textIsLight ? bright : !bright;   // OCR wants BLACK text on WHITE
+                bool isText = textIsLight ? bright : !bright;
                 big.SetPixel(xx, yy, isText ? System.Drawing.Color.Black : System.Drawing.Color.White);
             }
         return big;
