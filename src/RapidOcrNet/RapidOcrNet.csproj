@@ -1,0 +1,60 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsAotCompatible>true</IsAotCompatible>
+		<Version>2.0.0</Version>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<Authors>BobLd;RapidOCR</Authors>
+		<PackageTags>OCR;RapidOCR;PaddleOCR;PP-OCRv5;PPOCRv5;Document;skia;skiasharp;onnx;image</PackageTags>
+		<RepositoryUrl>https://github.com/BobLd/RapidOcrNet</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/BobLd/RapidOcrNet</PackageProjectUrl>
+		<Description>Lightweight cross-platform OCR processing library using PaddleOCR ONNX PP-OCR v5 models, and based on original code from RapidAI's RapidOCR.</Description>
+		
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageId>RapidOcrNet</PackageId>
+		<Title>RapidOcrNet</Title>
+		<Product>RapidOcrNet</Product>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<SignAssembly>false</SignAssembly>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Clipper2" Version="2.0.0" />
+		<PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.24.3" />
+		<PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.24.3" />
+		<PackageReference Include="SkiaSharp" Version="3.119.1" />
+		<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="models\v5\ch_PP-OCRv5_mobile_det.onnx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="models\v5\ch_ppocr_mobile_v2.0_cls_infer.onnx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="models\v5\latin_PP-OCRv5_rec_mobile_infer.onnx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="models\v5\ppocrv5_latin_dict.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="RapidOcrNet.targets" PackagePath="build/RapidOcrNet.targets" />
+		<Content Include="models\v5\*.*" Pack="true" PackagePath="models\v5">
+			<PackageCopyToOutput>true</PackageCopyToOutput>
+		</Content>
+	</ItemGroup>
+
+</Project>

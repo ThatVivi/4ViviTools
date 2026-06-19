@@ -26,6 +26,7 @@ public sealed class OcrService
 {
     private readonly string _tessDir = ResolveTessDir();
     private readonly WindowsOcrEngine _winOcr = new();
+    private readonly RapidOcrClient _rapid = new();
 
     public static readonly string[] SupportedLanguages = { "eng", "por", "spa", "jpn", "kor", "chi_sim", "chi_tra" };
     public string Language { get; set; } = "eng";
@@ -182,6 +183,11 @@ public sealed class OcrService
     {
         try
         {
+            // 1) PaddleOCR PP-OCRv5 (out-of-process worker) — best accuracy
+            var rapid = _rapid.Recognize(png);
+            if (!string.IsNullOrWhiteSpace(rapid)) return rapid;
+
+            // 2) Windows OCR
             var win = _winOcr.Recognize(png);
             if (!string.IsNullOrWhiteSpace(win)) return win;
 

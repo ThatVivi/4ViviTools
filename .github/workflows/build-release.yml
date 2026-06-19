@@ -25,6 +25,11 @@ jobs:
           -p:EnableCompressionInSingleFile=true
           -o publish/${{ matrix.runtime }}
       - shell: pwsh
+        run: >
+          dotnet publish src/4rVivi.OcrServer/4rVivi.OcrServer.csproj
+          -c Release -r ${{ matrix.runtime }} --self-contained true
+          -o publish/${{ matrix.runtime }}/OcrServer
+      - shell: pwsh
         run: Compress-Archive -Path publish/${{ matrix.runtime }}/* -DestinationPath 4rVivi-${{ matrix.runtime }}.zip -Force
       - shell: pwsh
         run: (Get-FileHash 4rVivi-${{ matrix.runtime }}.zip -Algorithm SHA256).Hash | Out-File 4rVivi-${{ matrix.runtime }}.sha256.txt

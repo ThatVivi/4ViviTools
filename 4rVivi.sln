@@ -8,6 +8,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "4rVivi.Plugins.Abstractions
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "4rVivi.Core.Tests", "tests\4rVivi.Core.Tests\4rVivi.Core.Tests.csproj", "{DB6189FA-7A9D-455A-B7D7-CF670BD8B3F6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RapidOcrNet", "src\\RapidOcrNet\\RapidOcrNet.csproj", "{A057150E-BF73-4D8E-8F2C-F9C8CB522B80}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "4rVivi.OcrServer", "src\\4rVivi.OcrServer\\4rVivi.OcrServer.csproj", "{377A7B6D-C236-4422-BB68-FF2576EF68D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +34,13 @@ Global
 		{DB6189FA-7A9D-455A-B7D7-CF670BD8B3F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB6189FA-7A9D-455A-B7D7-CF670BD8B3F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB6189FA-7A9D-455A-B7D7-CF670BD8B3F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A057150E-BF73-4D8E-8F2C-F9C8CB522B80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A057150E-BF73-4D8E-8F2C-F9C8CB522B80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A057150E-BF73-4D8E-8F2C-F9C8CB522B80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A057150E-BF73-4D8E-8F2C-F9C8CB522B80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{377A7B6D-C236-4422-BB68-FF2576EF68D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{377A7B6D-C236-4422-BB68-FF2576EF68D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{377A7B6D-C236-4422-BB68-FF2576EF68D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{377A7B6D-C236-4422-BB68-FF2576EF68D8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
