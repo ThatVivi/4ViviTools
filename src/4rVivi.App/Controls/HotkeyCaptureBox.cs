@@ -24,7 +24,7 @@ public class HotkeyCaptureBox : Button
     {
         if (!_cap) { base.OnKeyDown(e); return; }
         if (IsMod(e.Key)) { e.Handled = true; return; }   // wait for a non-modifier
-        string name = Name(e.Key);
+        string name = KeyName(e.Key);
         if (name.Length == 0) { e.Handled = true; return; }
         var m = e.KeyModifiers;
         string combo = (m.HasFlag(KeyModifiers.Control) ? "Ctrl+" : "")
@@ -44,7 +44,7 @@ public class HotkeyCaptureBox : Button
     private static bool IsMod(Key k) =>
         k is Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LeftShift or Key.RightShift or Key.LWin or Key.RWin;
 
-    private static string Name(Key k)
+    private static string KeyName(Key k)
     {
         string n = k.ToString();
         if (n.Length == 2 && n[0] == 'D' && char.IsDigit(n[1])) return n.Substring(1);  // D0-D9 -> 0-9
