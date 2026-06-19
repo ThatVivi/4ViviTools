@@ -52,6 +52,6 @@ public static class DiscordPresenceBootstrap
                 WebsiteUrl = s.DiscordWebsiteUrl,
                 LargeImageKey = "logo",
             };
-        }, 5);
+        }, 2);
     }
 }

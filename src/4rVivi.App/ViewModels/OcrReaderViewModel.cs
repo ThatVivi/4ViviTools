@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -17,7 +18,11 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     private readonly GameSession _session;
     private readonly OcrService _ocr;
     private readonly SettingsStore _settings;
-    private DispatcherTimer? _timer;
+    private System.Threading.Timer? _timer;
+    private volatile bool _busy;
+    private List<OcrMark> _activeMarks = new();
+    private readonly DiscordPresenceUpdater _discord;
+    private GlobalKeyHook? _hook;
     private OcrOverlayWindow? _overlay;
     private readonly Dictionary<string, (string val, int count)> _pending = new();
     [ObservableProperty] private int _intervalMs = 300;
@@ -55,10 +60,25 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     [ObservableProperty] private bool _running;
     [ObservableProperty] private string _status = "1) Load a screenshot. 2) Pick a stat, drag a box over it. 3) Save. 4) Start.";
 
-    public OcrReaderViewModel(GameSession session, OcrService ocr, SettingsStore settings)
+    public OcrReaderViewModel(GameSession session, OcrService ocr, SettingsStore settings, DiscordPresenceUpdater discord)
     {
-        _session = session; _ocr = ocr; _settings = settings;
+        _session = session; _ocr = ocr; _settings = settings; _discord = discord;
         foreach (var m in settings.Current.OcrMarks) Marks.Add(m);
+        try { _hook = new GlobalKeyHook(); _hook.KeyPressed += OnGlobalKey; } catch { }
+    }
+
+    private void OnGlobalKey(int vk)
+    {
+        if (vk == VkFor(OverlayHotkey)) Dispatcher.UIThread.Post(() => ToggleOverlayCommand.Execute(null));
+    }
+
+    private static int VkFor(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return -1;
+        name = name.Trim().ToUpperInvariant();
+        if (name.Length == 1) { char c = name[0]; if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) return c; }
+        if (name[0] == 'F' && int.TryParse(name.Substring(1), out int fn) && fn >= 1 && fn <= 12) return 0x70 + (fn - 1);
+        return -1;
     }
 
     /// <summary>Called by the view when the user finishes dragging a box (fractions 0..1).</summary>
@@ -89,20 +109,21 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
         if (!await _ocr.EnsureDataAsync()) { Status = "Couldn't get OCR data (no internet?)."; return; }
 
         _pending.Clear();
+        _activeMarks = Marks.ToList();
         LiveStats.Instance.Active = true;
         Running = true;
         OverlayOn = true;
         ShowOverlay();
-        _timer?.Stop();
-        _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(Math.Max(120, IntervalMs)) };
-        _timer.Tick += (_, _) => Tick();
-        _timer.Start();
-        Status = $"OCR running every {Math.Max(120, IntervalMs)}ms — keep the marked stats visible. Top bar, Stats and Discord now use it.";
+        try { DiscordPresenceBootstrap.Apply(_discord, _session, _settings.Current); } catch { }   // ensure Discord gets OCR data
+        int period = Math.Max(120, IntervalMs);
+        _timer?.Dispose();
+        _timer = new System.Threading.Timer(_ => BgTick(), null, 250, period);   // OFF the UI thread
+        Status = $"OCR running every {period}ms (background) — keep the marked stats visible. Top bar, Stats and Discord now use it.";
     }
 
     [RelayCommand] private void Stop()
     {
-        _timer?.Stop();
+        _timer?.Dispose(); _timer = null;
         Running = false;
         LiveStats.Instance.Active = false;
         OverlayOn = false;
@@ -133,43 +154,57 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
         _overlay = null;
     }
 
-    private void Tick()
+    private void BgTick()
     {
-        var hwnd = _session.WindowHandle;
-        if (hwnd == IntPtr.Zero) { Status = "Lost the game window — is it still open?"; return; }
-        if (_overlay != null) _overlay.SetInfo(Marks.ToList(), _session.Reader.Target?.ProcessName ?? "client", TopPx, SidePx);
-        LiveReadout.Clear();
-        foreach (var m in Marks)
+        if (_busy) return;
+        _busy = true;
+        try
         {
-            if (m.IsBar)
+            var hwnd = _session.WindowHandle;
+            if (hwnd == IntPtr.Zero) { Dispatcher.UIThread.Post(() => Status = "Lost the game window — is it still open?"); return; }
+
+            var readout = new List<string>();
+            foreach (var m in _activeMarks)
             {
-                int pct = _ocr.ReadBarPercent(hwnd, m.X, m.Y, m.W, m.H, TopPx, SidePx);
-                if (pct >= 0) LiveStats.Instance.SetNumber(m.Role, pct);
-                LiveReadout.Add($"{m.Role} = {(pct < 0 ? "?" : pct + "%")}");
-                continue;
+                if (m.IsBar)
+                {
+                    int pct = _ocr.ReadBarPercent(hwnd, m.X, m.Y, m.W, m.H, TopPx, SidePx);
+                    if (pct >= 0) LiveStats.Instance.SetNumber(m.Role, pct);
+                    readout.Add($"{m.Role} = {(pct < 0 ? "?" : pct + "%")}");
+                    continue;
+                }
+                if (Combined.TryGetValue(m.Role, out var pair))
+                {
+                    string two = _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: true, topOffset: TopPx, sideOffset: SidePx);
+                    var parsed = OcrService.ParseTwoInts(two);
+                    if (parsed is { } pv) { LiveStats.Instance.SetNumber(pair.a, pv.Item1); LiveStats.Instance.SetNumber(pair.b, pv.Item2); }
+                    readout.Add($"{m.Role} = {(parsed is { } q ? $"{q.Item1} / {q.Item2}" : "?")}");
+                    continue;
+                }
+                string raw = _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: !m.IsText, topOffset: TopPx, sideOffset: SidePx);
+                if (m.IsText)
+                {
+                    string t = raw.Trim();
+                    if (t.Length > 0 && Stable(m.Role, t)) LiveStats.Instance.SetText(m.Role, t);
+                    readout.Add($"{m.Role} = {(t.Length == 0 ? "?" : t)}");
+                }
+                else
+                {
+                    int n = OcrService.ParseFirstInt(raw);
+                    if (n >= 0 && Stable(m.Role, n.ToString())) LiveStats.Instance.SetNumber(m.Role, n);
+                    readout.Add($"{m.Role} = {(n < 0 ? "?" : n.ToString())}");
+                }
             }
-            if (Combined.TryGetValue(m.Role, out var pair))
+
+            Dispatcher.UIThread.Post(() =>
             {
-                string two = _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: true, topOffset: TopPx, sideOffset: SidePx);
-                var parsed = OcrService.ParseTwoInts(two);
-                if (parsed is { } pv) { LiveStats.Instance.SetNumber(pair.a, pv.Item1); LiveStats.Instance.SetNumber(pair.b, pv.Item2); }
-                LiveReadout.Add($"{m.Role} = {(parsed is { } q ? $"{q.Item1} / {q.Item2}" : "?")}");
-                continue;
-            }
-            string raw = _ocr.ReadRect(hwnd, m.X, m.Y, m.W, m.H, numeric: !m.IsText, topOffset: TopPx, sideOffset: SidePx);
-            if (m.IsText)
-            {
-                string t = raw.Trim();
-                if (t.Length > 0 && Stable(m.Role, t)) LiveStats.Instance.SetText(m.Role, t);
-                LiveReadout.Add($"{m.Role} = {(t.Length == 0 ? "?" : t)}");
-            }
-            else
-            {
-                int n = OcrService.ParseFirstInt(raw);
-                if (n >= 0 && Stable(m.Role, n.ToString())) LiveStats.Instance.SetNumber(m.Role, n);
-                LiveReadout.Add($"{m.Role} = {(n < 0 ? "?" : n.ToString())}");
-            }
+                LiveReadout.Clear();
+                foreach (var s2 in readout) LiveReadout.Add(s2);
+                if (_overlay != null) _overlay.SetInfo(Marks.ToList(), _session.Reader.Target?.ProcessName ?? "client", TopPx, SidePx);
+            });
         }
+        catch { }
+        finally { _busy = false; }
     }
 
     /// <summary>Commit a value only after it reads the same twice in a row — kills OCR flicker.</summary>

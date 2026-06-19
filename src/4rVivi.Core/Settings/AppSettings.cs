@@ -37,7 +37,7 @@ public sealed class AppSettings
     public string DivinePrideApiKey { get; set; } = "";
     public string GameFolder { get; set; } = "";
     public string GrfPath { get; set; } = "";
-    public bool DiscordEnabled { get; set; } = false;
+    public bool DiscordEnabled { get; set; } = true;   // on by default (uses built-in app id)
     public string DiscordAppId { get; set; } = "";
     public string DiscordWebsiteUrl { get; set; } = "";
     public string DiscordServerName { get; set; } = "Eldrynn RO";
