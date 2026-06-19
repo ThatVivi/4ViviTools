@@ -85,8 +85,7 @@ public partial class OcrReaderView : UserControl
     {
         try
         {
-            var top = TopLevel.GetTopLevel(this);
-            var screens = top?.Screens;
+            var screens = (TopLevel.GetTopLevel(this) as Window)?.Screens;
             if (screens == null || Vm == null || Vm.Monitors.Count > 0) return;
             int i = 1;
             foreach (var sc in screens.All)
