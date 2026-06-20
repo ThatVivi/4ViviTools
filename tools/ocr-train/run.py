@@ -18,6 +18,8 @@ def ensure_env(use_gpu):
         idx = [] if use_gpu else ["-i", "https://www.paddlepaddle.org.cn/packages/stable/cpu/"]
         subprocess.check_call([sys.executable, "-m", "pip", "install", wheel, *idx])
     subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", os.path.join(HERE, "requirements.txt")])
+    # paddlepaddle needs protobuf<=3.20.2; force it last so nothing upgraded it.
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "protobuf==3.20.2"])
 
 def get_paddleocr_repo():
     repo = os.path.join(HERE, "PaddleOCR")
@@ -27,9 +29,8 @@ def get_paddleocr_repo():
     return repo
 
 def current_onnx_reader():
-    # Offline real-crop reader. Placeholder: returns "" so unlabeled real crops become '###'
-    # (ignored in training). Synthetic data still trains the model. Replace with a headless
-    # RapidOcrNet/onnxruntime reader to auto-label real crops.
+    # Offline real-crop reader. Stub: returns "" so unlabeled real crops become '###'
+    # (ignored in training). Synthetic data still trains the model.
     def read(img):
         return ""
     return read

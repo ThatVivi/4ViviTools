@@ -1,4 +1,4 @@
 paddleocr>=2.7,<3
 paddle2onnx
 Pillow
-onnxruntime
+protobuf==3.20.2

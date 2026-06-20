@@ -20,6 +20,8 @@ def write_config(template, data_dir, use_gpu, pretrained, out_yml):
 
 def run(paddleocr_repo, config_yml, work):
     env = dict(os.environ)
+    # paddle's generated protobuf is old; pure-python parsing tolerates any installed protobuf.
+    env["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
     subprocess.check_call([sys.executable, os.path.join(paddleocr_repo, "tools", "train.py"),
                            "-c", config_yml], env=env)
     best = "./output/rec_ro/best_accuracy"
