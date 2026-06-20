@@ -2,6 +2,7 @@
              x:Class="FourRVivi.App.Views.LootView" x:DataType="vm:LootViewModel">
   <Grid RowDefinitions="Auto,Auto,*">
     <TextBlock Grid.Row="0" Text="Loot log" Classes="h1"/>
+    <TextBlock Grid.Row="0" Text="{Binding OcrLoot}" Classes="muted" HorizontalAlignment="Right" VerticalAlignment="Center"/>
     <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,12">
       <TextBox Width="240" Text="{Binding Item}" Watermark="Item name"/>
       <NumericUpDown Width="100" Minimum="1" Maximum="100000" Value="{Binding Qty}"/>
@@ -11,7 +12,7 @@
       <TextBlock Text="{Binding Totals}" Classes="muted" VerticalAlignment="Center"/>
     </StackPanel>
     <Border Grid.Row="2" Classes="card" Padding="0">
-      <ListBox ItemsSource="{Binding Rows}" Background="Transparent">
+      <ListBox ItemsSource="{Binding Rows}" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="tr:LootRow">
             <Grid ColumnDefinitions="100,*,60,120">

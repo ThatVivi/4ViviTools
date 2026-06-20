@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace FourRVivi.App.ViewModels;
@@ -20,6 +21,21 @@ public sealed partial class NavPage : ObservableObject
 
     public NavPage(string title, string key, ViewModelBase vm, Action<NavPage> onSelect)
     { Title = title; Key = key; ViewModel = vm; _onSelect = onSelect; }
+
+    [RelayCommand] private void Select() => _onSelect(this);
+}
+
+public sealed partial class NavCategory : ObservableObject
+{
+    public string Title { get; }
+    public string Key { get; }
+    public ObservableCollection<NavPage> Pages { get; } = new();
+    private readonly Action<NavCategory> _onSelect;
+
+    [ObservableProperty] private bool _isActive;
+
+    public NavCategory(string title, string key, Action<NavCategory> onSelect)
+    { Title = title; Key = key; _onSelect = onSelect; }
 
     [RelayCommand] private void Select() => _onSelect(this);
 }

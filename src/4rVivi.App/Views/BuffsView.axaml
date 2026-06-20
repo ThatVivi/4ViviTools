@@ -6,6 +6,7 @@
              x:Name="Root">
   <StackPanel Spacing="14">
     <TextBlock Text="Buffs" Classes="h1"/>
+      <ToggleSwitch Content="Buffs ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
     <TextBlock Classes="muted" Text="Re-cast skill and item buffs on a timer. Interval is milliseconds."/>
 
     <TextBlock Classes="section" Text="SKILL BUFFS"/>

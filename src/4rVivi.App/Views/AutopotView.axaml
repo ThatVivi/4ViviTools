@@ -8,6 +8,7 @@
   <StackPanel Spacing="14">
 
     <TextBlock Text="AutoPots+" Classes="h1"/>
+      <ToggleSwitch Content="Autopot ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
 
     <TextBlock Classes="muted"
                Text="Reads HP/SP from memory. Set % (and optional flat), key, reaction and use-delay. Assign HP/SP addresses in the Scanner first."/>

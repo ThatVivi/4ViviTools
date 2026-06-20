@@ -38,7 +38,7 @@
           <TextBlock Text="Opacity" Classes="muted" VerticalAlignment="Center" Margin="0,0,6,0"/>
           <Slider Width="110" Minimum="0.7" Maximum="1.0" Value="{Binding WindowOpacity}" VerticalAlignment="Center"/>
         </StackPanel>
-        <ToggleButton Grid.Column="7" MinWidth="160" IsChecked="{Binding MasterOn}" Content="{Binding MasterLabel}" Classes="accent"/>
+        <Button Grid.Column="7" MinWidth="120" Content="Stop all (F12)" Command="{Binding StopAllCommand}"/>
       </Grid>
     </Border>
 
@@ -46,25 +46,35 @@
     <Grid Grid.Row="1" ColumnDefinitions="212,*">
       <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
         <ScrollViewer>
-          <ItemsControl ItemsSource="{Binding NavItems}" Margin="0,6">
-            <ItemsControl.DataTemplates>
-              <DataTemplate DataType="vm:NavSection">
-                <TextBlock Classes="section" Text="{Binding Title}"/>
-              </DataTemplate>
-              <DataTemplate DataType="vm:NavPage">
-                <RadioButton Classes="nav" GroupName="nav" Content="{Binding Title}"
+          <ItemsControl ItemsSource="{Binding Categories}" Margin="0,6">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:NavCategory">
+                <RadioButton Classes="nav" GroupName="cat" Content="{Binding Title}"
                              IsChecked="{Binding IsActive, Mode=TwoWay}" Command="{Binding SelectCommand}"/>
               </DataTemplate>
-            </ItemsControl.DataTemplates>
+            </ItemsControl.ItemTemplate>
           </ItemsControl>
         </ScrollViewer>
       </Border>
 
-      <Grid Grid.Column="1" RowDefinitions="*,Auto">
-        <ScrollViewer Grid.Row="0">
+      <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto">
+        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding CurrentCategory.Pages}" Margin="10,5">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="4"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:NavPage">
+                  <RadioButton Classes="nav" GroupName="subtab" Content="{Binding Title}"
+                               IsChecked="{Binding IsActive, Mode=TwoWay}" Command="{Binding SelectCommand}"/>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Border>
+        <ScrollViewer Grid.Row="1">
           <ContentControl Content="{Binding CurrentPage}" Margin="22"/>
         </ScrollViewer>
-        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="14,7">
+        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="14,7">
           <TextBlock Text="{Binding StatusText}" Classes="muted"/>
         </Border>
       </Grid>

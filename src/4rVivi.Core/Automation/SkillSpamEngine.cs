@@ -18,7 +18,7 @@ public sealed class SkillSpamEngine : AutomationEngine
     {
         while (!ct.IsCancellationRequested)
         {
-            if (Session.MasterEnabled && Session.Reader.Attached)
+            if (Enabled && (Session.Reader.Attached || FourRVivi.Core.Game.LiveStats.Instance.IsFresh))
             {
                 string key = Rotation.Count > 0 ? Rotation[_idx++ % Rotation.Count] : Key;
                 if (!string.IsNullOrWhiteSpace(key)) Keys.Tap(Hwnd, KeyName.ToVk(key), 15);

@@ -11,6 +11,9 @@ public sealed partial class OverlayViewModel : ViewModelBase
     [ObservableProperty] private int _aoe;
     [ObservableProperty] private bool _gutter;
 
+        [ObservableProperty] private bool _enabled;
+    partial void OnEnabledChanged(bool value) { if (value) _overlay.Show(); else _overlay.Hide(); }
+
     public OverlayViewModel(OverlayController overlay) => _overlay = overlay;
 
     partial void OnCastRangeChanged(int value) { _overlay.CastRange = value; _overlay.Apply(); }

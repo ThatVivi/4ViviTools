@@ -25,6 +25,9 @@ public sealed partial class MacrosViewModel : ViewModelBase
     [ObservableProperty] private int _gapMs = 120;
     [ObservableProperty] private string _status = "Chain macros: equip/skill switch, auto-vend, auto-storage. Loop runs while master is ON.";
 
+        [ObservableProperty] private bool _enabled;
+    partial void OnEnabledChanged(bool value) { _hub.Macros.Enabled = value; }
+
     public MacrosViewModel(GameSession session, EngineHub hub, SettingsStore settings)
     {
         _session = session; _hub = hub; _settings = settings;

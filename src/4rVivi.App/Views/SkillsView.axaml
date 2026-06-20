@@ -2,6 +2,7 @@
              x:Class="FourRVivi.App.Views.SkillsView" x:DataType="vm:SkillsViewModel">
   <StackPanel Spacing="14">
     <TextBlock Text="Skills" Classes="h1"/>
+      <ToggleSwitch Content="Skills ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
     <Border Classes="card">
       <StackPanel Spacing="10">
         <TextBlock Text="Spammer" FontWeight="SemiBold"/>

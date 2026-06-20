@@ -11,6 +11,9 @@ public sealed partial class BotFarmViewModel : ViewModelBase
     [ObservableProperty] private int _fleeAtHpPercent;
     [ObservableProperty] private int _rotationMs;
 
+        [ObservableProperty] private bool _enabled;
+    partial void OnEnabledChanged(bool value) { _hub.BotFarm.Enabled = value; }
+
     public BotFarmViewModel(EngineHub hub)
     {
         _hub = hub;

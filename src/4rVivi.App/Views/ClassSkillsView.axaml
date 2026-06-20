@@ -5,6 +5,7 @@
   <Grid RowDefinitions="Auto,Auto,*">
     <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12">
       <TextBlock Text="Skill spammer" Classes="h1"/>
+      <ToggleSwitch Content="Spam ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
       <ComboBox Width="200" ItemsSource="{Binding Classes}" SelectedItem="{Binding SelectedClass}" VerticalAlignment="Center"/>
       <StackPanel VerticalAlignment="Center"><TextBlock Text="Delay ms" Classes="muted"/><NumericUpDown Width="110" Minimum="50" Maximum="5000" Value="{Binding SpamDelay}"/></StackPanel>
     </StackPanel>

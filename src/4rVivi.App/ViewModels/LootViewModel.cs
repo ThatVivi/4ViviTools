@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using Avalonia.Threading;
+using FourRVivi.Core.Game;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FourRVivi.Core.Trackers;
@@ -13,12 +15,16 @@ public sealed partial class LootViewModel : ViewModelBase
     [ObservableProperty] private int _qty = 1;
     [ObservableProperty] private long _valueEach;
     [ObservableProperty] private string _totals = "0 items";
+    [ObservableProperty] private string _ocrLoot = "OCR loot count: (start OCR with a Loot box)";
 
     public LootViewModel(LootLog log)
     {
         _log = log;
         foreach (var r in log.Rows) Rows.Add(r);
         Refresh();
+        var t = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(800) };
+        t.Tick += (_, _) => OcrLoot = LiveStats.Instance.TryGetNumber("Loot", out int n) ? $"OCR loot count: {n}" : "OCR loot count: -";
+        t.Start();
     }
 
     private void Refresh()
@@ -33,6 +39,9 @@ public sealed partial class LootViewModel : ViewModelBase
         _log.Add(Item.Trim(), Qty, ValueEach);
         Item = ""; ValueEach = 0; Qty = 1;
         Refresh();
+        var t = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(800) };
+        t.Tick += (_, _) => OcrLoot = LiveStats.Instance.TryGetNumber("Loot", out int n) ? $"OCR loot count: {n}" : "OCR loot count: -";
+        t.Start();
     }
     [RelayCommand] private void Clear() { _log.Clear(); Refresh(); }
 }

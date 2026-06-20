@@ -5,7 +5,7 @@
     <Border Classes="card">
       <StackPanel Spacing="10">
         <TextBlock Text="Profiles" FontWeight="SemiBold"/>
-        <ListBox ItemsSource="{Binding Profiles}" Height="120" Background="Transparent"/>
+        <ListBox ItemsSource="{Binding Profiles}" Height="120" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
         <StackPanel Orientation="Horizontal" Spacing="10">
           <TextBox Width="200" Text="{Binding NewProfileName}" Watermark="New profile name"/>
           <Button Content="Add profile" Command="{Binding AddProfileCommand}"/>

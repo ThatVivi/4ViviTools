@@ -2,6 +2,7 @@
              x:Class="FourRVivi.App.Views.SmartBotView" x:DataType="vm:SmartBotViewModel">
   <StackPanel Spacing="14">
     <TextBlock Text="Smart Bot" Classes="h1"/>
+      <ToggleSwitch Content="Smart Bot ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
     <TextBlock Classes="muted" TextWrapping="Wrap" Text="Attack + skill rotation, auto-loot, teleport when no progress, and return-to-town when overweight. Master ON to run. Set HP/EXP/Weight/Pos addresses in the Scanner for full behaviour."/>
     <Border Classes="card">
       <StackPanel Spacing="12">

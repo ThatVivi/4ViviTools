@@ -12,6 +12,9 @@ public sealed partial class SkillsViewModel : ViewModelBase
     [ObservableProperty] private string _rotationKeys = "";
     [ObservableProperty] private string _status = "Spammer hits one key on a delay; rotation cycles a list. Master ON to run.";
 
+        [ObservableProperty] private bool _enabled;
+    partial void OnEnabledChanged(bool value) { _hub.Spammer.Enabled = value; }
+
     public SkillsViewModel(EngineHub hub)
     {
         _hub = hub;

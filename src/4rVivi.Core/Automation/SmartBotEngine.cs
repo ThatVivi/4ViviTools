@@ -39,7 +39,7 @@ public sealed class SmartBotEngine : AutomationEngine
         StartedAt = DateTime.Now; Kills = 0; _lastChangeTick = Environment.TickCount64;
         while (!ct.IsCancellationRequested)
         {
-            if (Session.MasterEnabled && Session.Reader.Attached)
+            if (Enabled && (Session.Reader.Attached || FourRVivi.Core.Game.LiveStats.Instance.IsFresh))
             {
                 double hp = _stat.HpPercent;
                 double wt = _stat.WeightPercent;

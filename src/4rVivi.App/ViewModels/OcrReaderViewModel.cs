@@ -69,7 +69,7 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
         "HP / MaxHP", "SP / MaxSP", "Weight / MaxWeight",
         "BaseLevel", "JobLevel",
         "HP", "MaxHP", "SP", "MaxSP",
-        "BaseExpBar", "JobExpBar", "Character",
+        "HpPercent", "SpPercent", "BaseExpBar", "JobExpBar", "Character",
         "Weight", "MaxWeight", "Zeny", "Loot", "PosX", "PosY", "CharName", "ClassName"
     };
 
@@ -134,7 +134,7 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     {
         if (w <= 0 || h <= 0) return;
         bool isText = role == "CharName" || role == "ClassName" || role == "BasicInfo";
-        bool isBar = role is "BaseExpBar" or "JobExpBar";
+        bool isBar = role is "BaseExpBar" or "JobExpBar" or "HpPercent" or "SpPercent";
         bool isChar = role == "Character";
         Marks.Add(new OcrMark { Role = role, X = x, Y = y, W = w, H = h, IsText = isText, IsBar = isBar, IsChar = isChar });
         Status = $"Marked {role}. Mark the rest, then Save.";

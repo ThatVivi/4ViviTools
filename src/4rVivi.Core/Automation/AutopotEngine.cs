@@ -18,7 +18,7 @@ public sealed class AutopotEngine : AutomationEngine
     {
         while (!ct.IsCancellationRequested)
         {
-            if (Session.MasterEnabled && Session.Reader.Attached)
+            if (Enabled && (Session.Reader.Attached || FourRVivi.Core.Game.LiveStats.Instance.IsFresh))
             {
                 double hp = Session.Health.HpPercent, sp = Session.Health.SpPercent;
                 int hpv = Session.Health.Hp, spv = Session.Health.Sp;

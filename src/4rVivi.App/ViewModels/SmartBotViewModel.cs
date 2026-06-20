@@ -26,6 +26,9 @@ public sealed partial class SmartBotViewModel : ViewModelBase
 
     public string[] Keys { get; } = KeyList.Common;
 
+        [ObservableProperty] private bool _enabled;
+    partial void OnEnabledChanged(bool value) { _hub.SmartBot.Enabled = value; }
+
     public SmartBotViewModel(EngineHub hub, GameSession session)
     {
         _hub = hub; _session = session;

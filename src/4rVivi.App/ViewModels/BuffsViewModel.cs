@@ -14,6 +14,9 @@ public sealed partial class BuffsViewModel : ViewModelBase
     public ObservableCollection<BuffRowViewModel> SkillBuffs { get; } = new();
     public ObservableCollection<BuffRowViewModel> ItemBuffs { get; } = new();
 
+        [ObservableProperty] private bool _enabled;
+    partial void OnEnabledChanged(bool value) { _hub.SkillBuffs.Enabled = value; _hub.ItemBuffs.Enabled = value; }
+
     public BuffsViewModel(EngineHub hub, GameSession session)
     {
         _hub = hub; _session = session;

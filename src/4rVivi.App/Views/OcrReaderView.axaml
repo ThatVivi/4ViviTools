@@ -50,7 +50,7 @@
       <TextBlock Text="Marks" Classes="section"/>
       <Border Classes="card" Padding="0" Height="240">
         <ListBox ItemsSource="{Binding Marks}" Background="Transparent"
-                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+                 ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="ocr:OcrMark">
               <Grid ColumnDefinitions="16,*,28">
@@ -86,7 +86,7 @@
       <TextBlock Text="Live readout" Classes="section"/>
       <Border Classes="card" Padding="0" Height="180">
         <ListBox ItemsSource="{Binding LiveReadout}" Background="Transparent" FontFamily="Consolas,monospace"
-                 ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                 ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
       </Border>
       <TextBlock Text="{Binding EngineInfo}" FontWeight="SemiBold"/>
       <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap"/>

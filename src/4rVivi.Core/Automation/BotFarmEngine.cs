@@ -22,7 +22,7 @@ public sealed class BotFarmEngine : AutomationEngine
         StartedAt = DateTime.Now; Kills = 0;
         while (!ct.IsCancellationRequested)
         {
-            if (Session.MasterEnabled && Session.Reader.Attached)
+            if (Enabled && (Session.Reader.Attached || FourRVivi.Core.Game.LiveStats.Instance.IsFresh))
             {
                 double hp = Session.Health.HpPercent;
                 if (hp >= 0 && hp <= FleeAtHpPercent)

@@ -2,6 +2,7 @@
              x:Class="FourRVivi.App.Views.BotFarmView" x:DataType="vm:BotFarmViewModel">
   <StackPanel Spacing="14">
     <TextBlock Text="Bot / Farm" Classes="h1"/>
+      <ToggleSwitch Content="Bot ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
     <TextBlock Classes="muted" Text="Attack + loot rotation with a flee-at-HP% safety. Needs the HP address set in Scanner for flee to work. Master ON to run."/>
     <Border Classes="card">
       <StackPanel Spacing="12">

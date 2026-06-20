@@ -38,5 +38,6 @@ public sealed class EngineHub
     { yield return Autopot; yield return SkillBuffs; yield return ItemBuffs; yield return Spammer; yield return BotFarm; yield return SmartBot; yield return Macros; }
 
     public void StartAllLoops() { foreach (var e in All()) e.Start(); }
+    public void DisableAll() { foreach (var e in All()) e.Enabled = false; }
     public void StopAllLoops() { foreach (var e in All()) e.Stop(); }
 }

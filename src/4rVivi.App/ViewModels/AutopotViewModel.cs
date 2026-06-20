@@ -11,6 +11,9 @@ public sealed partial class AutopotViewModel : ViewModelBase
     private readonly SettingsStore _settings;
     public ObservableCollection<PotRowViewModel> Pots { get; } = new();
 
+        [ObservableProperty] private bool _enabled;
+    partial void OnEnabledChanged(bool value) { _hub.Autopot.Enabled = value; }
+
     public AutopotViewModel(EngineHub hub, SettingsStore settings)
     {
         _hub = hub; _settings = settings;

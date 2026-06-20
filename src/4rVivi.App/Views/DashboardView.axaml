@@ -1,21 +1,41 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
              x:Class="FourRVivi.App.Views.DashboardView" x:DataType="vm:DashboardViewModel">
-  <StackPanel Spacing="18">
-    <Border Classes="card">
+  <StackPanel Spacing="16">
+    <TextBlock Text="◆ 4rVivi — Dashboard" Classes="h1"/>
+
+    <Border Classes="card" Background="{DynamicResource Surface2Brush}">
       <StackPanel Spacing="10">
-        <TextBlock Text="◆ 4rVivi" Classes="h1"/>
-        <TextBlock Classes="muted" Text="Pick your RO process in the top bar, then turn everything on."/>
-        <Button Classes="accent" Content="Turn everything ON / OFF" Command="{Binding ToggleMasterCommand}" HorizontalAlignment="Left"/>
+        <TextBlock Text="Start here" Classes="section"/>
+        <TextBlock Text="{Binding OcrStatus}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+        <Button Classes="accent" Content="Open OCR Reader →" Command="{Binding OpenOcrCommand}" HorizontalAlignment="Left"/>
       </StackPanel>
     </Border>
+
+    <Border Classes="card">
+      <StackPanel Spacing="8">
+        <TextBlock Text="Feature toggles (each runs on its own — no master needed)" Classes="section"/>
+        <WrapPanel>
+          <ToggleSwitch Content="Autopot" IsChecked="{Binding Autopot.Enabled}" Margin="0,0,18,6"/>
+          <ToggleSwitch Content="Buffs" IsChecked="{Binding Buffs.Enabled}" Margin="0,0,18,6"/>
+          <ToggleSwitch Content="Skill Spammer" IsChecked="{Binding SkillSpammer.Enabled}" Margin="0,0,18,6"/>
+          <ToggleSwitch Content="Smart Bot" IsChecked="{Binding SmartBot.Enabled}" Margin="0,0,18,6"/>
+          <ToggleSwitch Content="Basic Bot" IsChecked="{Binding BasicBot.Enabled}" Margin="0,0,18,6"/>
+          <ToggleSwitch Content="RCX Overlay" IsChecked="{Binding Overlay.Enabled}" Margin="0,0,18,6"/>
+          <ToggleSwitch Content="Macros" IsChecked="{Binding Macros.Enabled}" Margin="0,0,18,6"/>
+        </WrapPanel>
+      </StackPanel>
+    </Border>
+
     <TextBlock Classes="section" Text="QUICK OPEN"/>
     <WrapPanel>
+      <Button Content="OCR Reader" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="OCR Reader"/>
       <Button Content="Autopot" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Autopot"/>
-      <Button Content="Skills" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Skills"/>
-      <Button Content="Bot / Farm" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Bot / Farm"/>
-      <Button Content="RCX Overlay" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="RCX Overlay"/>
+      <Button Content="Skill Spammer" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Skill Spammer"/>
+      <Button Content="Smart" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Smart"/>
+      <Button Content="Buff HUD" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Buff HUD"/>
+      <Button Content="Loot Log" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Loot Log"/>
       <Button Content="Database" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Database"/>
-      <Button Content="Scanner" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Scanner"/>
       <Button Content="Settings" Margin="0,0,8,8" Command="{Binding GoCommand}" CommandParameter="Settings"/>
     </WrapPanel>
   </StackPanel>

@@ -24,7 +24,7 @@ public sealed class BuffEngine : AutomationEngine
     {
         while (!ct.IsCancellationRequested)
         {
-            if (Session.MasterEnabled && Session.Reader.Attached)
+            if (Enabled && (Session.Reader.Attached || FourRVivi.Core.Game.LiveStats.Instance.IsFresh))
             {
                 long now = Environment.TickCount64;
                 foreach (var r in Rules.ToArray())

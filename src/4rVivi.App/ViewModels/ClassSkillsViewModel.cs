@@ -37,7 +37,7 @@ public sealed partial class ClassSkillsViewModel : ViewModelBase
 
     [ObservableProperty] private string _selectedClass;
     [ObservableProperty] private int _spamDelay = 300;
-    [ObservableProperty] private string _status = "Pick your class, tick the skills to spam, set a key for each, then Master ON.";
+    [ObservableProperty] private string _status = "Pick your class, tick the skills to spam, set a key for each, then toggle Spam ON (top of this tab) or on the Dashboard.";
 
     public ClassSkillsViewModel(EngineHub hub, ClassData cd)
     {
@@ -64,7 +64,7 @@ public sealed partial class ClassSkillsViewModel : ViewModelBase
             if (r.Enabled && !string.IsNullOrWhiteSpace(r.Key)) _hub.Spammer.Rotation.Add(r.Key);
         _hub.Spammer.DelayMs = Math.Max(50, SpamDelay);
         Status = _hub.Spammer.Rotation.Count == 0
-            ? "No skills queued. Tick skills + set keys, then Master ON."
-            : $"{_hub.Spammer.Rotation.Count} skill(s) queued — Master ON to spam them in rotation.";
+            ? "No skills queued. Tick skills + set keys, then toggle Spam ON (top of this tab) or on the Dashboard."
+            : $"{_hub.Spammer.Rotation.Count} skill(s) queued — Spam ON to run them.";
     }
 }

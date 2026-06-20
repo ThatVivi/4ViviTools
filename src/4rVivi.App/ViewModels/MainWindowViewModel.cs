@@ -22,11 +22,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly NavigationService _nav;
     private readonly Dictionary<string, NavPage> _pageByKey = new();
 
-    public ObservableCollection<object> NavItems { get; } = new();
+    public ObservableCollection<NavCategory> Categories { get; } = new();
     public ObservableCollection<GameProcess> Processes { get; } = new();
     public ObservableCollection<string> Profiles { get; } = new();
 
     [ObservableProperty] private object? _currentPage;
+    [ObservableProperty] private NavCategory? _currentCategory;
     [ObservableProperty] private GameProcess? _selectedProcess;
     [ObservableProperty] private string? _selectedProfile;
     [ObservableProperty] private bool _masterOn;
@@ -49,42 +50,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     {
         _session = session; _hub = hub; _procs = procs; _settings = settings; _loc = loc; _nav = nav;
 
-        BuildNav(new[] { Page("Dashboard", dashboard) });
-
-        AddSection("COMBAT");
-        AddPage("Autopot", autopot);
-        AddPage("Buffs", buffs);
-        AddPage("Skills", skills);
-        AddPage("Skill Spammer", classSkills);
-        AddPage("Smart Bot", smartBot);
-        AddPage("Bot (basic)", botFarm);
-        AddPage("RCX Overlay", overlay);
-
-        AddSection("TRACKERS");
-        AddPage("MVP Tracker", mvp);
-        AddPage("Buff HUD", hud);
-        AddPage("Loot Log", loot);
-
-        AddSection("MACROS");
-        AddPage("Macros", macros);
-
-        AddSection("DATA");
-        AddPage("Database", database);
-        AddPage("Calculator", calc);
-        AddPage("Homun AI", homun);
-
-        AddSection("TOOLS");
-        AddPage("GRF Browser", grf);
-        AddPage("Sprite Viewer", sprite);
-        AddPage("External Editors", tools);
-        AddPage("Marketplace", marketplace);
-
-        AddSection("SYSTEM");
-        AddPage("Auto-Detect", autoDetect);
-        AddPage("OCR Reader", ocrReader);
-        AddPage("Servers", servers);
-        AddPage("Stats", stats);
-        AddPage("Settings", settingsVm);
+        AddCat("Dashboard", ("Dashboard", dashboard));
+        AddCat("OCR Reader", ("OCR Reader", ocrReader));
+        AddCat("Macro", ("Macros", macros), ("Autopot", autopot), ("Buffs", buffs), ("Skills", skills), ("Skill Spammer", classSkills));
+        AddCat("Bot", ("Basic", botFarm), ("Smart", smartBot), ("RCX Overlay", overlay));
+        AddCat("Trackers", ("MVP", mvp), ("Buff HUD", hud), ("Loot Log", loot), ("Stats", stats));
+        AddCat("Data", ("Database", database), ("Calculator", calc), ("Homun AI", homun));
+        AddCat("Tools", ("GRF", grf), ("Sprite", sprite), ("External Editors", tools), ("Marketplace", marketplace));
+        AddCat("System", ("Auto-Detect", autoDetect), ("Servers", servers), ("Settings", settingsVm));
+        if (Categories.Count > 0) OnCategorySelected(Categories[0]);
 
         var s = _settings.Current;
         WindowOpacity = Math.Clamp(s.WindowOpacity, 70, 100) / 100.0;
@@ -113,27 +87,37 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         t.Start();
     }
 
-    private NavPage Page(string title, ViewModelBase vm) => new(title, title, vm, OnPageSelected);
-
-    private void BuildNav(IEnumerable<NavPage> firstPages)
+    private void AddCat(string title, params (string title, ViewModelBase vm)[] pages)
     {
-        foreach (var p in firstPages) { NavItems.Add(p); _pageByKey[p.Key] = p; }
-        var first = NavItems.OfType<NavPage>().FirstOrDefault();
-        if (first is not null) OnPageSelected(first);
+        var cat = new NavCategory(_loc.T(title), title, OnCategorySelected);
+        foreach (var (t, vm) in pages)
+        {
+            var p = new NavPage(_loc.T(t), t, vm, OnPageSelected);
+            cat.Pages.Add(p); _pageByKey[t] = p;
+        }
+        Categories.Add(cat);
     }
-    private void AddSection(string title) => NavItems.Add(new NavSection(_loc.T(title)));
-    private void AddPage(string title, ViewModelBase vm)
+
+    private void OnCategorySelected(NavCategory cat)
     {
-        var p = new NavPage(_loc.T(title), title, vm, OnPageSelected);
-        NavItems.Add(p); _pageByKey[title] = p;
+        foreach (var c in Categories) c.IsActive = ReferenceEquals(c, cat);
+        CurrentCategory = cat;
+        var first = cat.Pages.FirstOrDefault();
+        if (first is not null) OnPageSelected(first);
     }
 
     private void OnPageSelected(NavPage page)
     {
-        foreach (var n in NavItems.OfType<NavPage>()) n.IsActive = ReferenceEquals(n, page);
+        foreach (var c in Categories) foreach (var p in c.Pages) p.IsActive = ReferenceEquals(p, page);
         CurrentPage = page.ViewModel;
     }
-    private void GoToKey(string key) { if (_pageByKey.TryGetValue(key, out var p)) OnPageSelected(p); }
+
+    private void GoToKey(string key)
+    {
+        foreach (var c in Categories)
+            foreach (var p in c.Pages)
+                if (p.Key == key) { OnCategorySelected(c); OnPageSelected(p); return; }
+    }
 
     [RelayCommand] private void RefreshProcesses()
     {
@@ -177,8 +161,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     public void AttachWindow(Window w)
     {
-        w.KeyDown += (_, e) => { if (e.Key == Key.F12) MasterOn = false; };
+        w.KeyDown += (_, e) => { if (e.Key == Key.F12) StopAll(); };
     }
 
-    [RelayCommand] private void ToggleMaster() => MasterOn = !MasterOn;
+    [RelayCommand] private void StopAll() { _hub.DisableAll(); StatusText = "All features stopped (F12)."; }
 }

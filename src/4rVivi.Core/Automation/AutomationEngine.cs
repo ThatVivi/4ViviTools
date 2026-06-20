@@ -13,6 +13,8 @@ public abstract class AutomationEngine
     private CancellationTokenSource? _cts;
 
     public bool Running => _cts is { IsCancellationRequested: false };
+    /// <summary>Per-feature on/off (replaces the old global Master gate).</summary>
+    public bool Enabled { get; set; }
     public event Action<string>? Status;
     public string Name { get; }
 

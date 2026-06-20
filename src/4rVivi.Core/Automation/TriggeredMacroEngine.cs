@@ -28,7 +28,7 @@ public sealed class TriggeredMacroEngine : AutomationEngine
     {
         while (!ct.IsCancellationRequested)
         {
-            if (Session.MasterEnabled && Session.Reader.Attached)
+            if (Enabled && (Session.Reader.Attached || FourRVivi.Core.Game.LiveStats.Instance.IsFresh))
             {
                 long now = Environment.TickCount64;
                 foreach (var m in Macros.ToArray())

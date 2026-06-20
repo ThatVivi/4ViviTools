@@ -2,6 +2,7 @@
              x:Class="FourRVivi.App.Views.MacrosView" x:DataType="vm:MacrosViewModel">
   <StackPanel Spacing="14">
     <TextBlock Text="Macros" Classes="h1"/>
+      <ToggleSwitch Content="Macros ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
     <TextBlock Classes="muted" TextWrapping="Wrap" Text="Chain macros for equip/skill switch, auto-vend, auto-storage. Keys are comma-separated. Tick Loop to repeat while master is ON."/>
     <Button Content="+ Add macro" Command="{Binding AddChainCommand}" HorizontalAlignment="Left"/>
     <ItemsControl ItemsSource="{Binding Chains}">

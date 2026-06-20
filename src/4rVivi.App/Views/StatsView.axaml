@@ -22,7 +22,7 @@
     </WrapPanel>
     <TextBlock Classes="section" Text="EXP GAIN LOG"/>
     <Border Classes="card" Padding="0">
-      <ListBox ItemsSource="{Binding ExpLog}" Background="Transparent" FontFamily="Consolas,monospace"/>
+      <ListBox ItemsSource="{Binding ExpLog}" Background="Transparent" FontFamily="Consolas,monospace" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
     </Border>
     <TextBlock Classes="muted" TextWrapping="Wrap" Text="EXP/Zeny/Weight/HP/SP need their addresses set in the Scanner. The log records each EXP increase. Kills come from the Smart Bot's EXP-gain proxy."/>
   </StackPanel>
