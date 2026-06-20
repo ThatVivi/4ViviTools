@@ -12,23 +12,24 @@ def has_cuda():
 
 def ensure_env(use_gpu):
     if use_gpu:
-        try:
-            import paddle  # noqa
-        except Exception:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "paddlepaddle-gpu==2.6.2"])
+        # Paddle 3.x GPU (CUDA 12.6 + cuDNN 9). Uses GPU for compute + CPU for data loading.
+        subprocess.call([sys.executable, "-m", "pip", "uninstall", "-y", "paddlepaddle", "paddlepaddle-gpu"])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "paddlepaddle-gpu==3.2.1",
+                               "-i", "https://www.paddlepaddle.org.cn/packages/stable/cu126/"])
     else:
-        # CPU build: remove the GPU build (they both provide `paddle`) then install CPU wheel.
+        # Paddle 3.x CPU.
         subprocess.call([sys.executable, "-m", "pip", "uninstall", "-y", "paddlepaddle-gpu"])
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "paddlepaddle==2.6.2",
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "paddlepaddle==3.2.1",
                                "-i", "https://www.paddlepaddle.org.cn/packages/stable/cpu/"])
     subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", os.path.join(HERE, "requirements.txt")])
-    # paddlepaddle needs protobuf<=3.20.2; force it last so nothing upgraded it.
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "protobuf==3.20.2"])
-    # albumentations 2.x eagerly imports torch (often broken on Windows); 1.3.x doesn't need torch.
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "albumentations==1.3.1"])
+    # Paddle 3 needs a modern protobuf.
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "protobuf>=4.25.8"])
 
 def get_paddleocr_repo():
     repo = os.path.join(HERE, "PaddleOCR")
+    train_py = os.path.join(repo, "tools", "train.py")
+    if os.path.exists(repo) and not os.path.exists(train_py):
+        shutil.rmtree(repo, ignore_errors=True)   # stale / partial clone
     if not os.path.exists(repo):
         subprocess.check_call(["git", "clone", "--depth", "1",
                                "https://github.com/PaddlePaddle/PaddleOCR.git", repo])
@@ -46,16 +47,19 @@ def main():
     ap.add_argument("--user-images", default=os.path.join(HERE, "user_images"))
     ap.add_argument("--reference", default=os.path.join(HERE, "reference", "template.json"))
     ap.add_argument("--count", type=int, default=5000)
+    ap.add_argument("--epochs", type=int, default=100)
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--cpu", action="store_true", help="(default) CPU training")
-    ap.add_argument("--gpu", action="store_true", help="Use GPU (needs CUDA 11.8 + cuDNN 8 on PATH)")
+    ap.add_argument("--gpu", action="store_true", help="Use GPU (Paddle 3.2 + CUDA 12.6 + cuDNN 9)")
     a = ap.parse_args()
 
     use_gpu = a.gpu and has_cuda() and not a.cpu
     log(f"[1/6] device: {'GPU+CPU' if use_gpu else 'CPU only'}")
     ensure_env(use_gpu)
 
-    work = os.path.join(HERE, "work"); os.makedirs(work, exist_ok=True)
+    work = os.path.join(HERE, "work")
+    shutil.rmtree(work, ignore_errors=True)   # fresh each run (no manual cleanup needed)
+    os.makedirs(work, exist_ok=True)
     sys.path.insert(0, HERE)
     import synth, autolabel, build_dataset, train_export
 
@@ -78,11 +82,12 @@ def main():
 
     log("[5/6] train + export")
     repo = get_paddleocr_repo()
-    pre = train_export._ensure_pretrained(work)
+    cfg = train_export.find_rec_config(repo)
+    log(f"    config: {os.path.relpath(cfg, repo)}")
+    pre = train_export.ensure_pretrained(work)
     save_dir = os.path.join(work, "output", "rec_ro")
-    cfg = os.path.join(work, "rec_config.yml")
-    train_export.write_config(os.path.join(HERE, "rec_config.template.yml"), data, use_gpu, pre, save_dir, cfg)
-    onnx = train_export.run(repo, cfg, work, save_dir)
+    dict_path = os.path.join(HERE, "ppocrv5_latin_dict.txt")
+    onnx = train_export.run(repo, cfg, work, save_dir, pre, data, dict_path, a.epochs, use_gpu)
 
     log("[6/6] install model")
     dst = os.path.join(HERE, "..", "..", "src", "RapidOcrNet", "models", "v5",

@@ -1,62 +1,81 @@
-import os, subprocess, sys, urllib.request, tarfile
+import os, glob, subprocess, sys, urllib.request
 
-PRETRAIN_URL = "https://paddleocr.bj.bcebos.com/PP-OCRv3/english/en_PP-OCRv3_rec_train.tar"
+# Drop-in target for our runtime: latin PP-OCRv5 mobile recognition.
+PRETRAIN_URL = ("https://paddle-model-ecology.bj.bcebos.com/paddlex/"
+                "official_pretrained_model/latin_PP-OCRv5_mobile_rec_pretrained.pdparams")
 
-def _fwd(p):  # YAML-safe path (forward slashes; Windows accepts them)
+def _fwd(p):
     return p.replace("\\", "/")
 
-def _ensure_pretrained(work):
-    dst = os.path.join(work, "pretrain")
-    params = os.path.join(dst, "en_PP-OCRv3_rec_train", "best_accuracy.pdparams")
-    if os.path.exists(params):
-        return _fwd(params[:-len(".pdparams")])
-    os.makedirs(dst, exist_ok=True)
-    tar = os.path.join(dst, "rec.tar")
-    urllib.request.urlretrieve(PRETRAIN_URL, tar)
-    with tarfile.open(tar) as t:
-        t.extractall(dst)
-    return _fwd(params[:-len(".pdparams")])
+def find_rec_config(repo):
+    """Prefer the latin PP-OCRv5 mobile rec config; fall back to the general v5 mobile rec."""
+    pats = [
+        os.path.join(repo, "configs", "rec", "**", "*latin*PP-OCRv5*mobile*rec*.yml"),
+        os.path.join(repo, "configs", "rec", "**", "*latin*rec*.yml"),
+        os.path.join(repo, "configs", "rec", "PP-OCRv5", "PP-OCRv5_mobile_rec.yml"),
+        os.path.join(repo, "configs", "rec", "**", "*PP-OCRv5*mobile*rec*.yml"),
+    ]
+    for p in pats:
+        hits = sorted(glob.glob(p, recursive=True))
+        if hits:
+            return hits[0]
+    raise FileNotFoundError("No PP-OCRv5 rec config found in cloned PaddleOCR.")
 
-def write_config(template, data_dir, use_gpu, pretrained, save_dir, out_yml):
-    s = open(template, encoding="utf-8").read()
-    s = s.replace("__USE_GPU__", "true" if use_gpu else "false")
-    s = s.replace("__DATA_DIR__", _fwd(data_dir))
-    s = s.replace("__PRETRAINED__", _fwd(pretrained))
-    s = s.replace("__SAVE_DIR__", _fwd(save_dir))
-    open(out_yml, "w", encoding="utf-8").write(s)
+def ensure_pretrained(work):
+    dst = os.path.join(work, "pretrain")
+    os.makedirs(dst, exist_ok=True)
+    pdparams = os.path.join(dst, "latin_PP-OCRv5_mobile_rec_pretrained.pdparams")
+    if not os.path.exists(pdparams):
+        urllib.request.urlretrieve(PRETRAIN_URL, pdparams)
+    return _fwd(pdparams[:-len(".pdparams")])  # path without extension
 
 def _paddle2onnx(args, env):
-    # The paddle2onnx console script is often not on PATH. Prefer `python -m paddle2onnx`,
-    # then fall back to the plain command.
     for cmd in ([sys.executable, "-m", "paddle2onnx"], ["paddle2onnx"]):
         try:
-            subprocess.check_call(cmd + args, env=env)
-            return
+            subprocess.check_call(cmd + args, env=env); return
         except (FileNotFoundError, subprocess.CalledProcessError) as e:
             last = e
     raise last
 
-def run(paddleocr_repo, config_yml, work, save_dir):
+def run(repo, config_yml, work, save_dir, pretrained, data_dir, dict_path, epochs, use_gpu):
     env = dict(os.environ)
-    # paddle's generated protobuf is old; pure-python parsing tolerates any installed protobuf.
-    env["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+    data = _fwd(data_dir); save = _fwd(save_dir); dct = _fwd(dict_path)
+    train_list = data + "/train_list.txt"
+    val_list = data + "/val_list.txt"
 
-    subprocess.check_call([sys.executable, os.path.join(paddleocr_repo, "tools", "train.py"),
-                           "-c", config_yml], env=env)
+    # All overrides via -o so we never depend on the repo config's exact schema.
+    overrides = [
+        f"Global.pretrained_model={pretrained}",
+        f"Global.save_model_dir={save}",
+        f"Global.epoch_num={epochs}",
+        f"Global.use_gpu={'true' if use_gpu else 'false'}",
+        f"Global.character_dict_path={dct}",
+        f"Train.dataset.data_dir={data}",
+        f"Train.dataset.label_file_list=[{train_list}]",
+        f"Train.loader.num_workers=0",
+        f"Train.loader.batch_size_per_card=64",
+        f"Eval.dataset.data_dir={data}",
+        f"Eval.dataset.label_file_list=[{val_list}]",
+        f"Eval.loader.num_workers=0",
+        f"Eval.loader.batch_size_per_card=64",
+    ]
+    subprocess.check_call([sys.executable, os.path.join(repo, "tools", "train.py"),
+                           "-c", config_yml, "-o", *overrides], env=env)
 
-    # Prefer the best checkpoint; fall back to latest if eval never saved a best.
     best = os.path.join(save_dir, "best_accuracy")
     if not os.path.exists(best + ".pdparams"):
         best = os.path.join(save_dir, "latest")
 
     infer = os.path.join(work, "inference_rec")
-    subprocess.check_call([sys.executable, os.path.join(paddleocr_repo, "tools", "export_model.py"),
-                           "-c", config_yml, "-o", f"Global.pretrained_model={_fwd(best)}",
+    subprocess.check_call([sys.executable, os.path.join(repo, "tools", "export_model.py"),
+                           "-c", config_yml, "-o",
+                           f"Global.pretrained_model={_fwd(best)}",
+                           f"Global.character_dict_path={dct}",
                            f"Global.save_inference_dir={_fwd(infer)}"], env=env)
 
+    model_file = "inference.json" if os.path.exists(os.path.join(infer, "inference.json")) else "inference.pdmodel"
     onnx_out = os.path.join(work, "rec.onnx")
-    _paddle2onnx(["--model_dir", infer,
-                  "--model_filename", "inference.pdmodel",
+    _paddle2onnx(["--model_dir", infer, "--model_filename", model_file,
                   "--params_filename", "inference.pdiparams",
                   "--save_file", onnx_out, "--opset_version", "11"], env)
     return onnx_out
