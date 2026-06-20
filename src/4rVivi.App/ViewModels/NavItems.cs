@@ -32,7 +32,13 @@ public sealed partial class NavCategory : ObservableObject
     public ObservableCollection<NavPage> Pages { get; } = new();
     private readonly Action<NavCategory> _onSelect;
 
+    /// <summary>Clone categories (4rTools / ro-tools) show a master ON switch that flips every sub-tab engine.</summary>
+    public bool Togglable { get; set; }
+    public System.Collections.Generic.List<Action<bool>> Toggles { get; } = new();
+
     [ObservableProperty] private bool _isActive;
+    [ObservableProperty] private bool _enabled;
+    partial void OnEnabledChanged(bool value) { foreach (var t in Toggles) t(value); }
 
     public NavCategory(string title, string key, Action<NavCategory> onSelect)
     { Title = title; Key = key; _onSelect = onSelect; }

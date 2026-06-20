@@ -30,8 +30,9 @@
         <NumericUpDown Width="90" Minimum="0" Maximum="200" Value="{Binding TopOffset}"/>
         <TextBlock Text="Side" Classes="muted" VerticalAlignment="Center"/>
         <NumericUpDown Width="80" Minimum="0" Maximum="100" Value="{Binding SideOffset}"/>
-        <TextBlock Text="Zoom" Classes="muted" VerticalAlignment="Center"/>
-        <Slider Width="120" Minimum="0.5" Maximum="3.0" Value="{Binding Zoom}" VerticalAlignment="Center"/>
+        <TextBlock Text="OCR Zoom" Classes="muted" VerticalAlignment="Center"/>
+        <Slider Width="160" Minimum="2" Maximum="10" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Zoom}" VerticalAlignment="Center"/>
+        <TextBlock Text="{Binding Zoom, StringFormat=&apos;{}{0:0}x&apos;}" Classes="muted" VerticalAlignment="Center"/>
         <TextBlock Text="OCR filter" Classes="muted" VerticalAlignment="Center"/>
         <ComboBox Width="130" ItemsSource="{Binding PreprocessModes}" SelectedItem="{Binding PreprocessMode}"/>
         <TextBlock Text="Sharpness" Classes="muted" VerticalAlignment="Center"/>

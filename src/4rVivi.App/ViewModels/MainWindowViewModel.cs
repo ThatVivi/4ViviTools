@@ -58,6 +58,26 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         AddCat("Data", ("Database", database), ("Calculator", calc), ("Homun AI", homun));
         AddCat("Tools", ("GRF", grf), ("Sprite", sprite), ("External Editors", tools));
         AddCat("System", ("Auto-Detect", autoDetect), ("Servers", servers), ("Settings", settingsVm));
+
+        // ===== Tool clones (re-skin our OCR-wired engines into 4rTools / ro-tools layouts) =====
+        AddCloneCat("4rTools", "4rtools",
+            ("4rt:autopot",     "Autopot",       autopot,     v => autopot.Enabled = v),
+            ("4rt:skillbuff",   "Skill Buff",    buffs,       v => buffs.Enabled = v),
+            ("4rt:atkdef",      "ATK / DEF",     skills,      v => skills.Enabled = v),
+            ("4rt:macroswitch", "Macro Switch",  macros,      v => macros.Enabled = v),
+            ("4rt:spammer",     "Skill Spammer", classSkills, v => classSkills.Enabled = v),
+            ("4rt:bot",         "Bot",           botFarm,     v => botFarm.Enabled = v),
+            ("4rt:stats",       "Statistics",    stats,       null));
+        AddCloneCat("ro-tools", "rotools",
+            ("rt:autohpsp", "Auto HP/SP",    autopot,     v => autopot.Enabled = v),
+            ("rt:itembuff", "Item Buff",     buffs,       v => buffs.Enabled = v),
+            ("rt:skillbuff","Skill Buff",    skills,      v => skills.Enabled = v),
+            ("rt:spammer",  "Skill Spammer", classSkills, v => classSkills.Enabled = v),
+            ("rt:macros",   "Macros",        macros,      v => macros.Enabled = v),
+            ("rt:bot",      "Bot",           botFarm,     v => botFarm.Enabled = v),
+            ("rt:smart",    "Smart Bot",     smartBot,    v => smartBot.Enabled = v),
+            ("rt:overlay",  "Overlay",       overlay,     v => overlay.Enabled = v),
+            ("rt:stats",    "Statistics",    stats,       null));
         if (Categories.Count > 0) OnCategorySelected(Categories[0]);
 
         var s = _settings.Current;
@@ -94,6 +114,18 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             var p = new NavPage(_loc.T(t), t, vm, OnPageSelected);
             cat.Pages.Add(p); _pageByKey[t] = p;
+        }
+        Categories.Add(cat);
+    }
+
+    private void AddCloneCat(string title, string key, params (string key, string title, ViewModelBase vm, Action<bool>? toggle)[] pages)
+    {
+        var cat = new NavCategory(_loc.T(title), key, OnCategorySelected) { Togglable = true };
+        foreach (var (k, t, vm, toggle) in pages)
+        {
+            var p = new NavPage(_loc.T(t), k, vm, OnPageSelected);
+            cat.Pages.Add(p); _pageByKey[k] = p;
+            if (toggle != null) cat.Toggles.Add(toggle);
         }
         Categories.Add(cat);
     }

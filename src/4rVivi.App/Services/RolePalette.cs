@@ -15,7 +15,7 @@ public static class RolePalette
         ["BaseLevel"] = Color.Parse("#7CFF6C"), ["JobLevel"] = Color.Parse("#B06CFF"),
         ["Weight"] = Color.Parse("#FFE05C"),  ["MaxWeight"] = Color.Parse("#D4A03C"),
         ["Zeny"] = Color.Parse("#FFD700"),    ["BaseEXP"] = Color.Parse("#5CFFC8"),
-        ["JobEXP"] = Color.Parse("#FF6CD4"),  ["CharName"] = Color.Parse("#FFFFFF"),
+        ["JobEXP"] = Color.Parse("#FF6CD4"),  ["CharName"] = Color.Parse("#FFD23F"),
         ["Loot"] = Color.Parse("#FF8C42"),
         ["PosX"] = Color.Parse("#4CD9C0"),    ["PosY"] = Color.Parse("#9CD94C"),
         ["ClassName"] = Color.Parse("#C0A0FF"), ["BasicInfo"] = Color.Parse("#8899AA"),

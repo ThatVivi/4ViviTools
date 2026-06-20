@@ -36,12 +36,13 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
 
     [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern short GetAsyncKeyState(int vKey);
     private static bool Down(int vk) => (GetAsyncKeyState(vk) & 0x8000) != 0;
-    [ObservableProperty] private double _zoom = 1.0;
+    [ObservableProperty] private double _zoom = 4.0;
     public string[] PreprocessModes { get; } = { "Auto", "Light text", "Dark text", "Invert", "Grayscale", "High contrast", "Red", "Green", "Blue" };
     [ObservableProperty] private string _preprocessMode = "Auto";
     partial void OnPreprocessModeChanged(string value) => _ocr.PreprocessMode = string.IsNullOrEmpty(value) ? "Auto" : value;
     [ObservableProperty] private double _sharpness = 1.0;
     partial void OnSharpnessChanged(double value) => _ocr.Sharpen = value;
+    partial void OnZoomChanged(double value) => _ocr.Upscale = (int)System.Math.Round(value);
 
     private int TopPx => WindowMode == "Windowed" ? TopOffset : 0;
     private int SidePx => WindowMode == "Windowed" ? SideOffset : 0;
@@ -94,6 +95,7 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     public OcrReaderViewModel(GameSession session, OcrService ocr, SettingsStore settings, DiscordPresenceUpdater discord)
     {
         _session = session; _ocr = ocr; _settings = settings; _discord = discord;
+        _ocr.Upscale = (int)System.Math.Round(_zoom);
         foreach (var m in settings.Current.OcrMarks) Marks.Add(m);
         try { _hook = new GlobalKeyHook(); _hook.KeyPressed += OnGlobalKey; } catch { }
     }

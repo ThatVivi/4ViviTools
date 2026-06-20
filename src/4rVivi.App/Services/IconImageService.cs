@@ -48,6 +48,25 @@ public sealed class IconImageService
     public AvBitmap? GetSkill(string aegis) =>
         FromCache("s" + aegis, $"skills/{aegis.ToLowerInvariant()}.png", () => _icons.SkillIconData(aegis), () => _icons.SkillIconPath(aegis));
 
+    /// <summary>Usable-item icon by lowercase name (e.g. "red_potion"), bundled from the 4rTools/ro-tools packs. No GRF needed.</summary>
+    public AvBitmap? GetItemByName(string name)
+    {
+        var key = "n" + name;
+        if (_cache.TryGetValue(key, out var c)) return c;
+        AvBitmap? result = null;
+        try
+        {
+            if (_pack.TryGetValue($"itemsbyname/{name.ToLowerInvariant()}.png", out var png))
+            {
+                using var ms = new MemoryStream(png);
+                result = new AvBitmap(ms);
+            }
+        }
+        catch { }
+        _cache[key] = result;
+        return result;
+    }
+
     private AvBitmap? FromCache(string key, string packKey, Func<byte[]?> grf, Func<string?> file)
     {
         if (_cache.TryGetValue(key, out var cached)) return cached;

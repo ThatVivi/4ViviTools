@@ -32,6 +32,7 @@ public sealed class OcrService
     public string Language { get; set; } = "eng";
     public string PreprocessMode { get; set; } = "Auto";   // Auto | Light text | Dark text | Invert | Grayscale | Red | Green | Blue | High contrast
     public double Sharpen { get; set; } = 1.0;   // 0 = none, higher = sharper edges (helps every digit/letter)
+    public int Upscale { get; set; } = 4;        // OCR magnification (Zoom slider); higher = sharper read on tiny HUD text
     public string LastEngine { get; private set; } = "-";   // which engine produced the last read
 
     public IReadOnlyList<OcrRegion> Presets { get; } = new List<OcrRegion>
@@ -334,7 +335,8 @@ public sealed class OcrService
     /// <summary>Grayscale → 2x upscale → binary threshold. Greatly improves OCR on small HUD text.</summary>
     private System.Drawing.Bitmap Preprocess(System.Drawing.Bitmap src)
     {
-        int w = src.Width * 4, h = src.Height * 4;
+        int f = Math.Clamp(Upscale, 2, 10);
+        int w = src.Width * f, h = src.Height * f;
         var big = new System.Drawing.Bitmap(w, h);
         using (var g = Graphics.FromImage(big))
         {
