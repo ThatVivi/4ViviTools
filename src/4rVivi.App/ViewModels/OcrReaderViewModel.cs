@@ -111,9 +111,9 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     [ObservableProperty] private double _detBoxThresh;
     [ObservableProperty] private double _detUnclip;
     [ObservableProperty] private int _ocrCpuThreads;
-    partial void OnDetBoxThreshChanged(double v) { _ocr.Tuning.DetBoxThresh = (float)v; _ocr.ApplyTuning(); _settings.Save(); }
-    partial void OnDetUnclipChanged(double v) { _ocr.Tuning.DetUnclipRatio = (float)v; _ocr.ApplyTuning(); _settings.Save(); }
-    partial void OnOcrCpuThreadsChanged(int v) { _ocr.Tuning.CpuThreads = v; _ocr.ApplyTuning(); _settings.Save(); }
+    partial void OnDetBoxThreshChanged(double value) { _ocr.Tuning.DetBoxThresh = (float)value; _ocr.ApplyTuning(); _settings.Save(); }
+    partial void OnDetUnclipChanged(double value) { _ocr.Tuning.DetUnclipRatio = (float)value; _ocr.ApplyTuning(); _settings.Save(); }
+    partial void OnOcrCpuThreadsChanged(int value) { _ocr.Tuning.CpuThreads = value; _ocr.ApplyTuning(); _settings.Save(); }
 
     private readonly OcrTrainerRunner _trainer = new();
     private CancellationTokenSource? _trainCts;
