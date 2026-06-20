@@ -11,15 +11,21 @@ def has_cuda():
         return False
 
 def ensure_env(use_gpu):
-    try:
-        import paddle  # noqa
-    except Exception:
-        wheel = "paddlepaddle-gpu" if use_gpu else "paddlepaddle"
-        idx = [] if use_gpu else ["-i", "https://www.paddlepaddle.org.cn/packages/stable/cpu/"]
-        subprocess.check_call([sys.executable, "-m", "pip", "install", wheel, *idx])
+    if use_gpu:
+        try:
+            import paddle  # noqa
+        except Exception:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "paddlepaddle-gpu==2.6.2"])
+    else:
+        # CPU build: remove the GPU build (they both provide `paddle`) then install CPU wheel.
+        subprocess.call([sys.executable, "-m", "pip", "uninstall", "-y", "paddlepaddle-gpu"])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "paddlepaddle==2.6.2",
+                               "-i", "https://www.paddlepaddle.org.cn/packages/stable/cpu/"])
     subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", os.path.join(HERE, "requirements.txt")])
     # paddlepaddle needs protobuf<=3.20.2; force it last so nothing upgraded it.
     subprocess.check_call([sys.executable, "-m", "pip", "install", "protobuf==3.20.2"])
+    # albumentations 2.x eagerly imports torch (often broken on Windows); 1.3.x doesn't need torch.
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "albumentations==1.3.1"])
 
 def get_paddleocr_repo():
     repo = os.path.join(HERE, "PaddleOCR")
@@ -41,9 +47,10 @@ def main():
     ap.add_argument("--reference", default=os.path.join(HERE, "reference", "template.json"))
     ap.add_argument("--count", type=int, default=5000)
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--cpu", action="store_true", help="Force CPU training (no CUDA/cuDNN needed)")
     a = ap.parse_args()
 
-    use_gpu = has_cuda()
+    use_gpu = has_cuda() and not a.cpu
     log(f"[1/6] device: {'GPU+CPU' if use_gpu else 'CPU only'}")
     ensure_env(use_gpu)
 
