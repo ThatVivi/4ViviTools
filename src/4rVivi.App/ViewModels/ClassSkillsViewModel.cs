@@ -39,6 +39,9 @@ public sealed partial class ClassSkillsViewModel : ViewModelBase
     [ObservableProperty] private int _spamDelay = 300;
     [ObservableProperty] private string _status = "Pick your class, tick the skills to spam, set a key for each, then toggle Spam ON (top of this tab) or on the Dashboard.";
 
+    [ObservableProperty] private bool _enabled;
+    partial void OnEnabledChanged(bool value) => _hub.Spammer.Enabled = value;
+
     public ClassSkillsViewModel(EngineHub hub, ClassData cd)
     {
         _hub = hub; _cd = cd;
