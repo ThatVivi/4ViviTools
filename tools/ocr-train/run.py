@@ -47,10 +47,11 @@ def main():
     ap.add_argument("--reference", default=os.path.join(HERE, "reference", "template.json"))
     ap.add_argument("--count", type=int, default=5000)
     ap.add_argument("--force", action="store_true")
-    ap.add_argument("--cpu", action="store_true", help="Force CPU training (no CUDA/cuDNN needed)")
+    ap.add_argument("--cpu", action="store_true", help="(default) CPU training")
+    ap.add_argument("--gpu", action="store_true", help="Use GPU (needs CUDA 11.8 + cuDNN 8 on PATH)")
     a = ap.parse_args()
 
-    use_gpu = has_cuda() and not a.cpu
+    use_gpu = a.gpu and has_cuda() and not a.cpu
     log(f"[1/6] device: {'GPU+CPU' if use_gpu else 'CPU only'}")
     ensure_env(use_gpu)
 
@@ -78,9 +79,10 @@ def main():
     log("[5/6] train + export")
     repo = get_paddleocr_repo()
     pre = train_export._ensure_pretrained(work)
+    save_dir = os.path.join(work, "output", "rec_ro")
     cfg = os.path.join(work, "rec_config.yml")
-    train_export.write_config(os.path.join(HERE, "rec_config.template.yml"), data, use_gpu, pre, cfg)
-    onnx = train_export.run(repo, cfg, work)
+    train_export.write_config(os.path.join(HERE, "rec_config.template.yml"), data, use_gpu, pre, save_dir, cfg)
+    onnx = train_export.run(repo, cfg, work, save_dir)
 
     log("[6/6] install model")
     dst = os.path.join(HERE, "..", "..", "src", "RapidOcrNet", "models", "v5",

@@ -1,7 +1,7 @@
 Global:
   use_gpu: __USE_GPU__
   epoch_num: 200
-  save_model_dir: ./output/rec_ro
+  save_model_dir: __SAVE_DIR__
   save_epoch_step: 50
   eval_batch_step: [0, 500]
   pretrained_model: __PRETRAINED__
@@ -32,7 +32,7 @@ Train:
       - CTCLabelEncode: {}
       - RecResizeImg: { image_shape: [3, 48, 320] }
       - KeepKeys: { keep_keys: [image, label, length] }
-  loader: { shuffle: true, batch_size_per_card: 64, drop_last: true, num_workers: 4 }
+  loader: { shuffle: true, batch_size_per_card: 64, drop_last: true, num_workers: 0 }
 Eval:
   dataset:
     name: SimpleDataSet
@@ -43,4 +43,4 @@ Eval:
       - CTCLabelEncode: {}
       - RecResizeImg: { image_shape: [3, 48, 320] }
       - KeepKeys: { keep_keys: [image, label, length] }
-  loader: { shuffle: false, batch_size_per_card: 64, drop_last: false, num_workers: 4 }
+  loader: { shuffle: false, batch_size_per_card: 64, drop_last: false, num_workers: 0 }
