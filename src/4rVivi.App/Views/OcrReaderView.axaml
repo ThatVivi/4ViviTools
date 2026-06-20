@@ -53,6 +53,19 @@
           </Canvas>
         </ScrollViewer>
       </Border>
+      <WrapPanel Orientation="Horizontal">
+        <Button Margin="0,0,8,8" Content="Save" Command="{Binding SaveCommand}"/>
+        <Button Margin="0,0,8,8" Content="Clear" Command="{Binding ClearMarksCommand}"/>
+        <Button Margin="0,0,8,8" Classes="accent" Content="Start" Command="{Binding StartCommand}" IsVisible="{Binding !Running}"/>
+        <Button Margin="0,0,8,8" Classes="accent" Content="Stop" Command="{Binding StopCommand}" IsVisible="{Binding Running}"/>
+        <Button Margin="0,0,8,8" Content="Calibrate" Command="{Binding CalibrateCommand}"/>
+        <CheckBox Margin="0,0,8,8" Content="Until all data" IsChecked="{Binding CalibrateUntilComplete}" VerticalAlignment="Center"/>
+        <Button Margin="0,0,8,8" Content="Toggle overlay" Command="{Binding ToggleOverlayCommand}"/>
+        <Border Width="1" Background="{DynamicResource BorderBrush}" Margin="0,0,8,8"/>
+        <Button Margin="0,0,8,8" Content="Export training template" Command="{Binding ExportTemplateCommand}"/>
+        <Button Margin="0,0,8,8" Classes="accent" Content="Train OCR" Command="{Binding TrainOcrCommand}" IsEnabled="{Binding !Training}"/>
+        <Button Margin="0,0,8,8" Content="Cancel" Command="{Binding CancelTrainCommand}" IsEnabled="{Binding Training}"/>
+      </WrapPanel>
     </StackPanel>
 
     <StackPanel Grid.Column="1" Spacing="10" Margin="12,0,0,0">
@@ -77,18 +90,6 @@
         <TextBlock Text="Refresh ms" Classes="muted" VerticalAlignment="Center"/>
         <NumericUpDown Width="110" Minimum="120" Maximum="2000" Increment="50" Value="{Binding IntervalMs}"/>
       </StackPanel>
-      <StackPanel Orientation="Horizontal" Spacing="8">
-        <Button Content="Save" Command="{Binding SaveCommand}"/>
-        <Button Content="Clear" Command="{Binding ClearMarksCommand}"/>
-        <Button Classes="accent" Content="Start" Command="{Binding StartCommand}" IsVisible="{Binding !Running}"/>
-        <Button Classes="accent" Content="Stop" Command="{Binding StopCommand}" IsVisible="{Binding Running}"/>
-        <Button Content="Calibrate" Command="{Binding CalibrateCommand}"/>
-        <Button Content="Export training template" Command="{Binding ExportTemplateCommand}"/>
-        <Button Classes="accent" Content="Train OCR" Command="{Binding TrainOcrCommand}" IsEnabled="{Binding !Training}"/>
-        <Button Content="Cancel" Command="{Binding CancelTrainCommand}" IsEnabled="{Binding Training}"/>
-        <CheckBox Content="Until all data" IsChecked="{Binding CalibrateUntilComplete}" VerticalAlignment="Center"/>
-      </StackPanel>
-      <Button Content="Toggle overlay (show/hide boxes)" Command="{Binding ToggleOverlayCommand}" HorizontalAlignment="Left"/>
       <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
         <TextBlock Text="Overlay key:" Classes="muted" VerticalAlignment="Center"/>
         <ctrl:HotkeyCaptureBox Width="120" KeyText="{Binding OverlayHotkey}"/>
