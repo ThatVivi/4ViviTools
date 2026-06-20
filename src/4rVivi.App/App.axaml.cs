@@ -125,7 +125,6 @@ public partial class App : Application
         s.AddSingleton<GrfViewModel>();
         s.AddSingleton<SpriteViewerViewModel>();
         s.AddSingleton<ToolsLauncherViewModel>();
-        s.AddSingleton<MarketplaceViewModel>();
         s.AddSingleton<AutoDetectViewModel>();
         s.AddSingleton<OcrReaderViewModel>();
 

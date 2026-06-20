@@ -45,7 +45,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         SmartBotViewModel smartBot, ClassSkillsViewModel classSkills, BotFarmViewModel botFarm, OverlayViewModel overlay, MacrosViewModel macros,
         MvpTrackerViewModel mvp, HudViewModel hud, LootViewModel loot,
         DatabaseViewModel database, CalculatorViewModel calc, HomunAiViewModel homun,
-        GrfViewModel grf, SpriteViewerViewModel sprite, ToolsLauncherViewModel tools, MarketplaceViewModel marketplace,
+        GrfViewModel grf, SpriteViewerViewModel sprite, ToolsLauncherViewModel tools,
         ScannerViewModel scanner, AutoDetectViewModel autoDetect, OcrReaderViewModel ocrReader, ServersViewModel servers, StatsViewModel stats, SettingsViewModel settingsVm)
     {
         _session = session; _hub = hub; _procs = procs; _settings = settings; _loc = loc; _nav = nav;
@@ -56,7 +56,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         AddCat("Bot", ("Basic", botFarm), ("Smart", smartBot), ("RCX Overlay", overlay));
         AddCat("Trackers", ("MVP", mvp), ("Buff HUD", hud), ("Loot Log", loot), ("Stats", stats));
         AddCat("Data", ("Database", database), ("Calculator", calc), ("Homun AI", homun));
-        AddCat("Tools", ("GRF", grf), ("Sprite", sprite), ("External Editors", tools), ("Marketplace", marketplace));
+        AddCat("Tools", ("GRF", grf), ("Sprite", sprite), ("External Editors", tools));
         AddCat("System", ("Auto-Detect", autoDetect), ("Servers", servers), ("Settings", settingsVm));
         if (Categories.Count > 0) OnCategorySelected(Categories[0]);
 
