@@ -106,6 +106,12 @@ jobs:
           -c Release -r win-x64 --self-contained true
           -o publish/OcrServer
 
+      - name: Bundle OCR trainer
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path publish/tools | Out-Null
+          Copy-Item -Recurse -Force tools/ocr-train publish/tools/ocr-train
+
       - name: Upload Publish Log
         if: always()
         uses: actions/upload-artifact@v4

@@ -35,6 +35,31 @@ public sealed class OcrService
     public int Upscale { get; set; } = 4;        // OCR magnification (Zoom slider); higher = sharper read on tiny HUD text
     public string LastEngine { get; private set; } = "-";   // which engine produced the last read
 
+    public FourRVivi.Core.Settings.OcrTuningConfig Tuning { get; set; } = new();
+
+    /// <summary>For digit roles, keep only 0-9, '/', '.', stripping separators and stray letters.</summary>
+    public static string ConstrainNumeric(string raw, bool numeric)
+    {
+        if (!numeric || string.IsNullOrEmpty(raw)) return raw;
+        var sb = new System.Text.StringBuilder(raw.Length);
+        foreach (char c in raw)
+            if ((c >= '0' && c <= '9') || c == '/' || c == '.') sb.Append(c);
+        return sb.ToString();
+    }
+
+    public static byte[] BitmapToPng(System.Drawing.Bitmap bmp)
+    { using var ms = new MemoryStream(); bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png); return ms.ToArray(); }
+
+    public void ApplyTuning()
+    {
+        Environment.SetEnvironmentVariable("OCR_CPU_THREADS", Tuning.CpuThreads.ToString());
+        _rapid.SendConfig(
+            $"boxThresh={Tuning.DetBoxThresh};boxScore={Tuning.DetBoxScoreThresh};" +
+            $"unclip={Tuning.DetUnclipRatio};textScore={Tuning.TextScore};maxSide={Tuning.MaxSideLen}");
+    }
+
+    public void ReloadWorker() { _rapid.Restart(); ApplyTuning(); }
+
     public IReadOnlyList<OcrRegion> Presets { get; } = new List<OcrRegion>
     {
         new() { Name = "Classic (top-left)", X = 0, Y = 0, Width = 260, Height = 170 },
@@ -187,7 +212,7 @@ public sealed class OcrService
         {
             // 1) PaddleOCR PP-OCRv5 (out-of-process worker) — best accuracy
             var rapid = _rapid.Recognize(png);
-            if (!string.IsNullOrWhiteSpace(rapid)) { LastEngine = "PaddleOCR"; return rapid; }
+            if (!string.IsNullOrWhiteSpace(rapid)) { LastEngine = "PaddleOCR"; return ConstrainNumeric(rapid, numeric); }
 
             // 2) Windows OCR
             var win = _winOcr.Recognize(png);

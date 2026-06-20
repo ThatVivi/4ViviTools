@@ -23,6 +23,16 @@ public sealed class ProfileConfig
     public List<string> PreferredProcessNames { get; set; } = new() { "ragexe", "ragexere", "4ragexe" };
 }
 
+public sealed class OcrTuningConfig
+{
+    public float DetBoxThresh { get; set; } = 0.30f;
+    public float DetBoxScoreThresh { get; set; } = 0.60f;
+    public float DetUnclipRatio { get; set; } = 1.50f;
+    public float TextScore { get; set; } = 0.50f;
+    public int MaxSideLen { get; set; } = 960;
+    public int CpuThreads { get; set; } = 0;
+}
+
 public sealed class AppSettings
 {
     public string Language { get; set; } = "en";   // "en" | "ar"
@@ -42,6 +52,7 @@ public sealed class AppSettings
     public string DiscordWebsiteUrl { get; set; } = "";
     public string DiscordServerName { get; set; } = "Eldrynn RO";
     public List<FourRVivi.Core.Ocr.OcrMark> OcrMarks { get; set; } = new();
+    public OcrTuningConfig OcrTuning { get; set; } = new();
     public List<ChainMacro> Macros { get; set; } = new();
     public List<BuffTimer> BuffTimers { get; set; } = new();
 

@@ -30,6 +30,10 @@ jobs:
           -c Release -r ${{ matrix.runtime }} --self-contained true
           -o publish/${{ matrix.runtime }}/OcrServer
       - shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path publish/${{ matrix.runtime }}/tools | Out-Null
+          Copy-Item -Recurse -Force tools/ocr-train publish/${{ matrix.runtime }}/tools/ocr-train
+      - shell: pwsh
         run: Compress-Archive -Path publish/${{ matrix.runtime }}/* -DestinationPath 4rVivi-${{ matrix.runtime }}.zip -Force
       - shell: pwsh
         run: (Get-FileHash 4rVivi-${{ matrix.runtime }}.zip -Algorithm SHA256).Hash | Out-File 4rVivi-${{ matrix.runtime }}.sha256.txt

@@ -12,6 +12,7 @@ public sealed class RapidOcrClient : IDisposable
     private readonly object _lock = new();
     private Process? _proc;
     private bool _failed;
+    private string? _pendingCfg;
     private string _tmp = Path.Combine(Path.GetTempPath(), "4rvivi_ocr.png");
 
     public bool Available => !_failed;
@@ -48,6 +49,8 @@ public sealed class RapidOcrClient : IDisposable
                 }
             };
             _proc.Start();
+            if (_pendingCfg != null)
+                try { _proc.StandardInput.WriteLine("CFG\t" + _pendingCfg); _proc.StandardInput.Flush(); } catch { }
             return true;
         }
         catch { _failed = true; return false; }
@@ -72,6 +75,28 @@ public sealed class RapidOcrClient : IDisposable
                 return null;
             }
             catch { _failed = true; return null; }
+        }
+    }
+
+    /// <summary>Queue a CFG line; sent on next worker start and immediately if running.</summary>
+    public void SendConfig(string cfg)
+    {
+        lock (_lock)
+        {
+            _pendingCfg = cfg;
+            if (_proc is { HasExited: false })
+                try { _proc.StandardInput.WriteLine("CFG\t" + cfg); _proc.StandardInput.Flush(); } catch { _failed = true; }
+        }
+    }
+
+    /// <summary>Kill the worker so the next call starts fresh (e.g. after a new model is installed).</summary>
+    public void Restart()
+    {
+        lock (_lock)
+        {
+            try { if (_proc is { HasExited: false }) { _proc.StandardInput.WriteLine("QUIT"); _proc.WaitForExit(800); } } catch { }
+            try { _proc?.Kill(); } catch { }
+            _proc = null; _failed = false;
         }
     }
 

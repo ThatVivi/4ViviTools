@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -96,9 +99,55 @@ public sealed partial class OcrReaderViewModel : ViewModelBase
     {
         _session = session; _ocr = ocr; _settings = settings; _discord = discord;
         _ocr.Upscale = (int)System.Math.Round(_zoom);
+        _ocr.Tuning = settings.Current.OcrTuning;
+        _ocr.ApplyTuning();
+        _detBoxThresh = settings.Current.OcrTuning.DetBoxThresh;
+        _detUnclip = settings.Current.OcrTuning.DetUnclipRatio;
+        _ocrCpuThreads = settings.Current.OcrTuning.CpuThreads;
         foreach (var m in settings.Current.OcrMarks) Marks.Add(m);
         try { _hook = new GlobalKeyHook(); _hook.KeyPressed += OnGlobalKey; } catch { }
     }
+
+    [ObservableProperty] private double _detBoxThresh;
+    [ObservableProperty] private double _detUnclip;
+    [ObservableProperty] private int _ocrCpuThreads;
+    partial void OnDetBoxThreshChanged(double v) { _ocr.Tuning.DetBoxThresh = (float)v; _ocr.ApplyTuning(); _settings.Save(); }
+    partial void OnDetUnclipChanged(double v) { _ocr.Tuning.DetUnclipRatio = (float)v; _ocr.ApplyTuning(); _settings.Save(); }
+    partial void OnOcrCpuThreadsChanged(int v) { _ocr.Tuning.CpuThreads = v; _ocr.ApplyTuning(); _settings.Save(); }
+
+    private readonly OcrTrainerRunner _trainer = new();
+    private CancellationTokenSource? _trainCts;
+    [ObservableProperty] private string _trainLog = "";
+    [ObservableProperty] private bool _training;
+
+    [RelayCommand]
+    private void ExportTemplate()
+    {
+        byte[]? png = null;
+        try { var f = GrabMonitor(); if (f != null) png = OcrService.BitmapToPng(f); } catch { }
+        var dir = OcrTemplateExporter.Export(Marks, png);
+        Status = $"Exported template + reference image to {dir}.";
+    }
+
+    [RelayCommand]
+    private async Task TrainOcr()
+    {
+        var dir = _trainer.UserImagesDir();
+        try { Process.Start(new ProcessStartInfo { FileName = dir, UseShellExecute = true }); } catch { }
+        Status = $"Drop ~30-40 screenshots into {dir}, then training runs.";
+        TrainLog = "";
+        _trainer.Line -= OnTrainLine; _trainer.Line += OnTrainLine;
+        _trainCts = new CancellationTokenSource();
+        Training = true;
+        var ok = await _trainer.RunAsync(_trainCts.Token);
+        Training = false;
+        Status = ok ? "Training done — new model installed. Reloading OCR…" : "Training cancelled or failed (old model kept).";
+        if (ok) _ocr.ReloadWorker();
+    }
+
+    private void OnTrainLine(string l) => Dispatcher.UIThread.Post(() => TrainLog += l + "\n");
+
+    [RelayCommand] private void CancelTrain() { _trainCts?.Cancel(); }
 
     private void OnGlobalKey(int vk)
     {
