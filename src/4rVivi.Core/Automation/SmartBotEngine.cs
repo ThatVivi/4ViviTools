@@ -20,19 +20,23 @@ public sealed class SmartBotEngine : AutomationEngine
     public bool ClickToMove { get; set; } = true;   // walk by clicking random nearby points
     public bool ClickAttack { get; set; } = true;   // RO is click-to-attack: click a nearby point instead of a fixed key
     public int MoveRadius { get; set; } = 180;       // px around screen centre
+    public bool HardwareClick { get; set; } = false;
 
     public int Kills { get; private set; }                  // proxied from EXP gains
     public DateTime StartedAt { get; private set; } = DateTime.Now;
 
     private readonly StatReader _stat;
-    private readonly MouseSender _mouse = new();
+    private readonly MouseSender _mouse;
     private readonly Random _rng = new();
     private int _skillIdx;
     private long _lastChangeTick;
     private int _lastExp = -1, _lastHp = -1, _lastPx = -1, _lastPy = -1;
 
-    public SmartBotEngine(GameSession s, KeySender k, HumanizedTiming t) : base("Smart Bot", s, k, t)
-        => _stat = new StatReader(s);
+    public SmartBotEngine(GameSession s, KeySender k, MouseSender m, HumanizedTiming t) : base("Smart Bot", s, k, t)
+    {
+        _mouse = m;
+        _stat = new StatReader(s);
+    }
 
     protected override async Task LoopAsync(CancellationToken ct)
     {
@@ -70,7 +74,7 @@ public sealed class SmartBotEngine : AutomationEngine
                         int cx = cw / 2, cy = ch / 2;
                         int x = Math.Clamp(cx + _rng.Next(-MoveRadius, MoveRadius), 4, cw - 4);
                         int y = Math.Clamp(cy + _rng.Next(-MoveRadius, MoveRadius), 4, ch - 4);
-                        _mouse.Click(Hwnd, x, y);
+                        ClickAt(x, y);
                         await Timing.DelayAsync(RotationMs / 2, ct);
                     }
                 }
@@ -80,8 +84,8 @@ public sealed class SmartBotEngine : AutomationEngine
                 {
                     var (aw, ah) = _mouse.ClientSize(Hwnd);
                     if (aw > 0 && ah > 0)
-                        _mouse.Click(Hwnd, Math.Clamp(aw / 2 + _rng.Next(-MoveRadius, MoveRadius), 4, aw - 4),
-                                            Math.Clamp(ah / 2 + _rng.Next(-MoveRadius, MoveRadius), 4, ah - 4));
+                        ClickAt(Math.Clamp(aw / 2 + _rng.Next(-MoveRadius, MoveRadius), 4, aw - 4),
+                                Math.Clamp(ah / 2 + _rng.Next(-MoveRadius, MoveRadius), 4, ah - 4));
                 }
                 else Keys.Tap(Hwnd, KeyName.ToVk(AttackKey), 15);
                 if (SkillRotation.Count > 0)
@@ -96,6 +100,14 @@ public sealed class SmartBotEngine : AutomationEngine
             }
             await Timing.DelayAsync(RotationMs, ct);
         }
+    }
+
+    private void ClickAt(int x, int y)
+    {
+        if (HardwareClick)
+            _mouse.HardwareClick(Hwnd, x, y);
+        else
+            _mouse.Click(Hwnd, x, y);
     }
 
     private void TrackProgressAndUnstuck(CancellationToken ct)

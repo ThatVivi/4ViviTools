@@ -18,18 +18,27 @@ public sealed class EngineHub
     public TriggeredMacroEngine Macros { get; }
 
     public event Action<string>? Status;
+    private readonly MouseSender _mouse;
+
+    /// <summary>The click backend shared by engines that use mouse input.</summary>
+    public InputMethod InputMethod
+    {
+        get => _mouse.Method;
+        set => _mouse.Method = value;
+    }
 
     public EngineHub(GameSession session)
     {
         Session = session;
         Timing = new HumanizedTiming();
         var keys = new KeySender();
+        _mouse = new MouseSender();
         Autopot = new AutopotEngine(session, keys, Timing);
         SkillBuffs = new BuffEngine(session, keys, Timing);
         ItemBuffs = new BuffEngine(session, keys, Timing);
         Spammer = new SkillSpamEngine(session, keys, Timing);
         BotFarm = new BotFarmEngine(session, keys, Timing);
-        SmartBot = new SmartBotEngine(session, keys, Timing);
+        SmartBot = new SmartBotEngine(session, keys, _mouse, Timing);
         Macros = new TriggeredMacroEngine(session, keys, Timing);
         foreach (var e in All()) e.Status += s => Status?.Invoke(s);
     }

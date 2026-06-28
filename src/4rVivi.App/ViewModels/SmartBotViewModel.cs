@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FourRVivi.Core.Automation;
 using FourRVivi.Core.Game;
+using FourRVivi.Core.Input;
 
 namespace FourRVivi.App.ViewModels;
 
@@ -22,9 +23,18 @@ public sealed partial class SmartBotViewModel : ViewModelBase
     [ObservableProperty] private bool _clickToMove;
     [ObservableProperty] private bool _clickAttack;
     [ObservableProperty] private int _moveRadius;
+    [ObservableProperty] private bool _hardwareClick;
+    [ObservableProperty] private int _inputMethodIndex;
     [ObservableProperty] private string _addressStatus = "";
 
     public string[] Keys { get; } = KeyList.Common;
+    public string[] InputMethods { get; } =
+    {
+        "SendInput  (AHK Send/Click)",
+        "mouse/keybd_event  (AHK SendEvent)",
+        "PostMessage  (AHK ControlClick)",
+        "reWASD click  (ViGEm virtual controller)"
+    };
 
         [ObservableProperty] private bool _enabled;
     partial void OnEnabledChanged(bool value) { _hub.SmartBot.Enabled = value; }
@@ -37,6 +47,8 @@ public sealed partial class SmartBotViewModel : ViewModelBase
         _fleeAtHpPercent = b.FleeAtHpPercent; _stuckSeconds = b.StuckSeconds;
         _returnAtWeightPercent = b.ReturnAtWeightPercent; _rotationMs = b.RotationMs;
         _clickToMove = b.ClickToMove; _clickAttack = b.ClickAttack; _moveRadius = b.MoveRadius;
+        _hardwareClick = b.HardwareClick;
+        _inputMethodIndex = (int)_hub.InputMethod;
         RefreshAddresses();
     }
 
@@ -51,6 +63,8 @@ public sealed partial class SmartBotViewModel : ViewModelBase
     partial void OnClickToMoveChanged(bool value) => _hub.SmartBot.ClickToMove = value;
     partial void OnClickAttackChanged(bool value) => _hub.SmartBot.ClickAttack = value;
     partial void OnMoveRadiusChanged(int value) => _hub.SmartBot.MoveRadius = Math.Max(20, value);
+    partial void OnHardwareClickChanged(bool value) => _hub.SmartBot.HardwareClick = value;
+    partial void OnInputMethodIndexChanged(int value) => _hub.InputMethod = (InputMethod)value;
 
     [RelayCommand] private void ApplyRotation()
     {
