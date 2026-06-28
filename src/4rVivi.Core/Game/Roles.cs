@@ -9,9 +9,10 @@ public static class Roles
     public const string BaseLevel = "BaseLevel", JobLevel = "JobLevel";
     public const string PosX = "PosX", PosY = "PosY";
     public const string MapName = "MapName", CharName = "CharName", ClassName = "ClassName";
+    public const string Ammo = "Ammo";
 
     public static readonly string[] All =
     {
-        Hp, MaxHp, Sp, MaxSp, Exp, JobExp, Zeny, Weight, MaxWeight, BaseLevel, JobLevel, PosX, PosY, MapName, CharName, ClassName
+        Hp, MaxHp, Sp, MaxSp, Exp, JobExp, Zeny, Weight, MaxWeight, BaseLevel, JobLevel, PosX, PosY, MapName, CharName, ClassName, Ammo
     };
 }

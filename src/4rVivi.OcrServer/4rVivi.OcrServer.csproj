@@ -16,5 +16,33 @@
       <Link>models\v5\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\RapidOcrNet\models\icons\icon_embedder.onnx" Condition="Exists('..\RapidOcrNet\models\icons\icon_embedder.onnx')">
+      <Link>models\icons\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\RapidOcrNet\models\icons\icon_refs.bin" Condition="Exists('..\RapidOcrNet\models\icons\icon_refs.bin')">
+      <Link>models\icons\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\RapidOcrNet\models\icons\labels.txt" Condition="Exists('..\RapidOcrNet\models\icons\labels.txt')">
+      <Link>models\icons\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\RapidOcrNet\models\icons\map_names.json" Condition="Exists('..\RapidOcrNet\models\icons\map_names.json')">
+      <Link>models\icons\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\RapidOcrNet\models\icons\icon_meta.json" Condition="Exists('..\RapidOcrNet\models\icons\icon_meta.json')">
+      <Link>models\icons\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\RapidOcrNet\models\yolo\entity.onnx" Condition="Exists('..\RapidOcrNet\models\yolo\entity.onnx')">
+      <Link>models\yolo\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\RapidOcrNet\models\yolo\entity_meta.json" Condition="Exists('..\RapidOcrNet\models\yolo\entity_meta.json')">
+      <Link>models\yolo\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

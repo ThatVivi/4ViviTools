@@ -46,42 +46,26 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         MvpTrackerViewModel mvp, HudViewModel hud, LootViewModel loot,
         DatabaseViewModel database, CalculatorViewModel calc, HomunAiViewModel homun,
         GrfViewModel grf, SpriteViewerViewModel sprite, ToolsLauncherViewModel tools,
-        ScannerViewModel scanner, AutoDetectViewModel autoDetect, OcrReaderViewModel ocrReader, ServersViewModel servers, StatsViewModel stats, SettingsViewModel settingsVm)
+        ScannerViewModel scanner, AutoDetectViewModel autoDetect, OcrReaderViewModel ocrReader, BotStudioViewModel botStudio, ServersViewModel servers, StatsViewModel stats, SettingsViewModel settingsVm,
+        FourRToolsShellViewModel fourRTools, RoToolsShellViewModel roTools, DamageCalcViewModel damageCalc)
     {
         _session = session; _hub = hub; _procs = procs; _settings = settings; _loc = loc; _nav = nav;
 
         AddCat("Dashboard", ("Dashboard", dashboard));
-        AddCat("OCR Reader", ("OCR Reader", ocrReader));
         AddCat("Macro", ("Macros", macros), ("Autopot", autopot), ("Buffs", buffs), ("Skills", skills), ("Skill Spammer", classSkills));
-        AddCat("Bot", ("Basic", botFarm), ("Smart", smartBot), ("RCX Overlay", overlay));
+        AddCat("Bot", ("Bot", botStudio));
         AddCat("Trackers", ("MVP", mvp), ("Buff HUD", hud), ("Loot Log", loot), ("Stats", stats));
         AddCat("Data", ("Database", database), ("Calculator", calc), ("Homun AI", homun));
         AddCat("Tools", ("GRF", grf), ("Sprite", sprite), ("External Editors", tools));
         AddCat("System", ("Auto-Detect", autoDetect), ("Servers", servers), ("Settings", settingsVm));
 
-        // ===== Tool clones (re-skin our OCR-wired engines into 4rTools / ro-tools layouts) =====
-        AddCloneCat("4rTools", "4rtools",
-            ("4rt:autopot",     "Autopot",       autopot,     v => autopot.Enabled = v),
-            ("4rt:skillbuff",   "Skill Buff",    buffs,       v => buffs.Enabled = v),
-            ("4rt:atkdef",      "ATK / DEF",     skills,      v => skills.Enabled = v),
-            ("4rt:macroswitch", "Macro Switch",  macros,      v => macros.Enabled = v),
-            ("4rt:spammer",     "Skill Spammer", classSkills, v => classSkills.Enabled = v),
-            ("4rt:bot",         "Bot",           botFarm,     v => botFarm.Enabled = v),
-            ("4rt:stats",       "Statistics",    stats,       null));
-        AddCloneCat("ro-tools", "rotools",
-            ("rt:autohpsp", "Auto HP/SP",    autopot,     v => autopot.Enabled = v),
-            ("rt:itembuff", "Item Buff",     buffs,       v => buffs.Enabled = v),
-            ("rt:skillbuff","Skill Buff",    skills,      v => skills.Enabled = v),
-            ("rt:spammer",  "Skill Spammer", classSkills, v => classSkills.Enabled = v),
-            ("rt:macros",   "Macros",        macros,      v => macros.Enabled = v),
-            ("rt:bot",      "Bot",           botFarm,     v => botFarm.Enabled = v),
-            ("rt:smart",    "Smart Bot",     smartBot,    v => smartBot.Enabled = v),
-            ("rt:overlay",  "Overlay",       overlay,     v => overlay.Enabled = v),
-            ("rt:stats",    "Statistics",    stats,       null));
+        // ===== Tool clones: faithful in-app copies, OCR-fed =====
+        AddCat("4rTools", ("4rTools", fourRTools));   // faithful 4RTools shell (light theme)
+        AddCat("ro-tools", ("ro-tools", roTools));    // faithful RO-Tools v1.6.1 shell (dark theme)
         if (Categories.Count > 0) OnCategorySelected(Categories[0]);
 
         var s = _settings.Current;
-        WindowOpacity = Math.Clamp(s.WindowOpacity, 70, 100) / 100.0;
+        WindowOpacity = Math.Clamp(s.WindowOpacity, 25, 100) / 100.0;
         _loc.SetLang(s.Language);
         _hub.Timing.Enabled = s.HumanizeTiming;
 

@@ -7,7 +7,7 @@
       <TextBlock Text="Skill spammer" Classes="h1"/>
       <ToggleSwitch Content="Spam ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
       <ComboBox Width="200" ItemsSource="{Binding Classes}" SelectedItem="{Binding SelectedClass}" VerticalAlignment="Center"/>
-      <StackPanel VerticalAlignment="Center"><TextBlock Text="Delay ms" Classes="muted"/><NumericUpDown Width="110" Minimum="50" Maximum="5000" Value="{Binding SpamDelay}"/></StackPanel>
+      <StackPanel VerticalAlignment="Center"><TextBlock Text="Delay ms" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="50" Maximum="5000" Value="{Binding SpamDelay}"/></StackPanel>
     </StackPanel>
     <TextBlock Grid.Row="1" Classes="muted" Text="{Binding Status}" Margin="0,8"/>
     <ScrollViewer Grid.Row="2">

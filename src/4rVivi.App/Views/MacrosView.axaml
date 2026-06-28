@@ -33,7 +33,7 @@
         <StackPanel Orientation="Horizontal" Spacing="10">
           <TextBox Width="220" Text="{Binding Sequence}" Watermark="ENTER, ENTER"/>
           <ctrl:SequenceRecorder Sequence="{Binding Sequence}" VerticalAlignment="Bottom"/>
-          <StackPanel><TextBlock Text="Gap ms" Classes="muted"/><NumericUpDown Width="100" Minimum="20" Maximum="5000" Value="{Binding GapMs}"/></StackPanel>
+          <StackPanel><TextBlock Text="Gap ms" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="20" Maximum="5000" Value="{Binding GapMs}"/></StackPanel>
           <Button Classes="accent" Content="Play login" VerticalAlignment="Bottom" Command="{Binding PlayLoginCommand}"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="10">

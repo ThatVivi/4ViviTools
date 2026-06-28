@@ -91,7 +91,7 @@ public partial class OcrReaderView : UserControl
             foreach (var sc in screens.All)
             {
                 var b = sc.Bounds;
-                Vm.Monitors.Add(new MonitorInfo { Name = $"Screen {i} — {b.Width}x{b.Height}", X = b.X, Y = b.Y, W = b.Width, H = b.Height });
+                Vm.Monitors.Add(new MonitorInfo { Name = $"Screen {i} — {b.Width}x{b.Height}", X = b.X, Y = b.Y, W = b.Width, H = b.Height, Index = i - 1 });
                 i++;
             }
             if (Vm.SelectedMonitor == null && Vm.Monitors.Count > 0) Vm.SelectedMonitor = Vm.Monitors[0];
@@ -105,11 +105,21 @@ public partial class OcrReaderView : UserControl
         var prev = win?.WindowState ?? WindowState.Normal;
         try
         {
-            if (Vm?.SelectedMonitor == null) { if (Vm != null) Vm.Status = "Pick a monitor first."; return; }
-            if (win != null) win.WindowState = WindowState.Minimized;   // hide our tool before the shot
-            await System.Threading.Tasks.Task.Delay(350);
-            var sd = Vm.GrabMonitor();
-            if (win != null) { win.WindowState = prev; win.Activate(); }
+            System.Drawing.Bitmap? sd;
+            if (Vm != null && Vm.UseMonitor)
+            {
+                if (Vm.SelectedMonitor == null) { Vm.Status = "Pick a monitor first."; return; }
+                if (win != null) win.WindowState = WindowState.Minimized;   // hide our tool before the monitor shot
+                await System.Threading.Tasks.Task.Delay(350);
+                sd = Vm.GrabMonitor();
+                if (win != null) { win.WindowState = prev; win.Activate(); }
+            }
+            else
+            {
+                // Client-window capture via PrintWindow — works even occluded, so no minimize needed.
+                sd = Vm?.GrabWindow();
+                if (sd == null && Vm != null) Vm.Status = "Pick your RO process first (or switch to Monitor capture).";
+            }
             if (sd != null)
             {
                 using var ms = new System.IO.MemoryStream();

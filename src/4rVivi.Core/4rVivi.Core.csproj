@@ -14,5 +14,6 @@
     <EmbeddedResource Include="Data\gamedata.json" />
     <EmbeddedResource Include="Data\idnum2itemresnametable.txt" />
     <EmbeddedResource Include="Data\classdata.json" />
+    <None Update="Data\RegionProfiles.json"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></None>
   </ItemGroup>
 </Project>

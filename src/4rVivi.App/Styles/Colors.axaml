@@ -1,16 +1,16 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Styles.Resources>
-    <Color x:Key="BgColor">#101116</Color>
-    <Color x:Key="SurfaceColor">#171922</Color>
-    <Color x:Key="Surface2Color">#21242E</Color>
-    <Color x:Key="BorderColor">#303442</Color>
+    <Color x:Key="BgColor">#0B0B0D</Color>
+    <Color x:Key="SurfaceColor">#131316</Color>
+    <Color x:Key="Surface2Color">#1C1C21</Color>
+    <Color x:Key="BorderColor">#352A2D</Color>
     <Color x:Key="TextColor">#ECEEF5</Color>
-    <Color x:Key="TextMutedColor">#949AAA</Color>
-    <Color x:Key="AccentColor">#7C6CF7</Color>
-    <Color x:Key="Accent2Color">#6366F1</Color>
+    <Color x:Key="TextMutedColor">#9A9298</Color>
+    <Color x:Key="AccentColor">#C41E3A</Color>
+    <Color x:Key="Accent2Color">#7A1020</Color>
     <Color x:Key="OkColor">#34C78E</Color>
-    <Color x:Key="DangerColor">#EB5757</Color>
+    <Color x:Key="DangerColor">#D11A2A</Color>
 
     <SolidColorBrush x:Key="BgBrush" Color="{StaticResource BgColor}"/>
     <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>

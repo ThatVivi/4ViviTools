@@ -11,8 +11,8 @@
           <StackPanel><TextBlock Text="Loot key" Classes="muted"/><TextBox Width="80" Text="{Binding LootKey}"/></StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="14">
-          <StackPanel><TextBlock Text="Flee at HP %" Classes="muted"/><NumericUpDown Width="110" Minimum="0" Maximum="100" Value="{Binding FleeAtHpPercent}"/></StackPanel>
-          <StackPanel><TextBlock Text="Rotation ms" Classes="muted"/><NumericUpDown Width="120" Minimum="50" Maximum="10000" Value="{Binding RotationMs}"/></StackPanel>
+          <StackPanel><TextBlock Text="Flee at HP %" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="100" Value="{Binding FleeAtHpPercent}"/></StackPanel>
+          <StackPanel><TextBlock Text="Rotation ms" Classes="muted"/><NumericUpDown MinWidth="120" Minimum="50" Maximum="10000" Value="{Binding RotationMs}"/></StackPanel>
         </StackPanel>
       </StackPanel>
     </Border>

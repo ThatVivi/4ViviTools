@@ -13,6 +13,7 @@ public sealed class SkillSpamEngine : AutomationEngine
     private int _idx;
 
     public SkillSpamEngine(GameSession s, KeySender k, HumanizedTiming t) : base("Skills", s, k, t) { }
+    public override void ClearKeys() { Key = ""; Rotation.Clear(); }
 
     protected override async Task LoopAsync(CancellationToken ct)
     {

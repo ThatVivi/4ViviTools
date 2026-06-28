@@ -9,6 +9,7 @@ public sealed class MvpEntry
     public string Map { get; set; } = "";
     public int MinMinutes { get; set; } = 60;
     public int MaxMinutes { get; set; } = 70;
+    public string DefElement { get; set; } = "";   // MVP's defensive element (for best-element advice)
     public DateTime? KilledAt { get; set; }
 
     public DateTime? NextMin => KilledAt?.AddMinutes(MinMinutes);
@@ -18,9 +19,19 @@ public sealed class MvpEntry
     {
         if (KilledAt is null) return "—";
         var now = DateTime.Now;
-        if (now < NextMin) return "in " + Fmt(NextMin!.Value - now);
-        if (now <= NextMax) return "DUE (window)";
+        if (now < NextMin) return "not yet · in " + Fmt(NextMin!.Value - now);
+        if (now <= NextMax) return "maybe · window";
         return "spawned";
+    }
+
+    /// <summary>Status colour: grey (no timer), red (not yet), yellow (window), green (spawned).</summary>
+    public string StatusColor()
+    {
+        if (KilledAt is null) return "#888888";
+        var now = DateTime.Now;
+        if (now < NextMin) return "#E5484D";
+        if (now <= NextMax) return "#F5C24B";
+        return "#5EC26A";
     }
     private static string Fmt(TimeSpan t) => t.TotalHours >= 1 ? $"{(int)t.TotalHours}h{t.Minutes:00}m" : $"{t.Minutes}m{t.Seconds:00}s";
 }

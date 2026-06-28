@@ -52,6 +52,60 @@ public sealed class GameDatabase
     public EquipInfo? Equip(int id) => _d.Equips.FirstOrDefault(e => e.Id == id);
     public int EquipCount => _d.Equips.Count;
 
+    // Full lists for dropdown pickers. NOTE: gear lives in Items (type Weapon/Armor/Card),
+    // the Equips array is usually empty, so pickers read from Items by type.
+    public IReadOnlyList<MobInfo> AllMobs() => _d.Mobs;
+    public IReadOnlyList<SkillInfo> AllSkills() => _d.Skills;
+    public IReadOnlyList<ItemInfo> AllItems() => _d.Items;
+    public List<string> EnchantNames() =>
+        _d.Enchants.Select(e => e.Name).Where(n => !string.IsNullOrWhiteSpace(n)).Distinct().OrderBy(n => n).ToList();
+
+    public EquipInfo? EquipByName(string name) =>
+        _d.Equips.FirstOrDefault(e => string.Equals(e.Name, name, StringComparison.OrdinalIgnoreCase));
+    public CardInfo? CardByName(string name) =>
+        _d.Cards.FirstOrDefault(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase));
+    public EnchantInfo? EnchantByName(string name) =>
+        _d.Enchants.FirstOrDefault(e => string.Equals(e.Name, name, StringComparison.OrdinalIgnoreCase));
+    public IReadOnlyList<ComboInfo> AllCombos() => _d.Combos;
+    public SkillInfo? SkillByName(string name) =>
+        _d.Skills.FirstOrDefault(s => string.Equals(s.Name, name, StringComparison.OrdinalIgnoreCase));
+    /// <summary>Full skill list for a class (rAthena skill_tree.yml with inheritance resolved).
+    /// Catalog is keyed by a normalized token; this normalizes the class name to match.</summary>
+    public List<string> SkillsForClass(string className)
+    {
+        if (string.IsNullOrWhiteSpace(className)) return new List<string>();
+        var tok = NormalizeClass(className);
+        if (tok.StartsWith("baby")) tok = tok.Substring(4);          // baby shares the normal tree
+        if (tok == "doramsummoner" || tok == "doram") tok = "summoner";
+        return _d.SkillCatalog.TryGetValue(tok, out var list) ? list : new List<string>();
+    }
+    private static string NormalizeClass(string s)
+    {
+        var sb = new System.Text.StringBuilder(s.Length);
+        foreach (var c in s) if (char.IsLetterOrDigit(c)) sb.Append(char.ToLowerInvariant(c));
+        return sb.ToString();
+    }
+
+    private Dictionary<string, int>? _nameToId;
+    /// <summary>Item id for a display name (for resolving icons by name). 0 if unknown.</summary>
+    public int IconId(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return 0;
+        _nameToId ??= BuildNameIndex();
+        return _nameToId.TryGetValue(name.Trim().ToLowerInvariant(), out var id) ? id : 0;
+    }
+    private Dictionary<string, int> BuildNameIndex()
+    {
+        var map = new Dictionary<string, int>();
+        foreach (var i in _d.Items) { var k = i.Name.Trim().ToLowerInvariant(); if (k.Length > 0 && !map.ContainsKey(k)) map[k] = i.Id; }
+        foreach (var e in _d.Equips) { var k = e.Name.Trim().ToLowerInvariant(); if (k.Length > 0 && !map.ContainsKey(k)) map[k] = e.Id; }
+        return map;
+    }
+    public List<string> ItemNamesByType(params string[] types) =>
+        _d.Items.Where(i => types.Any(t => i.Type.Contains(t, StringComparison.OrdinalIgnoreCase)))
+                .Select(i => i.Name).Where(n => !string.IsNullOrWhiteSpace(n))
+                .Distinct().OrderBy(n => n).ToList();
+
     public IReadOnlyList<MobInfo> MvpMobs() => _d.Mobs.Where(m => m.Mvp).OrderBy(m => m.Name).ToList();
     public MobInfo? Mob(int id) => _d.Mobs.FirstOrDefault(m => m.Id == id);
     public (int mobs,int skills,int items,int maps) Counts() => (_d.Mobs.Count,_d.Skills.Count,_d.Items.Count,_d.Maps.Count);

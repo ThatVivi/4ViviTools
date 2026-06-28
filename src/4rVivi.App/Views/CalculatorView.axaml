@@ -1,99 +1,363 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
              xmlns:data="clr-namespace:FourRVivi.Core.Data;assembly=4rVivi.Core"
+             xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
              x:Class="FourRVivi.App.Views.CalculatorView" x:DataType="vm:CalculatorViewModel" x:Name="Root">
-  <Grid ColumnDefinitions="380,*" RowDefinitions="Auto,*">
-    <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Calculator + gear planner" Classes="h1" Margin="0,0,0,12"/>
+  <UserControl.Styles>
+    <Style Selector="Border.band">
+      <Setter Property="Background" Value="#2E6E6E"/>
+      <Setter Property="CornerRadius" Value="4"/>
+      <Setter Property="Padding" Value="10,6"/>
+    </Style>
+    <Style Selector="TextBlock.bandtitle">
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="FontSize" Value="14"/>
+    </Style>
+    <Style Selector="Border.panel">
+      <Setter Property="Background" Value="#1B2B2B"/>
+      <Setter Property="BorderBrush" Value="#2E6E6E"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="4"/>
+      <Setter Property="Padding" Value="10"/>
+    </Style>
+    <Style Selector="TextBlock.lbl">
+      <Setter Property="Foreground" Value="#BFE3E3"/>
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="TextBlock.ro">
+      <Setter Property="Foreground" Value="#D7E8E8"/>
+      <Setter Property="FontSize" Value="12"/>
+    </Style>
+    <Style Selector="TextBlock.val">
+      <Setter Property="Foreground" Value="#8BE9FD"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+  </UserControl.Styles>
 
-    <!-- left: character + stats + results -->
-    <ScrollViewer Grid.Row="1" Grid.Column="0" Margin="0,0,12,0">
-      <StackPanel Spacing="10">
-        <Border Classes="card">
+  <ScrollViewer>
+    <StackPanel Spacing="10" Margin="6">
+
+      <!-- ===== Title band ===== -->
+      <Border Classes="band">
+        <TextBlock Text="REVENANT ELEGY RAGNAROK ONLINE CALC" Classes="bandtitle" HorizontalAlignment="Center"/>
+      </Border>
+
+      <!-- ===== Top: enemy panel (left) + options/save (right) ===== -->
+      <Grid ColumnDefinitions="*,12,*">
+
+        <!-- Enemy / target -->
+        <Border Grid.Column="0" Classes="panel">
           <StackPanel Spacing="8">
             <StackPanel Orientation="Horizontal" Spacing="8">
-              <StackPanel><TextBlock Text="Class" Classes="muted"/><ComboBox Width="150" ItemsSource="{Binding Classes}" SelectedItem="{Binding SelectedClass}"/></StackPanel>
-              <StackPanel><TextBlock Text="Base Lv" Classes="muted"/><NumericUpDown Width="90" Minimum="1" Maximum="200" Value="{Binding BaseLevel}"/></StackPanel>
+              <TextBlock Text="Place:" Classes="lbl"/>
+              <ComboBox Width="130" ItemsSource="{Binding PlaceOptions}" SelectedIndex="0"/>
+              <TextBlock Text="Enemy:" Classes="lbl"/>
+              <ctrl:SearchPicker Width="220" Text="{Binding EnemyName}" ItemsSource="{Binding MobNames}"
+                               Watermark="type to search a monster…"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <StackPanel><TextBlock Text="Weapon" Classes="muted"/><ComboBox Width="150" ItemsSource="{Binding WeaponTypes}" SelectedItem="{Binding SelectedWeapon}"/></StackPanel>
-              <StackPanel><TextBlock Text="Weapon ATK" Classes="muted"/><NumericUpDown Width="100" Minimum="0" Maximum="9999" Value="{Binding WeaponAtk}"/></StackPanel>
-            </StackPanel>
-          </StackPanel>
-        </Border>
-        <Border Classes="card">
-          <StackPanel Spacing="6">
-            <TextBlock Text="Base stats" FontWeight="SemiBold"/>
-            <UniformGrid Columns="3">
-              <StackPanel Margin="0,0,6,6"><TextBlock Text="STR" Classes="muted"/><NumericUpDown Minimum="1" Maximum="999" Value="{Binding Str}"/></StackPanel>
-              <StackPanel Margin="0,0,6,6"><TextBlock Text="AGI" Classes="muted"/><NumericUpDown Minimum="1" Maximum="999" Value="{Binding Agi}"/></StackPanel>
-              <StackPanel Margin="0,0,0,6"><TextBlock Text="VIT" Classes="muted"/><NumericUpDown Minimum="1" Maximum="999" Value="{Binding Vit}"/></StackPanel>
-              <StackPanel Margin="0,0,6,0"><TextBlock Text="INT" Classes="muted"/><NumericUpDown Minimum="1" Maximum="999" Value="{Binding Intel}"/></StackPanel>
-              <StackPanel Margin="0,0,6,0"><TextBlock Text="DEX" Classes="muted"/><NumericUpDown Minimum="1" Maximum="999" Value="{Binding Dex}"/></StackPanel>
-              <StackPanel><TextBlock Text="LUK" Classes="muted"/><NumericUpDown Minimum="1" Maximum="999" Value="{Binding Luk}"/></StackPanel>
-            </UniformGrid>
-          </StackPanel>
-        </Border>
-        <Border Classes="card">
-          <StackPanel Spacing="6">
-            <TextBlock Text="Enchant / card extras (manual)" FontWeight="SemiBold"/>
-            <UniformGrid Columns="3">
-              <StackPanel Margin="0,0,6,6"><TextBlock Text="+STR" Classes="muted"/><NumericUpDown Minimum="0" Maximum="999" Value="{Binding EnchStr}"/></StackPanel>
-              <StackPanel Margin="0,0,6,6"><TextBlock Text="+AGI" Classes="muted"/><NumericUpDown Minimum="0" Maximum="999" Value="{Binding EnchAgi}"/></StackPanel>
-              <StackPanel Margin="0,0,0,6"><TextBlock Text="+VIT" Classes="muted"/><NumericUpDown Minimum="0" Maximum="999" Value="{Binding EnchVit}"/></StackPanel>
-              <StackPanel Margin="0,0,6,0"><TextBlock Text="+INT" Classes="muted"/><NumericUpDown Minimum="0" Maximum="999" Value="{Binding EnchInt}"/></StackPanel>
-              <StackPanel Margin="0,0,6,0"><TextBlock Text="+DEX" Classes="muted"/><NumericUpDown Minimum="0" Maximum="999" Value="{Binding EnchDex}"/></StackPanel>
-              <StackPanel><TextBlock Text="+LUK" Classes="muted"/><NumericUpDown Minimum="0" Maximum="999" Value="{Binding EnchLuk}"/></StackPanel>
-            </UniformGrid>
-          </StackPanel>
-        </Border>
-        <Button Classes="accent" Content="Compute" Command="{Binding ComputeCommand}" HorizontalAlignment="Left"/>
-        <Border Classes="card" Padding="0">
-          <ListBox ItemsSource="{Binding Results}" Background="Transparent" FontFamily="Consolas,monospace" MinHeight="180" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-        </Border>
-      </StackPanel>
-    </ScrollViewer>
 
-    <!-- right: gear search + build -->
-    <Grid Grid.Row="1" Grid.Column="1" RowDefinitions="Auto,*,Auto,*">
-      <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-        <ComboBox Width="160" ItemsSource="{Binding Slots}" SelectedItem="{Binding SelectedSlot}"/>
-        <TextBox Width="200" Text="{Binding Query}" Watermark="search equipment…"/>
-        <Button Content="Search" Command="{Binding SearchEquipCommand}"/>
-        <Button Classes="accent" Content="Add to build ▼" Command="{Binding AddToBuildCommand}"/>
-      </StackPanel>
-      <Border Grid.Row="1" Classes="card" Padding="0">
-        <ListBox ItemsSource="{Binding SearchResults}" SelectedItem="{Binding SelectedEquip}" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
-          <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="data:EquipInfo">
-              <Grid ColumnDefinitions="26,*,Auto">
-                <Image Grid.Column="0" Width="20" Height="20" Source="{Binding Id, Converter={StaticResource IdToIcon}}"/>
-                <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="2" Text="{Binding SubType}" Classes="muted" VerticalAlignment="Center"/>
-              </Grid>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
+            <UniformGrid Columns="4" >
+              <StackPanel><TextBlock Text="Level" Classes="lbl"/><NumericUpDown Minimum="1" Maximum="999" Value="{Binding EnemyLevel}"/></StackPanel>
+              <StackPanel><TextBlock Text="Max HP" Classes="lbl"/><NumericUpDown Minimum="1" Maximum="100000000" Value="{Binding EnemyMaxHp}"/></StackPanel>
+              <StackPanel><TextBlock Text="DEF" Classes="lbl"/><NumericUpDown Minimum="0" Maximum="9999" Value="{Binding EnemyDef}"/></StackPanel>
+              <StackPanel><TextBlock Text="MDEF" Classes="lbl"/><NumericUpDown Minimum="0" Maximum="9999" Value="{Binding EnemyMdef}"/></StackPanel>
+              <StackPanel><TextBlock Text="AGI" Classes="lbl"/><NumericUpDown Minimum="0" Maximum="999" Value="{Binding EnemyAgi}"/></StackPanel>
+              <StackPanel><TextBlock Text="VIT" Classes="lbl"/><NumericUpDown Minimum="0" Maximum="999" Value="{Binding EnemyVit}"/></StackPanel>
+              <StackPanel><TextBlock Text="INT" Classes="lbl"/><NumericUpDown Minimum="0" Maximum="999" Value="{Binding EnemyInt}"/></StackPanel>
+              <StackPanel><TextBlock Text="DEX" Classes="lbl"/><NumericUpDown Minimum="0" Maximum="999" Value="{Binding EnemyDex}"/></StackPanel>
+              <StackPanel><TextBlock Text="LUK" Classes="lbl"/><NumericUpDown Minimum="0" Maximum="999" Value="{Binding EnemyLuk}"/></StackPanel>
+              <StackPanel><TextBlock Text="Element" Classes="lbl"/><ComboBox ItemsSource="{Binding ElementOptions}" SelectedItem="{Binding EnemyElement}"/></StackPanel>
+              <StackPanel><TextBlock Text="Elem Lv" Classes="lbl"/><NumericUpDown Minimum="1" Maximum="4" Value="{Binding EnemyElementLevel}"/></StackPanel>
+              <StackPanel><TextBlock Text="Race" Classes="lbl"/><ComboBox ItemsSource="{Binding RaceOptions}" SelectedItem="{Binding EnemyRace}"/></StackPanel>
+              <StackPanel><TextBlock Text="Size" Classes="lbl"/><ComboBox ItemsSource="{Binding SizeOptions}" SelectedItem="{Binding EnemySize}"/></StackPanel>
+              <StackPanel><TextBlock Text="Type" Classes="lbl"/><ComboBox ItemsSource="{Binding TypeOptions}" SelectedItem="{Binding EnemyType}"/></StackPanel>
+            </UniformGrid>
+
+            <Button Classes="accent" Content="Recalculate" Command="{Binding ComputeCommand}" HorizontalAlignment="Left"/>
+
+            <Border Background="#16201F" CornerRadius="4" Padding="8">
+              <StackPanel Spacing="3">
+                <TextBlock Text="Player Attack Skills: Basic Attack" Classes="ro" FontWeight="Bold"/>
+                <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Player's Hit Rate" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding HitRate}" Classes="val"/></Grid>
+                <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Attack Element" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding AttackElementText}" Classes="val"/></Grid>
+                <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Weapon Size Modifier" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding WeaponSizeMod}" Classes="val"/></Grid>
+                <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Critical (Crit Rate)" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding CritRange}" Classes="val"/></Grid>
+                <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Minimum Damage" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding MinDamage}" Classes="val"/></Grid>
+                <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Maximum Damage" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding MaxDamage}" Classes="val"/></Grid>
+                <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Damage Per Second" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding Dps}" Classes="val"/></Grid>
+                <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Best attack element" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding BestElementText}" Foreground="#5EC26A" FontWeight="SemiBold"/></Grid>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </Border>
+
+        <!-- Options + Save/Load -->
+        <StackPanel Grid.Column="2" Spacing="10">
+          <Border Classes="panel">
+            <StackPanel Spacing="6">
+              <TextBlock Text="OPTIONS" Foreground="#BFE3E3" FontWeight="Bold"/>
+              <StackPanel Orientation="Horizontal" Spacing="8"><TextBlock Text="Calc's theme" Classes="lbl"/><ComboBox Width="120" SelectedIndex="0"><ComboBoxItem>Revenant</ComboBoxItem><ComboBoxItem>Classic</ComboBoxItem></ComboBox></StackPanel>
+              <CheckBox Content="Equipment level restrictions"/>
+              <CheckBox Content="Equipment slot restrictions"/>
+              <CheckBox Content="Equipment card slot restrictions"/>
+            </StackPanel>
+          </Border>
+          <Border Classes="panel">
+            <StackPanel Spacing="6">
+              <TextBlock Text="SAVE &amp; LOAD" Foreground="#BFE3E3" FontWeight="Bold"/>
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Button Content="Local Save"/><Button Content="Local Load"/><Button Content="Delete selected save"/>
+              </StackPanel>
+              <Button Content="Save as URL" HorizontalAlignment="Left"/>
+              <TextBox Watermark="Load URL from another calc…"/>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Grid>
+
+      <!-- ===== YOUR CHARACTER ===== -->
+      <Border Classes="band"><TextBlock Text="YOUR CHARACTER" Classes="bandtitle"/></Border>
+      <Border Classes="panel">
+        <Grid ColumnDefinitions="*,12,Auto">
+          <StackPanel Grid.Column="0" Spacing="8">
+            <WrapPanel>
+              <StackPanel Margin="0,0,10,6"><TextBlock Text="Mode (formula set)" Classes="lbl"/><ComboBox Width="160" ItemsSource="{Binding CalcModes}" SelectedItem="{Binding CalcMode}"/></StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom" Margin="0,0,10,8">
+                <CheckBox Content="Normal" IsChecked="{Binding GrpNormal}"/>
+                <CheckBox Content="Baby" IsChecked="{Binding GrpBaby}"/>
+                <CheckBox Content="Extended" IsChecked="{Binding GrpExtended}"/>
+              </StackPanel>
+            </WrapPanel>
+            <WrapPanel>
+              <StackPanel Margin="0,0,10,6"><TextBlock Text="Base Lv" Classes="lbl"/><NumericUpDown MinWidth="150" Minimum="1" Maximum="280" Value="{Binding BaseLevel}"/></StackPanel>
+              <StackPanel Margin="0,0,10,6"><TextBlock Text="Job Lv" Classes="lbl"/><NumericUpDown MinWidth="150" Minimum="1" Maximum="70" Value="{Binding JobLevel}"/></StackPanel>
+              <StackPanel Margin="0,0,10,6"><TextBlock Text="Class" Classes="lbl"/><ComboBox Width="170" ItemsSource="{Binding Classes}" SelectedItem="{Binding SelectedClass}"/></StackPanel>
+              <CheckBox Content="Adopted" IsChecked="{Binding Adopted}" VerticalAlignment="Bottom" Margin="0,0,10,8"/>
+              <StackPanel Margin="0,0,10,6"><TextBlock Text="Body element" Classes="lbl"/><ComboBox Width="120" ItemsSource="{Binding ElementOptions}" SelectedItem="{Binding BodyElement}"/></StackPanel>
+            </WrapPanel>
+
+            <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+              <TextBlock Grid.Row="0" Grid.Column="0" Text="STR" Classes="lbl" Margin="0,0,8,4"/><NumericUpDown Grid.Row="0" Grid.Column="1" MinWidth="120" Minimum="1" Maximum="999" Value="{Binding Str}" Margin="0,0,0,4"/>
+              <TextBlock Grid.Row="1" Grid.Column="0" Text="AGI" Classes="lbl" Margin="0,0,8,4"/><NumericUpDown Grid.Row="1" Grid.Column="1" MinWidth="120" Minimum="1" Maximum="999" Value="{Binding Agi}" Margin="0,0,0,4"/>
+              <TextBlock Grid.Row="2" Grid.Column="0" Text="VIT" Classes="lbl" Margin="0,0,8,4"/><NumericUpDown Grid.Row="2" Grid.Column="1" MinWidth="120" Minimum="1" Maximum="999" Value="{Binding Vit}" Margin="0,0,0,4"/>
+              <TextBlock Grid.Row="3" Grid.Column="0" Text="INT" Classes="lbl" Margin="0,0,8,4"/><NumericUpDown Grid.Row="3" Grid.Column="1" MinWidth="120" Minimum="1" Maximum="999" Value="{Binding Intel}" Margin="0,0,0,4"/>
+              <TextBlock Grid.Row="4" Grid.Column="0" Text="DEX" Classes="lbl" Margin="0,0,8,4"/><NumericUpDown Grid.Row="4" Grid.Column="1" MinWidth="120" Minimum="1" Maximum="999" Value="{Binding Dex}" Margin="0,0,0,4"/>
+              <TextBlock Grid.Row="5" Grid.Column="0" Text="LUK" Classes="lbl" Margin="0,0,8,4"/><NumericUpDown Grid.Row="5" Grid.Column="1" MinWidth="120" Minimum="1" Maximum="999" Value="{Binding Luk}" Margin="0,0,0,4"/>
+            </Grid>
+            <Button Classes="accent" Content="Compute" Command="{Binding ComputeCommand}" HorizontalAlignment="Left"/>
+          </StackPanel>
+
+          <!-- right readouts -->
+          <Border Grid.Column="2" Background="#16201F" CornerRadius="4" Padding="10" MinWidth="220">
+            <StackPanel Spacing="3">
+              <Grid ColumnDefinitions="*,Auto"><TextBlock Text="Max HP" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding CharHp}" Classes="val"/></Grid>
+              <Grid ColumnDefinitions="*,Auto"><TextBlock Text="Max SP" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding CharSp}" Classes="val"/></Grid>
+              <Grid ColumnDefinitions="*,Auto"><TextBlock Text="ASPD" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding CharAspd}" Classes="val"/></Grid>
+              <Grid ColumnDefinitions="*,Auto"><TextBlock Text="HIT" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding CharHit}" Classes="val"/></Grid>
+              <Grid ColumnDefinitions="*,Auto"><TextBlock Text="FLEE" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding CharFlee}" Classes="val"/></Grid>
+              <Grid ColumnDefinitions="*,Auto"><TextBlock Text="CRIT" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding CharCrit}" Classes="val"/></Grid>
+              <Grid ColumnDefinitions="*,Auto"><TextBlock Text="DEF" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding CharDef}" Classes="val"/></Grid>
+              <Grid ColumnDefinitions="*,Auto"><TextBlock Text="MDEF" Classes="ro"/><TextBlock Grid.Column="1" Text="{Binding CharMdef}" Classes="val"/></Grid>
+            </StackPanel>
+          </Border>
+        </Grid>
       </Border>
-      <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,8">
-        <TextBlock Text="Build" Classes="section"/>
-        <Button Content="Clear" Command="{Binding ClearBuildCommand}"/>
-        <TextBlock Text="{Binding Effect}" Classes="muted" TextWrapping="Wrap" Width="380"/>
-      </StackPanel>
-      <Border Grid.Row="3" Classes="card" Padding="0">
-        <ListBox ItemsSource="{Binding Build}" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
-          <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="data:EquipInfo">
-              <Grid ColumnDefinitions="26,*,Auto">
-                <Image Grid.Column="0" Width="20" Height="20" Source="{Binding Id, Converter={StaticResource IdToIcon}}"/>
-                <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center"/>
-                <Button Grid.Column="2" Content="✕"
-                        Command="{ReflectionBinding DataContext.RemoveFromBuildCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                        CommandParameter="{Binding}"/>
-              </Grid>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
+
+      <!-- ===== EQUIPMENT & CARDS (every slot + card is a searchable dropdown with icon) ===== -->
+      <Border Classes="band"><TextBlock Text="EQUIPMENT &amp; CARDS" Classes="bandtitle"/></Border>
+      <TextBlock Text="{Binding PickerInfo}" Foreground="#7EE787" FontSize="11" Margin="2,0"/>
+      <Border Classes="panel">
+        <Grid ColumnDefinitions="*,12,*,12,*">
+          <!-- weapon column -->
+          <StackPanel Grid.Column="0" Spacing="5">
+            <TextBlock Text="Weapon" Foreground="#FF7A7A" FontWeight="SemiBold"/>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqWeapon, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqWeapon}" ItemsSource="{Binding WeaponList}" Watermark="search weapon…"/></Grid>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="Refine" Classes="lbl"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="20" Value="{Binding EqRefine}"/>
+              <TextBlock Text="Attribute" Classes="lbl"/><ComboBox Width="110" ItemsSource="{Binding AttributeOptions}" SelectedItem="{Binding EqAttribute}"/>
+            </StackPanel>
+            <TextBlock Text="Weapon cards" Foreground="#FF8AD8" FontSize="11"/>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqWeaponCard1, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqWeaponCard1}" ItemsSource="{Binding CardList}" Watermark="search card…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqWeaponCard2, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqWeaponCard2}" ItemsSource="{Binding CardList}" Watermark="search card…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqWeaponCard3, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqWeaponCard3}" ItemsSource="{Binding CardList}" Watermark="search card…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqWeaponCard4, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqWeaponCard4}" ItemsSource="{Binding CardList}" Watermark="search card…"/></Grid>
+          </StackPanel>
+          <!-- headgear/armor column -->
+          <StackPanel Grid.Column="2" Spacing="5">
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqUpper, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqUpper}" ItemsSource="{Binding HeadgearList}" Watermark="upper headgear…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqUpperCard, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqUpperCard}" ItemsSource="{Binding CardList}" Watermark="card…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqMiddle, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqMiddle}" ItemsSource="{Binding HeadgearList}" Watermark="middle headgear…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqMiddleCard, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqMiddleCard}" ItemsSource="{Binding CardList}" Watermark="card…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqLower, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqLower}" ItemsSource="{Binding HeadgearList}" Watermark="lower headgear…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqLowerCard, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqLowerCard}" ItemsSource="{Binding CardList}" Watermark="card…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqArmor, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqArmor}" ItemsSource="{Binding ArmorList}" Watermark="armor…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqArmorCard, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqArmorCard}" ItemsSource="{Binding CardList}" Watermark="card…"/></Grid>
+          </StackPanel>
+          <!-- shield/garment/footgear/acc column -->
+          <StackPanel Grid.Column="4" Spacing="5">
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqShield, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqShield}" ItemsSource="{Binding ShieldList}" Watermark="shield…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqShieldCard, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqShieldCard}" ItemsSource="{Binding CardList}" Watermark="card…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqGarment, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqGarment}" ItemsSource="{Binding GarmentList}" Watermark="garment…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqGarmentCard, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqGarmentCard}" ItemsSource="{Binding CardList}" Watermark="card…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqFootgear, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqFootgear}" ItemsSource="{Binding FootgearList}" Watermark="footgear…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqFootgearCard, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqFootgearCard}" ItemsSource="{Binding CardList}" Watermark="card…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqAccLeft, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqAccLeft}" ItemsSource="{Binding AccessoryList}" Watermark="left accessory…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqAccLeftCard, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqAccLeftCard}" ItemsSource="{Binding CardList}" Watermark="card…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqAccRight, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqAccRight}" ItemsSource="{Binding AccessoryList}" Watermark="right accessory…"/></Grid>
+            <Grid ColumnDefinitions="24,*"><Image Width="20" Height="20" Source="{Binding EqAccRightCard, Converter={StaticResource NameToIcon}}"/><ctrl:SearchPicker Grid.Column="1" Text="{Binding EqAccRightCard}" ItemsSource="{Binding CardList}" Watermark="card…"/></Grid>
+          </StackPanel>
+        </Grid>
       </Border>
-    </Grid>
-  </Grid>
+
+      <!-- ===== ENCHANTS / RANDOM OPTIONS ===== -->
+      <Border Classes="band"><TextBlock Text="ENCHANTS / RANDOM OPTIONS" Classes="bandtitle"/></Border>
+      <Border Classes="panel">
+        <StackPanel Spacing="6">
+          <TextBlock Text="Random options / enchants (search and pick)" Classes="lbl"/>
+          <Grid ColumnDefinitions="*,12,*,12,*,12,*">
+            <ctrl:SearchPicker Grid.Column="0" Text="{Binding EqEnchant1}" ItemsSource="{Binding EnchantList}" Watermark="enchant 1…"/>
+            <ctrl:SearchPicker Grid.Column="2" Text="{Binding EqEnchant2}" ItemsSource="{Binding EnchantList}" Watermark="enchant 2…"/>
+            <ctrl:SearchPicker Grid.Column="4" Text="{Binding EqEnchant3}" ItemsSource="{Binding EnchantList}" Watermark="enchant 3…"/>
+            <ctrl:SearchPicker Grid.Column="6" Text="{Binding EqEnchant4}" ItemsSource="{Binding EnchantList}" Watermark="enchant 4…"/>
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <!-- ===== DAMAGING SKILL ===== -->
+      <Border Classes="band"><TextBlock Text="DAMAGING SKILL" Classes="bandtitle"/></Border>
+      <Border Classes="panel">
+        <StackPanel Spacing="6">
+          <WrapPanel>
+            <Grid ColumnDefinitions="24,260" Margin="0,0,12,6">
+              <Image Width="20" Height="20" Source="{Binding SkillName, Converter={StaticResource SkillNameToIcon}}"/>
+              <ctrl:SearchPicker Grid.Column="1" Text="{Binding SkillName}" ItemsSource="{Binding ClassSkillNames}" Watermark="search this class's skills…"/>
+            </Grid>
+            <StackPanel Margin="0,0,12,6"><TextBlock Text="Skill Lv" Classes="lbl"/><NumericUpDown MinWidth="120" Minimum="1" Maximum="{Binding SkillMaxLevel}" Value="{Binding SkillLevel}"/></StackPanel>
+            <StackPanel Margin="0,0,12,6"><TextBlock Text="Multiplier × (auto)" Classes="lbl"/><NumericUpDown MinWidth="120" Minimum="0.1" Maximum="200" Increment="0.1" Value="{Binding SkillMultiplier}"/></StackPanel>
+            <StackPanel Margin="0,0,12,6"><TextBlock Text="Hits (auto)" Classes="lbl"/><NumericUpDown MinWidth="110" Minimum="1" Maximum="50" Value="{Binding SkillHits}"/></StackPanel>
+            <CheckBox Content="Magic skill" IsChecked="{Binding SkillMagic}" VerticalAlignment="Bottom" Margin="0,0,12,10"/>
+            <CheckBox Content="Critical" IsChecked="{Binding IsCritical}" VerticalAlignment="Bottom" Margin="0,0,12,10"/>
+            <StackPanel Margin="0,0,12,6"><TextBlock Text="Crit dmg +%" Classes="lbl"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="500" Value="{Binding CritDamageBonus}"/></StackPanel>
+          </WrapPanel>
+          <TextBlock Text="{Binding SkillInfoText}" Foreground="#5EC26A" TextWrapping="Wrap" FontSize="12"/>
+        </StackPanel>
+      </Border>
+
+      <!-- equipment search helper (keeps the database picker available) -->
+      <Border Classes="panel">
+        <Grid ColumnDefinitions="*,12,*">
+          <StackPanel Grid.Column="0" Spacing="6">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <ComboBox Width="150" ItemsSource="{Binding Slots}" SelectedItem="{Binding SelectedSlot}"/>
+              <TextBox Width="170" Text="{Binding Query}" Watermark="search equipment…"/>
+              <Button Content="Search" Command="{Binding SearchEquipCommand}"/>
+              <Button Classes="accent" Content="Add ▼" Command="{Binding AddToBuildCommand}"/>
+            </StackPanel>
+            <Border Background="#16201F" CornerRadius="4" Padding="0">
+              <ListBox MaxHeight="220" ItemsSource="{Binding SearchResults}" SelectedItem="{Binding SelectedEquip}" Background="Transparent"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="data:EquipInfo">
+                    <Grid ColumnDefinitions="26,*,Auto">
+                      <Image Grid.Column="0" Width="20" Height="20" Source="{Binding Id, Converter={StaticResource IdToIcon}}"/>
+                      <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Foreground="{Binding Converter={StaticResource EquipBrush}}" FontWeight="SemiBold"/>
+                      <TextBlock Grid.Column="2" Text="{Binding SubType}" Classes="lbl"/>
+                    </Grid>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </Border>
+          </StackPanel>
+          <StackPanel Grid.Column="2" Spacing="6">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="Build" Classes="lbl"/><Button Content="Clear" Command="{Binding ClearBuildCommand}"/>
+            </StackPanel>
+            <Border Background="#16201F" CornerRadius="4" Padding="0">
+              <ListBox MaxHeight="220" ItemsSource="{Binding Build}" Background="Transparent"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="data:EquipInfo">
+                    <Grid ColumnDefinitions="26,*,Auto">
+                      <Image Grid.Column="0" Width="20" Height="20" Source="{Binding Id, Converter={StaticResource IdToIcon}}"/>
+                      <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Foreground="{Binding Converter={StaticResource EquipBrush}}" FontWeight="SemiBold"/>
+                      <Button Grid.Column="2" Content="✕"
+                              Command="{ReflectionBinding DataContext.RemoveFromBuildCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              CommandParameter="{Binding}"/>
+                    </Grid>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </Border>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- ===== BUFFS, ITEMS AND OTHER STUFF (searchable) ===== -->
+      <Border Classes="band"><TextBlock Text="BUFFS, ITEMS AND OTHER STUFF" Classes="bandtitle"/></Border>
+      <Border Classes="panel">
+        <StackPanel Spacing="8">
+          <Grid ColumnDefinitions="*,12,*">
+            <StackPanel Grid.Column="0" Spacing="4">
+              <TextBlock Text="Buff items (food / potions / boxes)" Classes="lbl"/>
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Image Width="20" Height="20" Source="{Binding BuffItemPick, Converter={StaticResource NameToIcon}}"/>
+                <ctrl:SearchPicker Width="240" Text="{Binding BuffItemPick}" ItemsSource="{Binding BuffItemList}" Watermark="search buff item…"/>
+                <Button Content="Add" Command="{Binding AddBuffItemCommand}"/>
+              </StackPanel>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Spacing="4">
+              <TextBlock Text="Buff skills (Blessing, AGI, songs…)" Classes="lbl"/>
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Image Width="20" Height="20" Source="{Binding BuffSkillPick, Converter={StaticResource SkillNameToIcon}}"/>
+                <ctrl:SearchPicker Width="240" Text="{Binding BuffSkillPick}" ItemsSource="{Binding SkillNames}" Watermark="search buff skill…"/>
+                <Button Content="Add" Command="{Binding AddBuffSkillCommand}"/>
+              </StackPanel>
+            </StackPanel>
+          </Grid>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="Active buffs" Classes="lbl"/><Button Content="Clear" Command="{Binding ClearBuffsCommand}"/>
+          </StackPanel>
+          <Border Background="#16201F" CornerRadius="4" Padding="0">
+            <ListBox MaxHeight="160" ItemsSource="{Binding PickedBuffs}" Background="Transparent"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="{Binding}" Classes="ro" VerticalAlignment="Center"/>
+                    <Button Grid.Column="1" Content="✕"
+                            Command="{ReflectionBinding DataContext.RemoveBuffCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </Border>
+        </StackPanel>
+      </Border>
+
+      <!-- ===== COMBAT SIMULATOR ===== -->
+      <Border Classes="band"><TextBlock Text="COMBAT SIMULATOR" Classes="bandtitle"/></Border>
+      <Border Classes="panel">
+        <StackPanel Spacing="8">
+          <StackPanel Orientation="Horizontal" Spacing="8"><TextBlock Text="Number of Enemies attacking you:" Classes="ro" VerticalAlignment="Center"/><NumericUpDown MinWidth="110" Minimum="1" Maximum="64" Value="{Binding NumEnemies}"/></StackPanel>
+          <StackPanel Orientation="Horizontal" Spacing="8"><TextBlock Text="Minimum delay between Active Skills:" Classes="ro" VerticalAlignment="Center"/><ComboBox Width="180" ItemsSource="{Binding DelayOptions}" SelectedItem="{Binding MinSkillDelay}"/></StackPanel>
+          <StackPanel Orientation="Horizontal" Spacing="8"><TextBlock Text="Set time between Active Skills (overrides):" Classes="ro" VerticalAlignment="Center"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="100000" Value="{Binding SetTimeMs}"/><TextBlock Text="ms" Classes="lbl"/></StackPanel>
+          <StackPanel Orientation="Horizontal" Spacing="8"><TextBlock Text="Ping to server:" Classes="ro" VerticalAlignment="Center"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="100000" Value="{Binding PingMs}"/><TextBlock Text="ms" Classes="lbl"/></StackPanel>
+          <StackPanel Orientation="Horizontal" Spacing="8"><TextBlock Text="Environment:" Classes="ro" VerticalAlignment="Center"/><ComboBox Width="140" ItemsSource="{Binding EnvOptions}" SelectedItem="{Binding Environment}"/></StackPanel>
+          <Expander Header="Debuffs on Enemy"><TextBlock Text="Curse, Poison, etc." Classes="ro" Margin="8"/></Expander>
+          <Expander Header="Buffs on Enemy"><TextBlock Text="Enemy buffs." Classes="ro" Margin="8"/></Expander>
+          <Expander Header="Manual Edits on Enemy"><TextBlock Text="Override enemy values." Classes="ro" Margin="8"/></Expander>
+        </StackPanel>
+      </Border>
+
+      <!-- stat dump -->
+      <Border Classes="panel" Padding="0">
+        <ListBox MaxHeight="200" ItemsSource="{Binding Results}" Background="Transparent" FontFamily="Consolas,monospace"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+      </Border>
+
+      <TextBlock Text="Original simulator by ROratorio · adapted for Revenant Elegy · in-app port" Classes="lbl" HorizontalAlignment="Right"/>
+    </StackPanel>
+  </ScrollViewer>
 </UserControl>

@@ -7,8 +7,8 @@
     <Border Classes="card">
       <StackPanel Spacing="12">
         <StackPanel Orientation="Horizontal" Spacing="14">
-          <StackPanel><TextBlock Text="Cast range (px)" Classes="muted"/><NumericUpDown Width="120" Minimum="0" Maximum="2000" Value="{Binding CastRange}"/></StackPanel>
-          <StackPanel><TextBlock Text="AoE box (px)" Classes="muted"/><NumericUpDown Width="120" Minimum="0" Maximum="2000" Value="{Binding Aoe}"/></StackPanel>
+          <StackPanel><TextBlock Text="Cast range (px)" Classes="muted"/><NumericUpDown MinWidth="120" Minimum="0" Maximum="2000" Value="{Binding CastRange}"/></StackPanel>
+          <StackPanel><TextBlock Text="AoE box (px)" Classes="muted"/><NumericUpDown MinWidth="120" Minimum="0" Maximum="2000" Value="{Binding Aoe}"/></StackPanel>
           <CheckBox Content="Gutter cross" IsChecked="{Binding Gutter}" VerticalAlignment="Bottom"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="10">

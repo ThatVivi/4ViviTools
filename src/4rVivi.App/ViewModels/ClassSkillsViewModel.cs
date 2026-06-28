@@ -20,7 +20,7 @@ public sealed partial class ClassSkillRow : ObservableObject
     public ClassSkillRow(string aegis, int id, Action changed)
     {
         Aegis = aegis; Id = id; _changed = changed;
-        Icon = IconImageService.Instance?.GetSkill(aegis);
+        Icon = IconImageService.Instance?.GetSkill(aegis, id);
     }
     partial void OnEnabledChanged(bool value) => _changed();
     partial void OnKeyChanged(string value) => _changed();

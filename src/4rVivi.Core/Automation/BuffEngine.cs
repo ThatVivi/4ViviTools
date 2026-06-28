@@ -7,6 +7,7 @@ namespace FourRVivi.Core.Automation;
 /// <summary>One periodic buff key + interval (mutable so the UI can edit it live).</summary>
 public sealed class BuffRule
 {
+    public string Name { get; set; } = "";          // skill/item name (for the searchable picker + icon)
     public string Key { get; set; } = "F1";
     public int IntervalMs { get; set; } = 30000;
     public bool Enabled { get; set; } = true;
@@ -16,6 +17,7 @@ public sealed class BuffRule
 public sealed class BuffEngine : AutomationEngine
 {
     public List<BuffRule> Rules { get; } = new();
+    public override void ClearKeys() { foreach (var r in Rules) r.Key = ""; }
     private readonly Dictionary<BuffRule, long> _last = new();
 
     public BuffEngine(GameSession s, KeySender k, HumanizedTiming t) : base("Buffs", s, k, t) { }

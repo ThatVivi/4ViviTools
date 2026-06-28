@@ -1,0 +1,149 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
+             x:Class="FourRVivi.App.Views.RoToolsShellView"
+             x:DataType="vm:RoToolsShellViewModel">
+
+  <!-- Faithful RO-Tools v1.6.1 layout, dark theme. -->
+  <ThemeVariantScope RequestedThemeVariant="Dark">
+  <Border Background="#15171F" Padding="0">
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="0">
+
+      <!-- Title bar -->
+      <Border Grid.Row="0" Background="#0E1014" Padding="12,8">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <TextBlock Grid.Column="0" Text="RO-Tools" Foreground="#8BE9FD" FontWeight="Bold" FontSize="15" VerticalAlignment="Center"/>
+          <TextBlock Grid.Column="1" Text="v1.6.1 · in-app · OCR-powered" Foreground="#6B7280" FontSize="11" VerticalAlignment="Center" Margin="10,2,0,0"/>
+          <ToggleSwitch Grid.Column="2" OnContent="ON" OffContent="OFF" IsChecked="{Binding ToolEnabled}" Foreground="White"/>
+        </Grid>
+      </Border>
+
+      <!-- Class selector + Auto Element quick row -->
+      <Border Grid.Row="1" Background="#1A1D26" BorderBrush="#2A2E3A" BorderThickness="0,0,0,1" Padding="12,7">
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <TextBlock Text="Class" Foreground="#9AA0B0" VerticalAlignment="Center"/>
+          <ComboBox Width="200" ItemsSource="{Binding Spammer.Classes}" SelectedItem="{Binding Spammer.SelectedClass}"/>
+          <TextBlock Text="Atk element" Foreground="#9AA0B0" VerticalAlignment="Center"/>
+          <ComboBox Width="130" ItemsSource="{Binding AttackElements}" SelectedItem="{Binding SelectedElement}"/>
+        </StackPanel>
+      </Border>
+
+      <!-- OCR header -->
+      <Border Grid.Row="2" Background="#12141B" Padding="12,6">
+        <StackPanel Orientation="Horizontal" Spacing="20">
+          <TextBlock Text="{Binding OcrState}" Foreground="#5EC26A" VerticalAlignment="Center"/>
+          <TextBlock Text="{Binding CharName, StringFormat='Name: {0}'}" Foreground="#ECEEF5" VerticalAlignment="Center"/>
+          <TextBlock Text="{Binding HpText, StringFormat='HP: {0}'}" Foreground="#FF7A7A" VerticalAlignment="Center"/>
+          <TextBlock Text="{Binding SpText, StringFormat='SP: {0}'}" Foreground="#7CC4FF" VerticalAlignment="Center"/>
+        </StackPanel>
+      </Border>
+
+      <!-- Feature tabs (the RO-Tools tab set) -->
+      <TabControl Grid.Row="3" Margin="6">
+
+        <TabItem Header="Auto HP/SP">
+          <ScrollViewer><ContentControl Content="{Binding HpSp}" Margin="6"/></ScrollViewer>
+        </TabItem>
+        <TabItem Header="Item Buff">
+          <ScrollViewer><ContentControl Content="{Binding Buffs}" Margin="6"/></ScrollViewer>
+        </TabItem>
+        <TabItem Header="Skill Buff">
+          <ScrollViewer><ContentControl Content="{Binding SkillBuff}" Margin="6"/></ScrollViewer>
+        </TabItem>
+
+        <TabItem Header="Skill Spammer">
+          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="10" Spacing="8">
+              <ToggleSwitch Content="Spam ON" IsChecked="{Binding Spammer.Enabled}"/>
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="Delay ms" Foreground="#9AA0B0" VerticalAlignment="Center"/>
+                <NumericUpDown MinWidth="110" Minimum="50" Maximum="5000" Value="{Binding Spammer.SpamDelay}"/>
+              </StackPanel>
+              <Border Background="#1A1D26" BorderBrush="#2A2E3A" BorderThickness="1" CornerRadius="3" Height="340">
+                <ListBox ItemsSource="{Binding Spammer.Skills}" Background="Transparent"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ClassSkillRow">
+                      <Grid ColumnDefinitions="28,Auto,*,90">
+                        <Image Grid.Column="0" Width="22" Height="22" Source="{Binding Icon}"/>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding Enabled}" Margin="6,0"/>
+                        <TextBlock Grid.Column="2" Text="{Binding Aegis}" Foreground="#ECEEF5" VerticalAlignment="Center"/>
+                        <ctrl:KeyCaptureBox Grid.Column="3" Width="80" KeyText="{Binding Key}"/>
+                      </Grid>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </Border>
+              <TextBlock Text="{Binding Spammer.Status}" Foreground="#9AA0B0" TextWrapping="Wrap"/>
+            </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+
+        <TabItem Header="Auto Element">
+          <StackPanel Margin="14" Spacing="10">
+            <TextBlock Text="Auto endow / weapon element" FontWeight="Bold" Foreground="#8BE9FD"/>
+            <TextBlock Text="Pick the element to keep up and the hotkey of the converter/scroll. Triggers on the spam loop." Foreground="#9AA0B0" TextWrapping="Wrap"/>
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <StackPanel><TextBlock Text="Element" Foreground="#9AA0B0" FontSize="11"/><ComboBox Width="140" ItemsSource="{Binding AttackElements}" SelectedItem="{Binding SelectedElement}"/></StackPanel>
+              <StackPanel><TextBlock Text="Key" Foreground="#9AA0B0" FontSize="11"/><ctrl:KeyCaptureBox Width="70" KeyText="{Binding ElementKey}"/></StackPanel>
+            </StackPanel>
+          </StackPanel>
+        </TabItem>
+
+        <TabItem Header="Macro">
+          <ScrollViewer><ContentControl Content="{Binding Macros}" Margin="6"/></ScrollViewer>
+        </TabItem>
+        <TabItem Header="Bot">
+          <ScrollViewer><ContentControl Content="{Binding Bot}" Margin="6"/></ScrollViewer>
+        </TabItem>
+        <TabItem Header="Smart Bot">
+          <ScrollViewer><ContentControl Content="{Binding Smart}" Margin="6"/></ScrollViewer>
+        </TabItem>
+        <TabItem Header="Overlay">
+          <ScrollViewer><ContentControl Content="{Binding Overlay}" Margin="6"/></ScrollViewer>
+        </TabItem>
+
+        <TabItem Header="Utilities">
+          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="12" Spacing="12">
+              <!-- Auto Ygg -->
+              <TextBlock Text="Auto Yggdrasil (emergency)" FontWeight="Bold" Foreground="#8BE9FD"/>
+              <Border Background="#1A1D26" BorderBrush="#2A2E3A" BorderThickness="1" CornerRadius="3" Padding="10">
+                <StackPanel Spacing="8">
+                  <ToggleSwitch Content="Auto Ygg ON" IsChecked="{Binding Ygg.Enabled}"/>
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <StackPanel><TextBlock Text="Ygg key" Foreground="#9AA0B0" FontSize="11"/><ctrl:KeyCaptureBox Width="70" KeyText="{Binding Ygg.Key}"/></StackPanel>
+                    <StackPanel><TextBlock Text="HP &#8804; %" Foreground="#9AA0B0" FontSize="11"/><NumericUpDown MinWidth="110" Minimum="1" Maximum="100" Value="{Binding Ygg.HpPercent}"/></StackPanel>
+                    <StackPanel><TextBlock Text="SP &#8804; % (0=off)" Foreground="#9AA0B0" FontSize="11"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="100" Value="{Binding Ygg.SpPercent}"/></StackPanel>
+                    <StackPanel><TextBlock Text="Cooldown (ms)" Foreground="#9AA0B0" FontSize="11"/><NumericUpDown MinWidth="110" Minimum="200" Maximum="60000" Value="{Binding Ygg.CooldownMs}"/></StackPanel>
+                  </StackPanel>
+                  <TextBlock Text="Uses the Ygg item when HP (and optionally SP) drop below the threshold. Reads HP/SP from OCR." Foreground="#9AA0B0" FontSize="11" TextWrapping="Wrap"/>
+                </StackPanel>
+              </Border>
+
+              <!-- Auto Stand -->
+              <TextBlock Text="Auto Stand (when forced to sit)" FontWeight="Bold" Foreground="#8BE9FD"/>
+              <Border Background="#1A1D26" BorderBrush="#2A2E3A" BorderThickness="1" CornerRadius="3" Padding="10">
+                <StackPanel Spacing="8">
+                  <ToggleSwitch Content="Auto Stand ON" IsChecked="{Binding AutoStand.Enabled}"/>
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <StackPanel><TextBlock Text="Stand key" Foreground="#9AA0B0" FontSize="11"/><ctrl:KeyCaptureBox Width="70" KeyText="{Binding AutoStand.StandKey}"/></StackPanel>
+                    <StackPanel><TextBlock Text="Cooldown (ms)" Foreground="#9AA0B0" FontSize="11"/><NumericUpDown MinWidth="110" Minimum="500" Maximum="60000" Value="{Binding AutoStand.CooldownMs}"/></StackPanel>
+                  </StackPanel>
+                  <CheckBox Content="Stand on motion-dwell (uses character-motion OCR box)" IsChecked="{Binding AutoStand.UseMotion}"/>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+
+        <TabItem Header="Utilidades / Stats">
+          <ScrollViewer><ContentControl Content="{Binding Stats}" Margin="6"/></ScrollViewer>
+        </TabItem>
+
+      </TabControl>
+    </Grid>
+  </Border>
+  </ThemeVariantScope>
+</UserControl>

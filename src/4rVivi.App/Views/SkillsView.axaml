@@ -8,7 +8,7 @@
         <TextBlock Text="Spammer" FontWeight="SemiBold"/>
         <StackPanel Orientation="Horizontal" Spacing="14">
           <StackPanel><TextBlock Text="Key" Classes="muted"/><ctrl:KeyCaptureBox Width="70" KeyText="{Binding SpamKey}"/></StackPanel>
-          <StackPanel><TextBlock Text="Delay ms" Classes="muted"/><NumericUpDown Width="120" Minimum="20" Maximum="10000" Value="{Binding SpamDelay}"/></StackPanel>
+          <StackPanel><TextBlock Text="Delay ms" Classes="muted"/><NumericUpDown MinWidth="120" Minimum="20" Maximum="10000" Value="{Binding SpamDelay}"/></StackPanel>
         </StackPanel>
       </StackPanel>
     </Border>

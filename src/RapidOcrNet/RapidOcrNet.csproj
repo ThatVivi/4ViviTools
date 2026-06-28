@@ -46,6 +46,24 @@
 		<None Update="models\v5\ppocrv5_latin_dict.txt">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="models\icons\icon_embedder.onnx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="models\icons\icon_refs.bin">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="models\icons\labels.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="models\icons\icon_meta.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="models\yolo\entity.onnx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="models\yolo\entity_meta.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -54,6 +72,12 @@
 	<ItemGroup>
 		<Content Include="RapidOcrNet.targets" PackagePath="build/RapidOcrNet.targets" />
 		<Content Include="models\v5\*.*" Pack="true" PackagePath="models\v5">
+			<PackageCopyToOutput>true</PackageCopyToOutput>
+		</Content>
+		<Content Include="models\icons\icon_embedder.onnx;models\icons\icon_refs.bin;models\icons\labels.txt;models\icons\icon_meta.json" Pack="true" PackagePath="models\icons">
+			<PackageCopyToOutput>true</PackageCopyToOutput>
+		</Content>
+		<Content Include="models\yolo\entity.onnx;models\yolo\entity_meta.json" Pack="true" PackagePath="models\yolo">
 			<PackageCopyToOutput>true</PackageCopyToOutput>
 		</Content>
 	</ItemGroup>

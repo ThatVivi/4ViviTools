@@ -1,3 +1,4 @@
+using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FourRVivi.Core.Settings;
@@ -17,8 +18,21 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     public string[] Languages { get; } = { "en", "ar" };
 
+    public string[] Themes { get; } = { "Dark", "Light" };
     [ObservableProperty] private string _language = "en";
+    [ObservableProperty] private string _theme = "Dark";
     [ObservableProperty] private string _accentHex = "#7C6CF7";
+
+    partial void OnThemeChanged(string value) => ApplyTheme(value);
+
+    public static void ApplyTheme(string theme)
+    {
+        var app = Avalonia.Application.Current;
+        if (app != null)
+            app.RequestedThemeVariant = string.Equals(theme, "Light", StringComparison.OrdinalIgnoreCase)
+                ? Avalonia.Styling.ThemeVariant.Light
+                : Avalonia.Styling.ThemeVariant.Dark;
+    }
     [ObservableProperty] private int _windowOpacity = 100;
     [ObservableProperty] private bool _humanizeTiming = true;
     [ObservableProperty] private bool _acrylicBackdrop = true;
@@ -36,6 +50,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         _settings = settings; _icons = icons; _discord = discord; _game = game;
         var c = settings.Current;
         Language = c.Language;
+        Theme = c.Theme;
         AccentHex = c.AccentHex;
         WindowOpacity = c.WindowOpacity;
         HumanizeTiming = c.HumanizeTiming;
@@ -54,6 +69,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
     {
         var c = _settings.Current;
         c.Language = string.IsNullOrWhiteSpace(Language) ? "en" : Language;
+        c.Theme = string.IsNullOrWhiteSpace(Theme) ? "Dark" : Theme;
         c.AccentHex = AccentHex;
         c.WindowOpacity = Math.Clamp(WindowOpacity, 70, 100);
         c.HumanizeTiming = HumanizeTiming;

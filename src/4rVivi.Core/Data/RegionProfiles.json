@@ -1,0 +1,9 @@
+{
+  "MapName":     { "Scale": 3.0, "Clahe": 4.0, "Threshold": false, "AdaptiveThreshold": false, "Lab": true,  "Close": false, "DetThresh": 0.15, "DetBoxThresh": 0.20, "Unclip": 2.50 },
+  "MonsterName": { "Scale": 3.0, "Clahe": 4.0, "Threshold": false, "AdaptiveThreshold": false, "Lab": true,  "Close": true,  "DetThresh": 0.10, "DetBoxThresh": 0.15, "Unclip": 3.00 },
+  "TargetName":  { "Scale": 3.0, "Clahe": 4.0, "Threshold": false, "AdaptiveThreshold": false, "Lab": true,  "Close": true,  "DetThresh": 0.10, "DetBoxThresh": 0.15, "Unclip": 3.00 },
+  "Inventory":   { "Scale": 3.0, "Clahe": 2.0, "Threshold": false, "AdaptiveThreshold": true,  "Lab": false, "Close": false, "DetThresh": 0.15, "DetBoxThresh": 0.20, "Unclip": 2.50 },
+  "Chat":        { "Scale": 3.0, "Clahe": 2.0, "Threshold": false, "AdaptiveThreshold": false, "Lab": false, "Close": false, "DetThresh": 0.10, "DetBoxThresh": 0.15, "Unclip": 3.00 },
+  "Stat":        { "Scale": 3.0, "Clahe": 2.0, "Threshold": true,  "AdaptiveThreshold": false, "Lab": false, "Close": false, "DetThresh": 0.15, "DetBoxThresh": 0.20, "Unclip": 2.50 },
+  "Default":     { "Scale": 2.0, "Clahe": 2.0, "Threshold": false, "AdaptiveThreshold": false, "Lab": false, "Close": false, "DetThresh": 0.15, "DetBoxThresh": 0.20, "Unclip": 2.50 }
+}

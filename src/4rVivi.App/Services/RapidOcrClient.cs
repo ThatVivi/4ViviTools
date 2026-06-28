@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Globalization;
 
 namespace FourRVivi.App.Services;
 
@@ -14,8 +15,12 @@ public sealed class RapidOcrClient : IDisposable
     private bool _failed;
     private string? _pendingCfg;
     private string _tmp = Path.Combine(Path.GetTempPath(), "4rvivi_ocr.png");
+    private string _tmpIcon = Path.Combine(Path.GetTempPath(), "4rvivi_icon.png");
+    private string _tmpDet = Path.Combine(Path.GetTempPath(), "4rvivi_det.png");
+    private string _tmpScan = Path.Combine(Path.GetTempPath(), "4rvivi_scan.png");
 
     public bool Available => !_failed;
+    public float LastScore { get; private set; } = 1f;   // rec confidence of the last single-region Recognize
 
     private static string? FindServer()
     {
@@ -70,11 +75,151 @@ public sealed class RapidOcrClient : IDisposable
                 _proc.StandardInput.Flush();
                 string? resp = _proc.StandardOutput.ReadLine();
                 if (resp == null) { _failed = true; return null; }
-                int tab = resp.IndexOf('\t');
-                if (resp.StartsWith("OK") && tab >= 0) return resp.Substring(tab + 1);
+                if (resp.StartsWith("OK\t"))
+                {
+                    var rest = resp.Substring(3);
+                    int tab2 = rest.IndexOf('\t');
+                    if (tab2 >= 0 && float.TryParse(rest.Substring(0, tab2), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var sc))
+                    { LastScore = sc; return rest.Substring(tab2 + 1); }
+                    LastScore = 1f; return rest;   // old single-field format
+                }
                 return null;
             }
             catch { _failed = true; return null; }
+        }
+    }
+
+    /// <summary>Recognition-only read of a single text-line crop (REC): skips detection + angle. Returns
+    /// the text and sets <see cref="LastScore"/>, or null if the worker is down.</summary>
+    public string? RecognizeLine(byte[] png)
+    {
+        if (png.Length == 0) return null;
+        lock (_lock)
+        {
+            if (!EnsureStarted()) return null;
+            try
+            {
+                File.WriteAllBytes(_tmp, png);
+                _proc!.StandardInput.WriteLine("REC\t" + _tmp);
+                _proc.StandardInput.Flush();
+                string? resp = _proc.StandardOutput.ReadLine();
+                if (resp == null) { _failed = true; return null; }
+                if (resp.StartsWith("OK\t"))
+                {
+                    var rest = resp.Substring(3);
+                    int tab = rest.IndexOf('\t');
+                    if (tab >= 0 && float.TryParse(rest.Substring(0, tab), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var sc))
+                    { LastScore = sc; return rest.Substring(tab + 1); }
+                    LastScore = 1f; return rest;
+                }
+                return null;
+            }
+            catch { _failed = true; return null; }
+        }
+    }
+
+    /// <summary>Recognize a game icon/sprite/minimap crop -> (label, cosine score), or null.</summary>
+    public (string label, float score)? RecognizeIcon(byte[] png)
+    {
+        if (png.Length == 0) return null;
+        lock (_lock)
+        {
+            if (!EnsureStarted()) return null;
+            try
+            {
+                File.WriteAllBytes(_tmpIcon, png);
+                _proc!.StandardInput.WriteLine("ICON\t" + _tmpIcon);
+                _proc.StandardInput.Flush();
+                string? resp = _proc.StandardOutput.ReadLine();
+                if (resp == null) { _failed = true; return null; }
+                var parts = resp.Split('\t');
+                if (parts.Length >= 3 && parts[0] == "OK" && parts[1].Length > 0 &&
+                    float.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out var sc))
+                    return (parts[1], sc);
+                return null;
+            }
+            catch { _failed = true; return null; }
+        }
+    }
+
+    /// <summary>A piece of text found anywhere on screen: pixel box + decoded string + det score.</summary>
+    public readonly record struct TextFind(int X, int Y, int W, int H, float Score, string Text);
+
+    /// <summary>Full-screen text detection+recognition. Finds and reads ALL text in the image
+    /// (not just a user region). Returns [] if the worker/model is unavailable.</summary>
+    public IReadOnlyList<TextFind> ScanText(byte[] png)
+    {
+        var list = new List<TextFind>();
+        if (png.Length == 0) return list;
+        lock (_lock)
+        {
+            if (!EnsureStarted()) return list;
+            try
+            {
+                File.WriteAllBytes(_tmpScan, png);
+                _proc!.StandardInput.WriteLine("SCAN\t" + _tmpScan);
+                _proc.StandardInput.Flush();
+                string? resp = _proc.StandardOutput.ReadLine();
+                if (resp == null) { _failed = true; return list; }
+                int tab = resp.IndexOf('\t');
+                if (!resp.StartsWith("OK") || tab < 0) return list;
+                foreach (var e in resp.Substring(tab + 1).Split(';'))
+                {
+                    if (e.Length == 0) continue;
+                    var f = e.Split(',');
+                    if (f.Length < 6) continue;
+                    if (int.TryParse(f[0], out var x) && int.TryParse(f[1], out var y) &&
+                        int.TryParse(f[2], out var w) && int.TryParse(f[3], out var h) &&
+                        float.TryParse(f[4], NumberStyles.Float, CultureInfo.InvariantCulture, out var sc))
+                    {
+                        string txt = "";
+                        try { txt = System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(f[5])); } catch { }
+                        list.Add(new TextFind(x, y, w, h, sc, txt));
+                    }
+                }
+                return list;
+            }
+            catch { _failed = true; return list; }
+        }
+    }
+
+    /// <summary>A detected on-screen entity: pixel box + (best icon-embedder label, its cosine score).</summary>
+    public readonly record struct Entity(int X, int Y, int W, int H, float Score, string Label, float LabelScore, string Cls);
+
+    /// <summary>Detect entities on a full screenshot PNG. Returns [] if the worker/model is unavailable.</summary>
+    public IReadOnlyList<Entity> DetectEntities(byte[] png)
+    {
+        var list = new List<Entity>();
+        if (png.Length == 0) return list;
+        lock (_lock)
+        {
+            if (!EnsureStarted()) return list;
+            try
+            {
+                File.WriteAllBytes(_tmpDet, png);
+                _proc!.StandardInput.WriteLine("DETECT\t" + _tmpDet);
+                _proc.StandardInput.Flush();
+                string? resp = _proc.StandardOutput.ReadLine();
+                if (resp == null) { _failed = true; return list; }
+                int tab = resp.IndexOf('\t');
+                if (!resp.StartsWith("OK") || tab < 0) return list;
+                foreach (var e in resp.Substring(tab + 1).Split(';'))
+                {
+                    if (e.Length == 0) continue;
+                    var f = e.Split(',');
+                    if (f.Length < 7) continue;
+                    if (int.TryParse(f[0], out var x) && int.TryParse(f[1], out var y) &&
+                        int.TryParse(f[2], out var w) && int.TryParse(f[3], out var h) &&
+                        float.TryParse(f[4], NumberStyles.Float, CultureInfo.InvariantCulture, out var sc) &&
+                        float.TryParse(f[6], NumberStyles.Float, CultureInfo.InvariantCulture, out var ls))
+                    {
+                        string cls = f.Length >= 8 ? f[7] : "";
+                        list.Add(new Entity(x, y, w, h, sc, f[5], ls, cls));
+                    }
+                }
+                return list;
+            }
+            catch { _failed = true; return list; }
         }
     }
 

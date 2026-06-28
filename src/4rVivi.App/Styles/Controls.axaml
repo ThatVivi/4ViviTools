@@ -124,4 +124,72 @@
     <Setter Property="Background" Value="{DynamicResource OkBrush}"/>
     <Setter Property="Foreground" Value="White"/>
   </Style>
+
+  <!-- ============================================================
+       GLOBAL COLOUR PASS — colour every button, box, table and the
+       text the user types. (Requested: "make every table, box,
+       button colored, even the fonts where the user puts input")
+       ============================================================ -->
+
+  <!-- Every plain button gets a coloured fill + white text -->
+  <Style Selector="Button">
+    <Setter Property="Background" Value="{DynamicResource Accent2Brush}"/>
+    <Setter Property="Foreground" Value="White"/>
+    <Setter Property="CornerRadius" Value="8"/>
+    <Setter Property="Padding" Value="12,7"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <Style Selector="Button:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+    <Setter Property="Foreground" Value="White"/>
+  </Style>
+
+  <!-- Typed input text is colourful (each control type a different colour) so values pop -->
+  <Style Selector="TextBox">
+    <Setter Property="Foreground" Value="#8BE9FD"/>            <!-- cyan -->
+    <Setter Property="CaretBrush" Value="#8BE9FD"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <Style Selector="NumericUpDown /template/ TextBox">
+    <Setter Property="Foreground" Value="#FFD479"/>            <!-- gold -->
+    <Setter Property="CaretBrush" Value="#FFD479"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <Style Selector="ComboBox">
+    <Setter Property="Foreground" Value="#C4B5FD"/>            <!-- violet -->
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <Style Selector="AutoCompleteBox /template/ TextBox">
+    <Setter Property="Foreground" Value="#7EE787"/>            <!-- green -->
+    <Setter Property="CaretBrush" Value="#7EE787"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+
+  <!-- Tables / lists: coloured alternating rows + coloured selection -->
+  <Style Selector="ListBoxItem:nth-child(even)">
+    <Setter Property="Background" Value="#1B2230"/>
+  </Style>
+  <Style Selector="ListBoxItem:nth-child(odd)">
+    <Setter Property="Background" Value="#161B26"/>
+  </Style>
+  <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+  </Style>
+
+  <!-- Coloured tab headers -->
+  <Style Selector="TabItem">
+    <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <Style Selector="TabItem:selected">
+    <Setter Property="Foreground" Value="#8BE9FD"/>
+  </Style>
+  <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+  </Style>
+
+  <!-- CheckBox / labels a touch brighter -->
+  <Style Selector="CheckBox">
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+  </Style>
 </Styles>

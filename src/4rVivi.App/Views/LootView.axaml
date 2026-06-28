@@ -5,8 +5,8 @@
     <TextBlock Grid.Row="0" Text="{Binding OcrLoot}" Classes="muted" HorizontalAlignment="Right" VerticalAlignment="Center"/>
     <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,12">
       <TextBox Width="240" Text="{Binding Item}" Watermark="Item name"/>
-      <NumericUpDown Width="100" Minimum="1" Maximum="100000" Value="{Binding Qty}"/>
-      <NumericUpDown Width="130" Minimum="0" Maximum="1000000000" Value="{Binding ValueEach}" Watermark="zeny each"/>
+      <NumericUpDown MinWidth="110" Minimum="1" Maximum="100000" Value="{Binding Qty}"/>
+      <NumericUpDown MinWidth="130" Minimum="0" Maximum="1000000000" Value="{Binding ValueEach}" Watermark="zeny each"/>
       <Button Classes="accent" Content="Add" Command="{Binding AddCommand}"/>
       <Button Content="Clear" Command="{Binding ClearCommand}"/>
       <TextBlock Text="{Binding Totals}" Classes="muted" VerticalAlignment="Center"/>

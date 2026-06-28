@@ -1,0 +1,1 @@
+{"imgsz": 640, "classes": ["monster", "player", "loot", "portal", "target", "target_hp", "player_hp"], "format": "yolo11"}

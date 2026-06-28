@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="FourRVivi.App.Controls.SearchPicker">
+  <Grid>
+    <TextBox x:Name="PART_Text"/>
+    <Popup x:Name="PART_Popup" PlacementTarget="{Binding #PART_Text}" Placement="Bottom"
+           IsLightDismissEnabled="True" WindowManagerAddShadowHint="False">
+      <Border Background="#1B2230" BorderBrush="#2E6E6E" BorderThickness="1" CornerRadius="4" MinWidth="260">
+        <ListBox x:Name="PART_List" MaxHeight="280" Background="Transparent"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <Grid ColumnDefinitions="24,*">
+                <Image Width="20" Height="20" Source="{Binding Converter={StaticResource NameToIcon}}"/>
+                <TextBlock Grid.Column="1" Text="{Binding}" VerticalAlignment="Center" Foreground="#ECEEF5"/>
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Border>
+    </Popup>
+  </Grid>
+</UserControl>

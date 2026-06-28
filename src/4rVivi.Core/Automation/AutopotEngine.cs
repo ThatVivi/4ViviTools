@@ -13,6 +13,7 @@ public sealed class AutopotEngine : AutomationEngine
     private readonly Dictionary<PotConfig, long> _lastFire = new();
 
     public AutopotEngine(GameSession s, KeySender k, HumanizedTiming t) : base("Autopot", s, k, t) { }
+    public override void ClearKeys() { foreach (var r in Rules) r.Key = ""; }
 
     protected override async Task LoopAsync(CancellationToken ct)
     {
@@ -21,17 +22,14 @@ public sealed class AutopotEngine : AutomationEngine
             if (Enabled && (Session.Reader.Attached || FourRVivi.Core.Game.LiveStats.Instance.IsFresh))
             {
                 double hp = Session.Health.HpPercent, sp = Session.Health.SpPercent;
-                int hpv = Session.Health.Hp, spv = Session.Health.Sp;
                 long now = Environment.TickCount64;
 
                 foreach (var r in Rules)
                 {
                     if (!r.Enabled) continue;
                     double pct = r.UseSp ? sp : hp;
-                    int flat = r.UseSp ? spv : hpv;
-                    if (pct < 0) continue; // address unknown
-                    bool trip = pct <= r.Percent || (r.Flat > 0 && flat <= r.Flat);
-                    if (!trip) continue;
+                    if (pct <= 0 || pct > 100) continue;   // unknown/garbage read -> don't fire (anti-spam)
+                    if (pct > r.Percent) continue;          // only pot while at/below the % threshold
                     if (_lastFire.TryGetValue(r, out long last) && now - last < r.UseDelayMs) continue;
 
                     await Timing.DelayAsync(r.ReactionMs, ct);

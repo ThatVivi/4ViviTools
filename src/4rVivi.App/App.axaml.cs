@@ -28,9 +28,22 @@ public partial class App : Application
         Services = ConfigureServices();
         var iconSvc = Services.GetRequiredService<IconImageService>();
         IconImageService.Instance = iconSvc;
+        iconSvc.ItemNet = Services.GetRequiredService<FourRVivi.Core.Trackers.ItemIconService>();
+        iconSvc.SkillNet = Services.GetRequiredService<FourRVivi.Core.Trackers.SkillIconService>();
+        var dbLazy = Services.GetRequiredService<Lazy<GameDatabase>>();
+        iconSvc.NameToId = n => { try { return dbLazy.Value.IconId(n); } catch { return 0; } };
+        iconSvc.SkillByName = n => { try { var s = dbLazy.Value.SkillByName(n); return s == null ? null : (s.Aegis, s.Id); } catch { return null; } };
         var st = Services.GetRequiredService<SettingsStore>();
-        iconSvc.SetGameFolder(st.Current.GameFolder);
+        // Use the configured game folder, or auto-detect an extracted GRF tree (…/GRF/data/texture/유저인터페이스).
+        var gameFolder = st.Current.GameFolder;
+        if (string.IsNullOrWhiteSpace(gameFolder) || !System.IO.Directory.Exists(System.IO.Path.Combine(gameFolder, "data", "texture", "유저인터페이스")))
+        {
+            var found = FindGrfFolder();
+            if (found != null) { gameFolder = found; st.Current.GameFolder = found; try { st.Save(); } catch { } }
+        }
+        iconSvc.SetGameFolder(gameFolder);
         iconSvc.SetGrf(st.Current.GrfPath);
+        ViewModels.SettingsViewModel.ApplyTheme(st.Current.Theme);   // light/dark from settings
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -43,6 +56,29 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
       }
       catch (Exception ex) { FourRVivi.App.Services.AppLog.Crash("Startup failed", ex); throw; }
+    }
+
+    /// <summary>Walk up from the app dir looking for an extracted GRF tree. Returns the folder that
+    /// contains <c>data/texture/유저인터페이스</c> (the value SetGameFolder expects), or null.</summary>
+    private static string? FindGrfFolder()
+    {
+        const string marker = "data/texture/유저인터페이스";
+        try
+        {
+            var dir = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+            for (int i = 0; i < 8 && dir != null; i++, dir = dir.Parent)
+            {
+                // <dir>/data/texture/...  -> game folder is <dir>
+                if (System.IO.Directory.Exists(System.IO.Path.Combine(dir.FullName, marker.Replace('/', System.IO.Path.DirectorySeparatorChar))))
+                    return dir.FullName;
+                // <dir>/GRF/data/texture/... -> game folder is <dir>/GRF
+                var grf = System.IO.Path.Combine(dir.FullName, "GRF");
+                if (System.IO.Directory.Exists(System.IO.Path.Combine(grf, marker.Replace('/', System.IO.Path.DirectorySeparatorChar))))
+                    return grf;
+            }
+        }
+        catch { }
+        return null;
     }
 
     private static void StartDiscordPresence()
@@ -74,6 +110,8 @@ public partial class App : Application
         });
         s.AddSingleton<LootLog>();
         s.AddSingleton<MvpIconService>();
+        s.AddSingleton<FourRVivi.Core.Trackers.ItemIconService>();
+        s.AddSingleton<FourRVivi.Core.Trackers.SkillIconService>();
         s.AddSingleton<IconService>();
         s.AddSingleton<ClassData>();
         s.AddSingleton<IconImageService>();
@@ -127,6 +165,14 @@ public partial class App : Application
         s.AddSingleton<ToolsLauncherViewModel>();
         s.AddSingleton<AutoDetectViewModel>();
         s.AddSingleton<OcrReaderViewModel>();
+        s.AddSingleton<BotStudioViewModel>();
+        s.AddSingleton<AtkDefViewModel>();
+        s.AddSingleton<AutoStandViewModel>();
+        s.AddSingleton<AutoYggViewModel>();
+        s.AddSingleton<SpammerGridViewModel>();
+        s.AddSingleton<FourRToolsShellViewModel>();
+        s.AddSingleton<RoToolsShellViewModel>();
+        s.AddSingleton<DamageCalcViewModel>();
 
         return s.BuildServiceProvider();
     }

@@ -1,36 +1,154 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels" xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels" xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
+             xmlns:auto="clr-namespace:FourRVivi.Core.Automation;assembly=4rVivi.Core"
              x:Class="FourRVivi.App.Views.SmartBotView" x:DataType="vm:SmartBotViewModel">
+  <ScrollViewer>
   <StackPanel Spacing="14">
-    <TextBlock Text="Smart Bot" Classes="h1"/>
+    <StackPanel Orientation="Horizontal" Spacing="14">
+      <TextBlock Text="Smart Bot" Classes="h1"/>
       <ToggleSwitch Content="Smart Bot ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
-    <TextBlock Classes="muted" TextWrapping="Wrap" Text="Attack + skill rotation, auto-loot, teleport when no progress, and return-to-town when overweight. Master ON to run. Set HP/EXP/Weight/Pos addresses in the Scanner for full behaviour."/>
+    </StackPanel>
+    <TextBlock Classes="muted" TextWrapping="Wrap" Text="Vision-targeted auto-combat. Turn on Auto-detect in the Scanner so the bot can see monsters. Set HP/EXP/Weight/Pos/Ammo in the Scanner for full behaviour."/>
+
+    <!-- Keys + combat -->
     <Border Classes="card">
       <StackPanel Spacing="12">
+        <TextBlock Text="Keys &amp; combat" Classes="h2"/>
         <StackPanel Orientation="Horizontal" Spacing="14">
-          <StackPanel><TextBlock Text="Attack key" Classes="muted"/><ctrl:KeyCaptureBox Width="100" KeyText="{Binding AttackKey}"/></StackPanel>
-          <StackPanel><TextBlock Text="Loot key" Classes="muted"/><ctrl:KeyCaptureBox Width="100" KeyText="{Binding LootKey}"/></StackPanel>
-          <StackPanel><TextBlock Text="Teleport key" Classes="muted"/><ctrl:KeyCaptureBox Width="100" KeyText="{Binding TeleportKey}"/></StackPanel>
-          <StackPanel><TextBlock Text="Return key" Classes="muted"/><ctrl:KeyCaptureBox Width="100" KeyText="{Binding ReturnKey}"/></StackPanel>
+          <StackPanel><TextBlock Text="Attack key" Classes="muted"/><ctrl:KeyCaptureBox Width="90" KeyText="{Binding AttackKey}"/></StackPanel>
+          <StackPanel><TextBlock Text="Loot key" Classes="muted"/><ctrl:KeyCaptureBox Width="90" KeyText="{Binding LootKey}"/></StackPanel>
+          <StackPanel><TextBlock Text="Teleport key" Classes="muted"/><ctrl:KeyCaptureBox Width="90" KeyText="{Binding TeleportKey}"/></StackPanel>
+          <StackPanel><TextBlock Text="Return key" Classes="muted"/><ctrl:KeyCaptureBox Width="90" KeyText="{Binding ReturnKey}"/></StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="10">
-          <TextBlock Text="Skill rotation" Classes="muted" VerticalAlignment="Center"/>
+          <TextBlock Text="Global skill rotation" Classes="muted" VerticalAlignment="Center"/>
           <TextBox Width="240" Text="{Binding Rotation}" Watermark="F2, F3 (woven into attacks)"/>
           <Button Content="Apply rotation" Command="{Binding ApplyRotationCommand}"/>
+          <TextBlock Text="Input:" VerticalAlignment="Center" Classes="muted" Margin="8,0,4,0"/>
+          <ComboBox MinWidth="230" SelectedIndex="{Binding InputMethodIndex}" ItemsSource="{Binding InputMethods}"
+                    ToolTip.Tip="Which Windows input API to send clicks/keys with. Try each to see what your server accepts (these mirror AHK's Send / SendEvent / ControlSend)."/>
+          <Button Content="Clear ALL keys" Classes="danger" Command="{Binding ClearAllKeysCommand}"
+                  ToolTip.Tip="Blank every hotkey across all features (bot, autopot, skill spammer, buffs, macros)."/>
+          <TextBlock Text="Attack skill" Classes="muted" VerticalAlignment="Center"/>
+          <AutoCompleteBox MinWidth="180" Watermark="search skill" Text="{Binding AttackSkill}" ItemsSource="{Binding SkillNames}" FilterMode="Contains" MinimumPrefixLength="1"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="14">
-          <StackPanel><TextBlock Text="Flee at HP %" Classes="muted"/><NumericUpDown Width="110" Minimum="0" Maximum="100" Value="{Binding FleeAtHpPercent}"/></StackPanel>
-          <StackPanel><TextBlock Text="Stuck seconds" Classes="muted"/><NumericUpDown Width="110" Minimum="2" Maximum="120" Value="{Binding StuckSeconds}"/></StackPanel>
-          <StackPanel><TextBlock Text="Return at weight %" Classes="muted"/><NumericUpDown Width="130" Minimum="0" Maximum="100" Value="{Binding ReturnAtWeightPercent}"/></StackPanel>
-          <StackPanel><TextBlock Text="Rotation ms" Classes="muted"/><NumericUpDown Width="110" Minimum="80" Maximum="5000" Value="{Binding RotationMs}"/></StackPanel>
-          <CheckBox Content="Click to move" IsChecked="{Binding ClickToMove}" VerticalAlignment="Bottom"/>
-          <CheckBox Content="Click to attack" IsChecked="{Binding ClickAttack}" VerticalAlignment="Bottom"/>
-          <StackPanel><TextBlock Text="Move radius px" Classes="muted"/><NumericUpDown Width="120" Minimum="20" Maximum="600" Value="{Binding MoveRadius}"/></StackPanel>
+          <StackPanel><TextBlock Text="Flee at HP %" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="100" Value="{Binding FleeAtHpPercent}"/></StackPanel>
+          <StackPanel><TextBlock Text="Stuck seconds" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="2" Maximum="120" Value="{Binding StuckSeconds}"/></StackPanel>
+          <StackPanel><TextBlock Text="Return at weight %" Classes="muted"/><NumericUpDown MinWidth="120" Minimum="0" Maximum="100" Value="{Binding ReturnAtWeightPercent}"/></StackPanel>
+          <StackPanel><TextBlock Text="Rotation ms" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="80" Maximum="5000" Value="{Binding RotationMs}"/></StackPanel>
+          <StackPanel><TextBlock Text="Move radius px" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="20" Maximum="600" Value="{Binding MoveRadius}"/></StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="16">
+          <CheckBox Content="Use vision (click detected monsters)" IsChecked="{Binding UseVision}"/>
+          <CheckBox Content="Hardware click (trusted cursor)" IsChecked="{Binding HardwareClick}"/>
+          <CheckBox Content="Click to move" IsChecked="{Binding ClickToMove}"/>
+          <CheckBox Content="Click to attack" IsChecked="{Binding ClickAttack}"/>
         </StackPanel>
       </StackPanel>
     </Border>
+
+    <!-- Gear / ammo -->
+    <Border Classes="card">
+      <StackPanel Spacing="12">
+        <TextBlock Text="Weapon &amp; ammo" Classes="h2"/>
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <StackPanel><TextBlock Text="Weapon key" Classes="muted"/><ctrl:KeyCaptureBox Width="90" KeyText="{Binding WeaponKey}"/></StackPanel>
+          <StackPanel><TextBlock Text="Ammo key" Classes="muted"/><ctrl:KeyCaptureBox Width="90" KeyText="{Binding AmmoKey}"/></StackPanel>
+          <CheckBox Content="Equip on start" IsChecked="{Binding EquipOnStart}" VerticalAlignment="Bottom"/>
+          <StackPanel><TextBlock Text="Stop at ammo &#8804;" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="9999" Value="{Binding StopAtAmmo}"/></StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock Text="Ammo" Classes="muted" VerticalAlignment="Center"/>
+          <AutoCompleteBox MinWidth="200" Watermark="search ammo item" Text="{Binding AmmoName}" ItemsSource="{Binding AmmoNames}" FilterMode="Contains" MinimumPrefixLength="1"/>
+        </StackPanel>
+        <TextBlock Classes="muted" TextWrapping="Wrap" Text="Mark the ammo counter as role &#8220;Ammo&#8221; in the Scanner to track rounds left and halt fire when low."/>
+      </StackPanel>
+    </Border>
+
+    <!-- Roam box + reconnect -->
+    <Border Classes="card">
+      <StackPanel Spacing="12">
+        <TextBlock Text="Roam box, map &amp; reconnect" Classes="h2"/>
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock Text="Farm map" Classes="muted" VerticalAlignment="Center"/>
+          <AutoCompleteBox MinWidth="200" Watermark="search map" Text="{Binding TargetMap}" ItemsSource="{Binding MapNames}" FilterMode="Contains" MinimumPrefixLength="1"/>
+          <TextBlock Text="(bot only farms while the OCR map matches)" Classes="muted" VerticalAlignment="Center"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <CheckBox Content="Walk only inside box" IsChecked="{Binding UseWalkBox}" VerticalAlignment="Bottom"/>
+          <StackPanel><TextBlock Text="Box X" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="4000" Value="{Binding BoxX}"/></StackPanel>
+          <StackPanel><TextBlock Text="Box Y" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="4000" Value="{Binding BoxY}"/></StackPanel>
+          <StackPanel><TextBlock Text="Box W" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="4000" Value="{Binding BoxW}"/></StackPanel>
+          <StackPanel><TextBlock Text="Box H" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="4000" Value="{Binding BoxH}"/></StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <CheckBox Content="Auto-reconnect (OCR-detected)" IsChecked="{Binding AutoReconnect}" VerticalAlignment="Center"/>
+          <TextBlock Text="Reconnect keys" Classes="muted" VerticalAlignment="Center"/>
+          <TextBox Width="220" Text="{Binding ReconnectKeys}" Watermark="Enter, Enter (pressed in order)"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- Per-monster rules -->
+    <Border Classes="card">
+      <StackPanel Spacing="10">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock Text="Monster rules" Classes="h2" VerticalAlignment="Center"/>
+          <Button Content="Add" Command="{Binding AddMonsterCommand}"/>
+          <Button Content="Apply" Classes="accent" Command="{Binding ApplyMonstersCommand}"/>
+        </StackPanel>
+        <TextBlock Classes="muted" TextWrapping="Wrap" Text="Name = matches the vision label (substring). Attack off = avoid. Skill key fires on that monster, gated by its cooldown. Empty list = attack any mob."/>
+        <Grid ColumnDefinitions="*,70,90,110,70">
+          <TextBlock Grid.Column="0" Text="Monster name" Classes="muted"/>
+          <TextBlock Grid.Column="1" Text="Attack" Classes="muted"/>
+          <TextBlock Grid.Column="2" Text="Skill key" Classes="muted"/>
+          <TextBlock Grid.Column="3" Text="Cooldown ms" Classes="muted"/>
+          <TextBlock Grid.Column="4" Text="" Classes="muted"/>
+        </Grid>
+        <ItemsControl ItemsSource="{Binding Monsters}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="auto:MonsterRule">
+              <Grid ColumnDefinitions="*,70,90,110,70" Margin="0,2">
+                <AutoCompleteBox Grid.Column="0" Margin="0,0,6,0" Text="{Binding Name}" Watermark="search monster"
+                                 FilterMode="Contains" MinimumPrefixLength="1"
+                                 ItemsSource="{Binding $parent[UserControl].((vm:SmartBotViewModel)DataContext).MonsterNames}"/>
+                <CheckBox Grid.Column="1" IsChecked="{Binding Attack}"/>
+                <TextBox Grid.Column="2" Margin="0,0,6,0" Text="{Binding SkillKey}"/>
+                <NumericUpDown Grid.Column="3" Minimum="200" Maximum="60000" Value="{Binding SkillCooldownMs}"/>
+                <Button Grid.Column="4" Content="X"
+                        Command="{Binding $parent[UserControl].((vm:SmartBotViewModel)DataContext).RemoveMonsterCommand}"
+                        CommandParameter="{Binding}"/>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </Border>
+
+    <!-- Activity log -->
+    <Border Classes="card">
+      <StackPanel Spacing="8">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock Text="Activity log" Classes="h2" VerticalAlignment="Center"/>
+          <Button Content="Clear" Command="{Binding ClearLogCommand}"/>
+        </StackPanel>
+        <Border Height="220" Background="{DynamicResource Surface2Brush}" CornerRadius="6">
+          <ScrollViewer>
+            <ItemsControl ItemsSource="{Binding Logs}" Margin="8">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate><TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="12"/></DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Border>
+      </StackPanel>
+    </Border>
+
     <StackPanel Orientation="Horizontal" Spacing="10">
       <TextBlock Text="{Binding AddressStatus}" Classes="muted" TextWrapping="Wrap" Width="640"/>
       <Button Content="Refresh" Command="{Binding RefreshAddressesCommand}"/>
     </StackPanel>
   </StackPanel>
+  </ScrollViewer>
 </UserControl>

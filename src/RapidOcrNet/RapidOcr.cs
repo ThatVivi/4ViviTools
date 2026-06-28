@@ -62,6 +62,22 @@ public sealed class RapidOcr : IDisposable
         _textRecognizer.InitModel(recPath, keysPath, op);
     }
 
+    /// <summary>Recognition-only: run the CRNN recognizer on a single pre-cropped text line, skipping
+    /// detection and angle classification entirely. Best for known fixed ROIs (HP/SP/levels) where the
+    /// detector tends to drop tiny game text before recognition even runs.</summary>
+    public (string text, float score) RecognizeLine(SKBitmap crop)
+    {
+        var line = _textRecognizer.GetTextLine(crop);
+        string text = line?.Chars != null ? string.Concat(line.Chars) : "";
+        float score = 0f;
+        if (line?.CharScores != null && line.CharScores.Length > 0)
+        {
+            float s = 0; foreach (var c in line.CharScores) s += c;
+            score = s / line.CharScores.Length;
+        }
+        return (text, score);
+    }
+
     public OcrResult Detect(string path, RapidOcrOptions options)
     {
         if (!File.Exists(path))
@@ -421,7 +437,7 @@ public sealed class RapidOcr : IDisposable
     public static SessionOptions GetDefaultSessionOptions(int numThread = 0)
     {
         var op = new SessionOptions();
-        op.GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_EXTENDED;
+        op.GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL;
         op.InterOpNumThreads = numThread;
         op.IntraOpNumThreads = numThread;
         return op;
