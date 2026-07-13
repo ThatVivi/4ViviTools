@@ -3,7 +3,7 @@
   <StackPanel Spacing="14">
     <TextBlock Text="Macros" Classes="h1"/>
       <ToggleSwitch Content="Macros ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
-    <TextBlock Classes="muted" TextWrapping="Wrap" Text="Chain macros for equip/skill switch, auto-vend, auto-storage. Keys are comma-separated. Tick Loop to repeat while master is ON."/>
+    <TextBlock Classes="muted" TextWrapping="Wrap" Text="Chain macros for equip/skill switch, auto-vend, auto-storage. Record the keys once, then tick Loop to repeat while master is ON."/>
     <Button Content="+ Add macro" Command="{Binding AddChainCommand}" HorizontalAlignment="Left"/>
     <ItemsControl ItemsSource="{Binding Chains}">
       <ItemsControl.ItemTemplate>
@@ -12,7 +12,7 @@
             <Grid ColumnDefinitions="180,*,80,110,Auto,Auto" VerticalAlignment="Center">
               <TextBox Grid.Column="0" Text="{Binding Name}" Margin="0,0,8,0"/>
               <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="0,0,8,0">
-                <TextBox Width="180" Text="{Binding KeysCsv}" Watermark="F9, ENTER, ENTER"/>
+                <TextBlock Width="180" MinHeight="32" VerticalAlignment="Center" Text="{Binding KeysCsv}" TextWrapping="Wrap"/>
                 <ctrl:SequenceRecorder Sequence="{Binding KeysCsv}"/>
               </StackPanel>
               <CheckBox Grid.Column="2" Content="Loop" IsChecked="{Binding LoopWhileOn}"/>
@@ -31,9 +31,9 @@
     <Border Classes="card">
       <StackPanel Spacing="10">
         <StackPanel Orientation="Horizontal" Spacing="10">
-          <TextBox Width="220" Text="{Binding Sequence}" Watermark="ENTER, ENTER"/>
+          <TextBlock Width="220" MinHeight="32" VerticalAlignment="Bottom" Text="{Binding Sequence}" TextWrapping="Wrap"/>
           <ctrl:SequenceRecorder Sequence="{Binding Sequence}" VerticalAlignment="Bottom"/>
-          <StackPanel><TextBlock Text="Gap ms" Classes="muted"/><NumericUpDown Width="100" Minimum="20" Maximum="5000" Value="{Binding GapMs}"/></StackPanel>
+          <StackPanel><TextBlock Text="Gap ms" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="20" Maximum="5000" Value="{Binding GapMs}"/></StackPanel>
           <Button Classes="accent" Content="Play login" VerticalAlignment="Bottom" Command="{Binding PlayLoginCommand}"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="10">

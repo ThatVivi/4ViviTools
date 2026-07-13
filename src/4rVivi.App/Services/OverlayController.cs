@@ -4,7 +4,7 @@ using FourRVivi.App.Overlay;
 namespace FourRVivi.App.Services;
 
 /// <summary>Owns the single overlay window instance and forwards configuration.</summary>
-public sealed class OverlayController
+public sealed class OverlayController : IDisposable
 {
     private readonly GameSession _session;
     private OverlayWindow? _win;
@@ -22,4 +22,9 @@ public sealed class OverlayController
     }
     public void Apply() => _win?.Configure(CastRange, Aoe, Gutter);
     public void Hide() => _win?.Hide();
+    public void Dispose()
+    {
+        try { _win?.Close(); } catch { }
+        _win = null;
+    }
 }

@@ -1,108 +1,59 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels" xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
              x:Class="FourRVivi.App.Views.AutopotView"
              x:DataType="vm:AutopotViewModel"
              x:Name="Root">
 
   <StackPanel Spacing="14">
+    <Grid ColumnDefinitions="*,Auto">
+      <StackPanel Grid.Column="0" Spacing="3">
+        <TextBlock Text="Auto Potions" Classes="h1"/>
+        <TextBlock Classes="muted" Text="RO-style HP/SP potion rules. Record the item hotkey, choose HP or SP, then set the percentage trigger."/>
+      </StackPanel>
+      <ToggleSwitch Grid.Column="1" Content="Autopot ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
+    </Grid>
 
-    <TextBlock Text="AutoPots+" Classes="h1"/>
-      <ToggleSwitch Content="Autopot ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
+    <Button Classes="accent" Command="{Binding AddPotCommand}" HorizontalAlignment="Left">
+      <StackPanel Orientation="Horizontal" Spacing="7">
+        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xECC8;" VerticalAlignment="Center"/>
+        <TextBlock Text="Add potion rule" VerticalAlignment="Center"/>
+      </StackPanel>
+    </Button>
 
-    <TextBlock Classes="muted"
-               Text="Reads HP/SP from memory. Set % (and optional flat), key, reaction and use-delay. Assign HP/SP addresses in the Scanner first."/>
+    <Border Padding="10,6" CornerRadius="6" BorderThickness="1"
+            BorderBrush="{DynamicResource AccentBrush}" Background="{DynamicResource Surface2Brush}">
+      <TextBlock Text="-1 = Auto. Leave React and Delay at -1 for adaptive timing, or enter your own milliseconds." TextWrapping="Wrap"/>
+    </Border>
 
-    <Button Content="+ Add pot rule"
-            Command="{Binding AddPotCommand}"
-            HorizontalAlignment="Left"/>
+    <Grid ColumnDefinitions="54,82,92,118,118,118,54" Margin="14,0,14,-4">
+      <TextBlock Grid.Column="0" Text="Use" Classes="muted"/>
+      <TextBlock Grid.Column="1" Text="Hotkey" Classes="muted"/>
+      <TextBlock Grid.Column="2" Text="Pool" Classes="muted"/>
+      <TextBlock Grid.Column="3" Text="Use at %" Classes="muted"/>
+      <TextBlock Grid.Column="4" Text="React (-1 auto)" Classes="muted"/>
+      <TextBlock Grid.Column="5" Text="Delay (-1 auto)" Classes="muted"/>
+    </Grid>
 
     <ItemsControl ItemsSource="{Binding Pots}">
       <ItemsControl.ItemTemplate>
-
         <DataTemplate x:DataType="vm:PotRowViewModel">
-
-          <Border Classes="card"
-                  Margin="0,0,0,8">
-
-            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*"
-                  RowDefinitions="Auto"
-                  VerticalAlignment="Center">
-
-              <CheckBox Grid.Column="0"
-                        IsChecked="{Binding Enabled}"
-                        Content="On"
-                        Margin="0,0,12,0"/>
-
-              <StackPanel Grid.Column="1"
-                          Margin="0,0,12,0">
-                <TextBlock Text="Key"
-                           Classes="muted"/>
-                <ctrl:KeyCaptureBox Width="60" KeyText="{Binding Key}"/>
-              </StackPanel>
-
-              <StackPanel Grid.Column="2"
-                          Margin="0,0,12,0">
-                <TextBlock Text="HP/SP %"
-                           Classes="muted"/>
-                <NumericUpDown Width="100"
-                               Minimum="0"
-                               Maximum="100"
-                               Value="{Binding Percent}"/>
-              </StackPanel>
-
-              <StackPanel Grid.Column="3"
-                          Margin="0,0,12,0">
-                <TextBlock Text="Flat"
-                           Classes="muted"/>
-                <NumericUpDown Width="110"
-                               Minimum="0"
-                               Maximum="9999999"
-                               Value="{Binding Flat}"/>
-              </StackPanel>
-
-              <CheckBox Grid.Column="4"
-                        IsChecked="{Binding UseSp}"
-                        Content="SP"
-                        Margin="0,0,12,0"
-                        VerticalAlignment="Bottom"/>
-
-              <StackPanel Grid.Column="5"
-                          Margin="0,0,12,0">
-                <TextBlock Text="React ms"
-                           Classes="muted"/>
-                <NumericUpDown Width="90"
-                               Minimum="0"
-                               Maximum="5000"
-                               Value="{Binding ReactionMs}"/>
-              </StackPanel>
-
-              <StackPanel Grid.Column="6"
-                          Margin="0,0,12,0">
-                <TextBlock Text="Delay ms"
-                           Classes="muted"/>
-                <NumericUpDown Width="90"
-                               Minimum="0"
-                               Maximum="60000"
-                               Value="{Binding UseDelayMs}"/>
-              </StackPanel>
-
-              <Button Grid.Column="7"
-                      Content="✕"
-                      HorizontalAlignment="Right"
-                      VerticalAlignment="Center"
+          <Border Classes="card" Margin="0,0,0,8">
+            <Grid ColumnDefinitions="54,82,92,118,118,118,54" VerticalAlignment="Center">
+              <CheckBox Grid.Column="0" IsChecked="{Binding Enabled}" Content="On" VerticalAlignment="Center"/>
+              <ctrl:KeyCaptureBox Grid.Column="1" Width="68" KeyText="{Binding Key}"/>
+              <ToggleSwitch Grid.Column="2" OffContent="HP" OnContent="SP" IsChecked="{Binding UseSp}" VerticalAlignment="Center"/>
+              <NumericUpDown Grid.Column="3" MinWidth="110" Minimum="1" Maximum="100" Value="{Binding Percent}"/>
+              <NumericUpDown Grid.Column="4" MinWidth="110" Minimum="-1" Maximum="5000" Value="{Binding ReactionMs}"/>
+              <NumericUpDown Grid.Column="5" MinWidth="110" Minimum="-1" Maximum="60000" Value="{Binding UseDelayMs}"/>
+              <Button Grid.Column="6" Content="X" HorizontalAlignment="Right" VerticalAlignment="Center"
                       Command="{ReflectionBinding DataContext.RemovePotCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                       CommandParameter="{Binding}"/>
-
             </Grid>
-
           </Border>
-
         </DataTemplate>
-
       </ItemsControl.ItemTemplate>
     </ItemsControl>
-
   </StackPanel>
-
 </UserControl>

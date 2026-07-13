@@ -23,8 +23,8 @@ public sealed class TextDetector : IDisposable
     private static readonly float[] MeanValues = [0.485F * 255F, 0.456F * 255F, 0.406F * 255F];
     private static readonly float[] NormValues = [1.0F / 0.229F / 255.0F, 1.0F / 0.224F / 255.0F, 1.0F / 0.225F / 255.0F];
 
-    private InferenceSession _dbNet;
-    private string _inputName;
+    private InferenceSession? _dbNet;
+    private string _inputName = "";
 
     public TextDetector()
     {
@@ -77,7 +77,8 @@ public sealed class TextDetector : IDisposable
 
         try
         {
-            using (IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = _dbNet.Run(inputs))
+            var dbNet = _dbNet ?? throw new InvalidOperationException("Text detector model is not initialized.");
+            using (IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = dbNet.Run(inputs))
             {
                 return GetTextBoxes(results[0], scale.DstHeight, scale.DstWidth, scale, boxScoreThresh,
                     boxThresh, unClipRatio);
@@ -544,7 +545,7 @@ public sealed class TextDetector : IDisposable
 
     public void Dispose()
     {
-        _dbNet.Dispose();
+        _dbNet?.Dispose();
         _dilatePaint.Dispose();
         _dilateFilter.Dispose();
     }

@@ -3,7 +3,7 @@ namespace FourRVivi.Core.Configuration;
 /// <summary>appsettings.json model (theme/language/feature flags + update settings).</summary>
 public sealed class AppSettings
 {
-    public string Theme { get; set; } = "Dark";
+    public string Theme { get; set; } = "Red";
     public string Language { get; set; } = "en";
     public bool EnableOCR { get; set; } = true;
     public bool EnablePlugins { get; set; } = true;

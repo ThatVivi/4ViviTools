@@ -4,7 +4,7 @@ using Avalonia.Input;
 
 namespace FourRVivi.App.Controls;
 
-/// <summary>Click it, press a key — it records the key name (F1, A, 1, SPACE…) instead of typing.</summary>
+/// <summary>Click it, press a key, and it records the key name (F1, A, 1, SPACE) instead of typing.</summary>
 public class KeyCaptureBox : Button
 {
     public static readonly StyledProperty<string> KeyTextProperty =
@@ -17,7 +17,7 @@ public class KeyCaptureBox : Button
 
     public KeyCaptureBox() { Focusable = true; Width = double.IsNaN(Width) ? 70 : Width; UpdateContent(); }
 
-    protected override void OnClick() { _capturing = true; Content = "press…"; Focus(); }
+    protected override void OnClick() { _capturing = true; Content = "press..."; Focus(); }
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
@@ -36,7 +36,7 @@ public class KeyCaptureBox : Button
         if (e.Property == KeyTextProperty && !_capturing) UpdateContent();
     }
 
-    private void UpdateContent() => Content = string.IsNullOrEmpty(KeyText) ? "—" : KeyText;
+    private void UpdateContent() => Content = string.IsNullOrEmpty(KeyText) ? "-" : KeyText;
 
     public static string? Map(Key k)
     {

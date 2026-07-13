@@ -48,15 +48,17 @@ public sealed partial class StatsViewModel : ViewModelBase
         ZenyPerHour = _session.ZenyPerHour.ToString("N0");
         ExpGained = _session.ExpGained.ToString("N0");
 
-        int hp = _stat.Hp, maxHp = _stat.MaxHp, sp = _stat.Sp, maxSp = _stat.MaxSp, wt = _stat.Weight, maxWt = _stat.MaxWeight;
-        _session.Observe(hp);
+        int wt = _stat.Weight, maxWt = _stat.MaxWeight;
         Deaths = _session.Deaths;
         ZenyGained = _session.ZenyGained.ToString("N0");
         LootCount = _session.LootCount.ToString("N0");
         LootPerHour = _session.LootPerHour.ToString("N0");
         ProfitPerHour = _session.ProfitPerHour.ToString("N0");
-        HpText = hp < 0 ? "—" : (maxHp > 0 ? $"{hp}/{maxHp}" : hp.ToString());
-        SpText = sp < 0 ? "—" : (maxSp > 0 ? $"{sp}/{maxSp}" : sp.ToString());
+        var hpPct = _stat.HpPercent;
+        var spPct = _stat.SpPercent;
+        _session.ObserveTrustedHpPercent(hpPct);
+        HpText = hpPct >= 0 ? $"{hpPct:0}%" : "—";
+        SpText = spPct >= 0 ? $"{spPct:0}%" : "—";
         WeightText = wt < 0 ? "—" : (maxWt > 0 ? $"{wt}/{maxWt}" : wt.ToString());
 
         // EXP gain log

@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="FourRVivi.App.Controls.SliderWithBox"
+             x:Name="Root">
+  <Grid ColumnDefinitions="92,*,104,32" RowDefinitions="Auto,Auto" Margin="0,0,12,8">
+    <TextBlock Grid.Column="0"
+               Text="{Binding Label, ElementName=Root}"
+               Classes="muted"
+               VerticalAlignment="Center"
+               Margin="0,0,8,0"/>
+    <Slider Grid.Column="1"
+            Minimum="{Binding Minimum, ElementName=Root}"
+            Maximum="{Binding Maximum, ElementName=Root}"
+            TickFrequency="{Binding Step, ElementName=Root}"
+            SmallChange="{Binding Step, ElementName=Root}"
+            LargeChange="{Binding LargeStep, ElementName=Root}"
+            IsSnapToTickEnabled="{Binding SnapToStep, ElementName=Root}"
+            Value="{Binding Value, ElementName=Root, Mode=TwoWay}"
+            VerticalAlignment="Center"
+            Margin="0,0,8,0"/>
+    <NumericUpDown Grid.Column="2"
+                   Minimum="{Binding Minimum, ElementName=Root}"
+                   Maximum="{Binding Maximum, ElementName=Root}"
+                   Increment="{Binding Step, ElementName=Root}"
+                   FormatString="{Binding FormatString, ElementName=Root}"
+                   Value="{Binding Value, ElementName=Root, Mode=TwoWay}"
+                   MinWidth="96"
+                   Margin="0,0,8,0"/>
+    <TextBlock Grid.Column="3"
+               Text="{Binding Unit, ElementName=Root}"
+               Classes="muted"
+               VerticalAlignment="Center"/>
+    <TextBlock Grid.Row="1"
+               Grid.Column="1"
+               Grid.ColumnSpan="3"
+               Text="{Binding RangeText, ElementName=Root}"
+               Classes="muted"
+               FontSize="11"
+               IsVisible="{Binding ShowRange, ElementName=Root}"/>
+  </Grid>
+</UserControl>

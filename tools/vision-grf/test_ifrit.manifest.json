@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "codeCells": 3,
+  "codeCell": 5,
+  "codeCellPx": 5,
+  "boxPx": 2,
+  "boxColor": [
+    255,
+    0,
+    0
+  ],
+  "mobs": {
+    "1832": {
+      "name": "Ifrit",
+      "sprite": "data\\sprite\\몬스터\\IFRIT.spr",
+      "code": [
+        [
+          255,
+          48,
+          144
+        ],
+        [
+          240,
+          255,
+          192
+        ],
+        [
+          96,
+          144,
+          255
+        ]
+      ]
+    }
+  }
+}

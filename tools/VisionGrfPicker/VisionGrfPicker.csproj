@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>VisionGrfPicker</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- cp949 (Korean) code page for GRF entry names on .NET 8 -->
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Bake the data straight into the exe from their real repo locations, so the shipped
+         exe is one self-contained file (no external JSON needed). A user can still override
+         by dropping their own gamedata.json / mobid_sprite_map.json next to the exe. -->
+    <EmbeddedResource Include="..\..\src\4rVivi.Core\Data\gamedata.json">
+      <LogicalName>gamedata.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\vision-grf\mobid_sprite_map.json">
+      <LogicalName>mobid_sprite_map.json</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

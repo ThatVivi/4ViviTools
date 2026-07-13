@@ -22,12 +22,8 @@ public sealed class RoPresence
     public int PartyMax { get; set; }
     public string LargeImageKey { get; set; } = "logo";
     public string SmallImageKey { get; set; } = "";
-    public int HpPct { get; set; }
-    public int SpPct { get; set; }
-    public int Hp { get; set; }
-    public int MaxHp { get; set; }
-    public int Sp { get; set; }
-    public int MaxSp { get; set; }
+    public int HpPct { get; set; } = -1;
+    public int SpPct { get; set; } = -1;
     public int BaseExpPct { get; set; }
     public int JobExpPct { get; set; }
     public string Activity { get; set; } = "";
@@ -53,8 +49,8 @@ public sealed class RoPresence
             string place = string.IsNullOrWhiteSpace(map) ? "" : ((X > 0 || Y > 0) ? $"{map} ({X},{Y})" : map);
             var parts = new List<string>();
             if (!string.IsNullOrWhiteSpace(Activity)) parts.Add(Activity);
-            if (MaxHp > 0) parts.Add($"HP {Hp}/{MaxHp}");
-            if (MaxSp > 0) parts.Add($"SP {Sp}/{MaxSp}");
+            if (HpPct >= 0) parts.Add($"HP {HpPct}%");
+            if (SpPct >= 0) parts.Add($"SP {SpPct}%");
             if (BaseExpPct > 0 || JobExpPct > 0) parts.Add($"EXP {BaseExpPct}%/{JobExpPct}%");
             if (place.Length > 0) parts.Add(place);
             return string.Join(" | ", parts);

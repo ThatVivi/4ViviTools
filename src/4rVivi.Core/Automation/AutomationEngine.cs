@@ -41,4 +41,7 @@ public abstract class AutomationEngine
     protected IntPtr Hwnd => Session.WindowHandle;
 
     protected abstract Task LoopAsync(CancellationToken ct);
+
+    /// <summary>Clear every hotkey this engine fires (used by the global "Clear all keys" button).</summary>
+    public virtual void ClearKeys() { }
 }

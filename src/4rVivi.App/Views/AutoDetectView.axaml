@@ -1,44 +1,83 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
              xmlns:srv="clr-namespace:FourRVivi.Core.Servers;assembly=4rVivi.Core"
-             x:Class="FourRVivi.App.Views.AutoDetectView" x:DataType="vm:AutoDetectViewModel">
+             x:Class="FourRVivi.App.Views.AutoDetectView"
+             x:DataType="vm:AutoDetectViewModel">
   <StackPanel Spacing="12" Margin="4">
-    <TextBlock Text="Auto-detect client" Classes="h1"/>
+    <StackPanel Orientation="Horizontal" Spacing="10">
+      <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8B3;" FontSize="22" VerticalAlignment="Center"/>
+      <TextBlock Text="Auto-Detect Client" Classes="h1"/>
+    </StackPanel>
     <TextBlock Text="{Binding Banner}" FontWeight="SemiBold" TextWrapping="Wrap"/>
     <TextBlock Classes="muted" TextWrapping="Wrap"
-               Text="Uses a built-in table of known clients (from 4RTools, MIT). It matches your client and binds HP/MaxHP/SP/MaxSP and your name from fixed addresses — no scanning. If your server runs Gepard Shield, reads may be blocked."/>
+               Text="Matches known RO clients from the built-in 4RTools server table and fills the HP, SP, and character-name addresses when available."/>
 
     <Border Classes="card">
       <StackPanel Spacing="10">
-        <Button Classes="accent" Content="Auto-detect now" Command="{Binding AutoDetectCommand}" HorizontalAlignment="Left"/>
+        <Button Classes="accent" Command="{Binding AutoDetectCommand}" HorizontalAlignment="Left">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72C;" VerticalAlignment="Center"/>
+            <TextBlock Text="Auto-detect now"/>
+          </StackPanel>
+        </Button>
         <StackPanel Orientation="Horizontal" Spacing="10">
           <ComboBox Width="320" ItemsSource="{Binding Servers}" SelectedItem="{Binding SelectedServer}">
-            <ComboBox.ItemTemplate><DataTemplate x:DataType="srv:ServerProfile"><TextBlock Text="{Binding Label}"/></DataTemplate></ComboBox.ItemTemplate>
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="srv:ServerProfile">
+                <TextBlock Text="{Binding Label}"/>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
           </ComboBox>
-          <Button Content="Use selected server" Command="{Binding ApplySelectedCommand}"/>
+          <Button Command="{Binding ApplySelectedCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE73E;" VerticalAlignment="Center"/>
+              <TextBlock Text="Use selected server"/>
+            </StackPanel>
+          </Button>
         </StackPanel>
       </StackPanel>
     </Border>
 
     <Border Classes="card">
       <StackPanel Spacing="10">
-        <TextBlock Text="Manual (advanced)" Classes="section"/>
+        <TextBlock Text="Manual Addresses" Classes="section"/>
         <StackPanel Orientation="Horizontal" Spacing="10">
-          <StackPanel><TextBlock Text="HP address" Classes="muted"/><TextBox Width="180" Text="{Binding HpAddress}" Watermark="0x010DCE10"/></StackPanel>
-          <StackPanel><TextBlock Text="Name address (optional)" Classes="muted"/><TextBox Width="180" Text="{Binding NameAddress}" Watermark="0x010DF5D8"/></StackPanel>
-          <Button Content="Apply" VerticalAlignment="Bottom" Command="{Binding ApplyManualCommand}"/>
+          <StackPanel>
+            <TextBlock Text="HP address" Classes="muted"/>
+            <TextBox Width="180" Text="{Binding HpAddress}" Watermark="0x010DCE10"/>
+          </StackPanel>
+          <StackPanel>
+            <TextBlock Text="Name address" Classes="muted"/>
+            <TextBox Width="180" Text="{Binding NameAddress}" Watermark="0x010DF5D8"/>
+          </StackPanel>
+          <Button VerticalAlignment="Bottom" Command="{Binding ApplyManualCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74E;" VerticalAlignment="Center"/>
+              <TextBlock Text="Apply"/>
+            </StackPanel>
+          </Button>
         </StackPanel>
       </StackPanel>
     </Border>
 
     <Border Classes="card">
       <StackPanel Spacing="8">
-        <TextBlock Text="Live read" Classes="section"/>
-        <WrapPanel>
-          <Border Classes="card" Width="180" Margin="0,0,12,12"><StackPanel><TextBlock Text="Name" Classes="muted"/><TextBlock Text="{Binding NameText}" FontSize="18"/></StackPanel></Border>
-          <Border Classes="card" Width="180" Margin="0,0,12,12"><StackPanel><TextBlock Text="HP" Classes="muted"/><TextBlock Text="{Binding HpText}" FontSize="18"/></StackPanel></Border>
-          <Border Classes="card" Width="180" Margin="0,0,12,12"><StackPanel><TextBlock Text="SP" Classes="muted"/><TextBlock Text="{Binding SpText}" FontSize="18"/></StackPanel></Border>
-        </WrapPanel>
+        <TextBlock Text="Live Read" Classes="section"/>
+        <UniformGrid Columns="3">
+          <StackPanel Margin="0,0,12,12">
+            <TextBlock Text="Name" Classes="muted"/>
+            <TextBlock Text="{Binding NameText}" FontSize="18"/>
+          </StackPanel>
+          <StackPanel Margin="0,0,12,12">
+            <TextBlock Text="HP" Classes="muted"/>
+            <TextBlock Text="{Binding HpText}" FontSize="18"/>
+          </StackPanel>
+          <StackPanel Margin="0,0,12,12">
+            <TextBlock Text="SP" Classes="muted"/>
+            <TextBlock Text="{Binding SpText}" FontSize="18"/>
+          </StackPanel>
+        </UniformGrid>
         <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap"/>
       </StackPanel>
     </Border>

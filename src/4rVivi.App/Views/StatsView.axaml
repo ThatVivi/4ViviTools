@@ -24,6 +24,6 @@
     <Border Classes="card" Padding="0">
       <ListBox ItemsSource="{Binding ExpLog}" Background="Transparent" FontFamily="Consolas,monospace" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
     </Border>
-    <TextBlock Classes="muted" TextWrapping="Wrap" Text="EXP/Zeny/Weight/HP/SP need their addresses set in the Scanner. The log records each EXP increase. Kills come from the Smart Bot's EXP-gain proxy."/>
+    <TextBlock Classes="muted" TextWrapping="Wrap" Text="HP/SP come from the OCR Reader's HP % Text and SP % Text markers. EXP, Zeny, and Weight can still use OCR marks or Scanner addresses. Kills come from the Smart Bot's EXP-gain proxy."/>
   </StackPanel>
 </UserControl>

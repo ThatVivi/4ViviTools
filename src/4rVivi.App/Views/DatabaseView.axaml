@@ -1,23 +1,26 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
              x:Class="FourRVivi.App.Views.DatabaseView" x:DataType="vm:DatabaseViewModel">
-  <Grid RowDefinitions="Auto,Auto,Auto,*">
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
     <TextBlock Grid.Row="0" Text="Game database (rAthena)" Classes="h1"/>
     <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,12">
       <ComboBox Width="120" ItemsSource="{Binding Kinds}" SelectedItem="{Binding SelectedKind}"/>
-      <TextBox Width="280" Text="{Binding Query}" Watermark="Search…"/>
+      <TextBox Width="280" Text="{Binding Query}" Watermark="Search..."/>
       <Button Classes="accent" Content="Search" Command="{Binding SearchCommand}"/>
       <Button Content="Reload database" Command="{Binding ReloadCommand}"/>
     </StackPanel>
     <TextBlock Grid.Row="2" Classes="muted" Text="{Binding Diagnostics}" Margin="0,0,0,8"/>
-    <Border Grid.Row="3" Classes="card" Padding="0">
-      <ListBox ItemsSource="{Binding Results}" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+    <Border Grid.Row="3" Classes="card" Padding="0" VerticalAlignment="Top">
+      <ListBox MaxHeight="360" ItemsSource="{Binding Results}" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="vm:DbRow">
-            <Grid ColumnDefinitions="28,64,230,*">
-              <Image Grid.Column="0" Width="22" Height="22" Source="{Binding Id, Converter={StaticResource IdToIcon}}"/>
+            <Grid ColumnDefinitions="28,64,230,*,56">
+              <Image Grid.Column="0" Width="22" Height="22" Source="{Binding Icon}"/>
               <TextBlock Grid.Column="1" Text="{Binding Id}" Classes="muted" VerticalAlignment="Center"/>
               <TextBlock Grid.Column="2" Text="{Binding Name}" VerticalAlignment="Center"/>
               <TextBlock Grid.Column="3" Text="{Binding Info}" Classes="muted" VerticalAlignment="Center"/>
+              <Button Grid.Column="4" Content="Open" ToolTip.Tip="Open on divine-pride"
+                      Command="{ReflectionBinding DataContext.OpenDpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                      CommandParameter="{Binding}"/>
             </Grid>
           </DataTemplate>
         </ListBox.ItemTemplate>

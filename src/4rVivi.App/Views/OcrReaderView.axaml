@@ -1,84 +1,300 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
              xmlns:ocr="clr-namespace:FourRVivi.Core.Ocr;assembly=4rVivi.Core"
              xmlns:conv="clr-namespace:FourRVivi.App.Converters"
              xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
-             x:Class="FourRVivi.App.Views.OcrReaderView" x:DataType="vm:OcrReaderViewModel">
+             x:Class="FourRVivi.App.Views.OcrReaderView"
+             x:DataType="vm:OcrReaderViewModel">
   <UserControl.Resources>
     <conv:RoleToBrushConverter x:Key="RoleToBrush"/>
   </UserControl.Resources>
-  <Grid ColumnDefinitions="*,300" Margin="4">
-    <StackPanel Grid.Column="0" Spacing="10">
-      <TextBlock Text="OCR Reader (screen-based, Gepard-proof)" Classes="h1"/>
-      <TextBlock Classes="muted" TextWrapping="Wrap"
-                 Text="Paste a screenshot with Ctrl+V (or Load it). Pick a stat, then drag a box over it on the image — each role has its own colour. Save. Press Start — it reads those spots off the live window non-stop and feeds the top bar, Stats and Discord. It can't get map/coords (RO doesn't show them)."/>
-      <StackPanel Orientation="Horizontal" Spacing="10">
-        <Button Classes="accent" Content="Load screenshot" Click="OnLoadClick"/>
-        <Button Content="Paste image" Click="OnPasteClick"/>
-        <TextBlock Text="Marking as:" Classes="muted" VerticalAlignment="Center"/>
-        <ComboBox Width="140" ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}"/>
+
+  <Grid ColumnDefinitions="*,320" Margin="4">
+    <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Spacing="10">
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+          <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE721;" FontSize="22" VerticalAlignment="Center"/>
+            <TextBlock Text="OCR and Capture" Classes="h1"/>
+          </StackPanel>
+          <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="8">
+            <ToggleSwitch Content="Advanced" IsChecked="{Binding ShowAdvanced}" VerticalAlignment="Center"/>
+          </StackPanel>
+          <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Classes="muted" TextWrapping="Wrap"
+                     Text="Attach an RO client from the top bar, use client-window capture by default, mark only the HUD values you need, then run OCR for Smart Bot, stats, and Discord RPC. DXGI is available for monitor capture."/>
+        </Grid>
+
+        <Border Classes="card" Padding="10">
+          <Grid ColumnDefinitions="Auto,170,Auto,*,Auto">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,10,0">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE9F5;" VerticalAlignment="Center"/>
+              <TextBlock Text="Markers" Classes="muted" VerticalAlignment="Center"/>
+            </StackPanel>
+            <ComboBox Grid.Column="1" ItemsSource="{Binding MarkerModes}" SelectedItem="{Binding MarkerMode}" Margin="0,0,10,0"/>
+            <Button Grid.Column="2" Command="{Binding AutoDetectMarkersCommand}" Margin="0,0,10,0">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8B3;" VerticalAlignment="Center"/>
+                <TextBlock Text="Auto-detect"/>
+              </StackPanel>
+            </Button>
+            <TextBlock Grid.Column="3" Text="{Binding MarkerConfidenceStatus}" Classes="muted" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <Button Grid.Column="4" Classes="accent" Command="{Binding UseDetectedMarkersCommand}" IsEnabled="{Binding CanUseDetectedMarkers}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE73E;" VerticalAlignment="Center"/>
+                <TextBlock Text="Use markers"/>
+              </StackPanel>
+            </Button>
+          </Grid>
+        </Border>
+
+        <Border Classes="card" Padding="10">
+          <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*">
+            <WrapPanel Grid.Row="0" Orientation="Horizontal">
+              <Button Classes="accent" Margin="0,0,8,8" Click="OnCaptureMonitorClick">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE722;" VerticalAlignment="Center"/>
+                  <TextBlock Text="Capture client"/>
+                </StackPanel>
+              </Button>
+              <Button Margin="0,0,8,8" Click="OnLoadClick">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8E5;" VerticalAlignment="Center"/>
+                  <TextBlock Text="Load screenshot"/>
+                </StackPanel>
+              </Button>
+              <Button Margin="0,0,8,8" Click="OnPasteClick">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE77F;" VerticalAlignment="Center"/>
+                  <TextBlock Text="Paste image"/>
+                </StackPanel>
+              </Button>
+              <TextBlock Margin="8,0,6,8" Text="Mark" Classes="muted" VerticalAlignment="Center"/>
+              <ComboBox Width="160" Margin="0,0,8,8" ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}"/>
+              <TextBlock Margin="0,0,0,8" Classes="muted" TextWrapping="Wrap" MaxWidth="430" VerticalAlignment="Center" Text="{Binding SelectedRoleNote}"/>
+            </WrapPanel>
+
+            <WrapPanel Grid.Row="1" Orientation="Horizontal">
+              <CheckBox Margin="0,0,10,8" Content="Monitor capture" IsChecked="{Binding UseMonitor}" VerticalAlignment="Center"/>
+              <CheckBox Margin="0,0,10,8" Content="DXGI default" IsChecked="{Binding UseDxgiCapture}" VerticalAlignment="Center"
+                        ToolTip.Tip="GPU Desktop Duplication capture. If it cannot read the frame, the tool falls back automatically."/>
+              <RadioButton Margin="0,0,10,8" Content="Run live" GroupName="capmode" IsChecked="{Binding RunningCapture}" VerticalAlignment="Center"/>
+              <RadioButton Margin="0,0,10,8" Content="One read" GroupName="capmode" IsChecked="{Binding ScreenshotOnly}" VerticalAlignment="Center"/>
+              <ComboBox Width="200" Margin="0,0,10,8" ItemsSource="{Binding Monitors}" SelectedItem="{Binding SelectedMonitor}"/>
+              <TextBlock Margin="0,0,6,8" Text="Window" Classes="muted" VerticalAlignment="Center"/>
+              <ComboBox Width="120" Margin="0,0,10,8" ItemsSource="{Binding WindowModes}" SelectedItem="{Binding WindowMode}"/>
+              <Button Margin="0,0,10,8" Content="Reset OCR defaults" Command="{Binding ResetOcrAutoDefaultsCommand}"/>
+              <TextBlock Margin="0,0,6,8" Text="Refresh (-1 auto)" Classes="muted" VerticalAlignment="Center"/>
+              <NumericUpDown MinWidth="120" Margin="0,0,4,8" Minimum="-1" Maximum="2000" Increment="1" Value="{Binding IntervalMs}"/>
+              <TextBlock Margin="0,0,10,8" Text="ms" Classes="muted" VerticalAlignment="Center"/>
+            </WrapPanel>
+
+            <WrapPanel Grid.Row="2" Orientation="Horizontal">
+              <TextBlock Margin="0,0,6,8" Text="Zoom" Classes="muted" VerticalAlignment="Center"/>
+              <Slider Width="130" Margin="0,0,4,8" Minimum="2" Maximum="10" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Zoom}" VerticalAlignment="Center"/>
+              <TextBlock Margin="0,0,10,8" Text="{Binding Zoom, StringFormat='{}{0:0}x'}" Classes="muted" VerticalAlignment="Center"/>
+              <TextBlock Margin="0,0,6,8" Text="Filter" Classes="muted" VerticalAlignment="Center"/>
+              <ComboBox Width="140" Margin="0,0,10,8" ItemsSource="{Binding PreprocessModes}" SelectedItem="{Binding PreprocessMode}"/>
+              <TextBlock Margin="0,0,6,8" Text="Sharp" Classes="muted" VerticalAlignment="Center"/>
+              <Slider Width="110" Margin="0,0,10,8" Minimum="0" Maximum="300" Value="{Binding Sharpness}" VerticalAlignment="Center"/>
+              <TextBlock Margin="0,0,6,8" Text="Top" Classes="muted" VerticalAlignment="Center"/>
+              <NumericUpDown MinWidth="110" Margin="0,0,10,8" Minimum="0" Maximum="200" Value="{Binding TopOffset}"/>
+              <TextBlock Margin="0,0,6,8" Text="Side" Classes="muted" VerticalAlignment="Center"/>
+              <NumericUpDown MinWidth="110" Margin="0,0,10,8" Minimum="0" Maximum="100" Value="{Binding SideOffset}"/>
+            </WrapPanel>
+          </Grid>
+        </Border>
+
+        <Border Classes="card" Padding="10">
+          <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*">
+            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="6" Margin="0,0,12,8" VerticalAlignment="Center">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8B3;" VerticalAlignment="Center"/>
+              <TextBlock Text="Vision Assist GRF" Classes="section" VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBlock Grid.Row="0" Grid.Column="1" Text="Build the GRF, apply monsters with VisionGrfPicker, add it to DATA.INI, then enable this runtime reader." Classes="muted" TextWrapping="Wrap" Margin="0,0,10,8" VerticalAlignment="Center"/>
+
+            <WrapPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+              <CheckBox Margin="0,0,10,8" Content="Use Vision Assist GRF" IsChecked="{Binding VisionAssistGrf}" VerticalAlignment="Center"
+                        ToolTip.Tip="Use the GRF-rendered monster boxes and mob-id color cells. This automatically turns off the regular monster overlay."/>
+              <TextBlock Margin="0,0,10,8" Text="No path needed. The app has the marker table built in; DATA.INI must load the GRF first: 0=VisionAssistLibrary.grf" Classes="muted" VerticalAlignment="Center"/>
+            </WrapPanel>
+          </Grid>
+        </Border>
+
+        <Border Classes="card" Padding="0" Height="460">
+          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Canvas x:Name="DrawCanvas" Background="{DynamicResource Surface2Brush}" Width="900" Height="506" ClipToBounds="True">
+              <Image x:Name="Img" Stretch="Fill"/>
+            </Canvas>
+          </ScrollViewer>
+        </Border>
+
+        <Border Classes="card" Padding="10">
+          <WrapPanel Orientation="Horizontal">
+            <Button Margin="0,0,8,8" Command="{Binding SaveCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74E;" VerticalAlignment="Center"/>
+                <TextBlock Text="Save"/>
+              </StackPanel>
+            </Button>
+            <Button Margin="0,0,8,8" Command="{Binding ClearMarksCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74D;" VerticalAlignment="Center"/>
+                <TextBlock Text="Clear"/>
+              </StackPanel>
+            </Button>
+            <Button Margin="0,0,8,8" Classes="accent" Command="{Binding StartCommand}" IsVisible="{Binding !Running}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE768;" VerticalAlignment="Center"/>
+                <TextBlock Text="Start OCR"/>
+              </StackPanel>
+            </Button>
+            <Button Margin="0,0,8,8" Classes="accent" Command="{Binding StopCommand}" IsVisible="{Binding Running}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE71A;" VerticalAlignment="Center"/>
+                <TextBlock Text="Stop OCR"/>
+              </StackPanel>
+            </Button>
+            <Button Margin="0,0,8,8" Command="{Binding ToggleOverlayCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7F4;" VerticalAlignment="Center"/>
+                <TextBlock Text="Overlay"/>
+              </StackPanel>
+            </Button>
+            <CheckBox Margin="8,0,8,8" Content="Text" IsChecked="{Binding DetectText}" VerticalAlignment="Center"/>
+            <CheckBox Margin="0,0,8,8" Content="Monster overlay" IsChecked="{Binding DetectMonsters}" VerticalAlignment="Center"
+                      IsEnabled="{Binding !VisionAssistGrf}"
+                      ToolTip.Tip="Shows the OCR/YOLO monster overlay. Vision Assist GRF still feeds Smart Bot while the bot is running."/>
+            <CheckBox Margin="0,0,8,8" Content="Skills and buffs" IsChecked="{Binding DetectSkills}" VerticalAlignment="Center"/>
+          </WrapPanel>
+        </Border>
+
+        <Border Classes="card" Padding="10" IsVisible="{Binding ShowAdvanced}">
+          <StackPanel Spacing="8">
+            <TextBlock Text="Advanced OCR" Classes="section"/>
+            <WrapPanel Orientation="Horizontal">
+              <TextBlock Margin="0,0,4,8" Text="Detector" Classes="muted" VerticalAlignment="Center"/>
+              <Slider Margin="0,0,10,8" Width="100" Minimum="0.1" Maximum="0.9" Value="{Binding DetBoxThresh}" VerticalAlignment="Center"/>
+              <TextBlock Margin="0,0,4,8" Text="Unclip" Classes="muted" VerticalAlignment="Center"/>
+              <Slider Margin="0,0,10,8" Width="100" Minimum="1.0" Maximum="3.0" Value="{Binding DetUnclip}" VerticalAlignment="Center"/>
+              <TextBlock Margin="0,0,4,8" Text="Threads" Classes="muted" VerticalAlignment="Center"/>
+              <NumericUpDown Margin="0,0,10,8" MinWidth="110" Minimum="0" Maximum="16" Value="{Binding OcrCpuThreads}"/>
+              <TextBlock Margin="0,0,4,8" Text="Runtime" Classes="muted" VerticalAlignment="Center"/>
+              <ComboBox Margin="0,0,10,8" MinWidth="120"
+                        ItemsSource="{Binding OnnxExecutionProviders}"
+                        SelectedItem="{Binding OnnxExecutionProvider}"/>
+              <TextBlock Margin="0,0,4,8" Text="Icon px" Classes="muted" VerticalAlignment="Center"/>
+              <NumericUpDown Margin="0,0,10,8" MinWidth="110" Minimum="12" Maximum="128" Value="{Binding IconCellPx}"/>
+              <CheckBox Margin="0,0,10,8" Content="Rotated text" IsChecked="{Binding ReadRotated}" VerticalAlignment="Center"/>
+              <TextBlock Margin="0,0,4,8" Text="Side limit" Classes="muted" VerticalAlignment="Center"/>
+              <NumericUpDown Margin="0,0,10,8" MinWidth="110" Minimum="320" Maximum="2000" Value="{Binding LimitSide}"/>
+            </WrapPanel>
+            <WrapPanel Orientation="Horizontal">
+              <Button Margin="0,0,8,8" Content="Merge markers" Command="{Binding MergeMarksCommand}"/>
+              <Button Margin="0,0,8,8" Content="Calibrate" Command="{Binding CalibrateCommand}"/>
+              <CheckBox Margin="0,0,8,8" Content="Until all data" IsChecked="{Binding CalibrateUntilComplete}" VerticalAlignment="Center"/>
+              <CheckBox Margin="0,0,8,8" Content="Movement" IsChecked="{Binding DetectMovement}" VerticalAlignment="Center"/>
+              <CheckBox Margin="0,0,8,8" Content="Zone scan" IsChecked="{Binding ZoneScan}" VerticalAlignment="Center"/>
+              <CheckBox Margin="0,0,8,8" Content="Multi-pass" IsChecked="{Binding MultiPass}" VerticalAlignment="Center"/>
+              <CheckBox Margin="0,0,8,8" Content="Windows numbers" IsChecked="{Binding WindowsForNumbers}" VerticalAlignment="Center"/>
+              <CheckBox Margin="0,0,8,8" Content="Skip unchanged" IsChecked="{Binding SkipUnchanged}" VerticalAlignment="Center"/>
+              <CheckBox Margin="0,0,8,8" Content="Fast monster tracking" IsChecked="{Binding FastMonsterTracking}" VerticalAlignment="Center"/>
+              <CheckBox Margin="0,0,8,8" Content="Vote OCR" IsChecked="{Binding Ensemble}" VerticalAlignment="Center"/>
+            </WrapPanel>
+            <WrapPanel Orientation="Horizontal">
+              <TextBlock Margin="0,0,4,8" Text="Text every (-1 auto)" Classes="muted" VerticalAlignment="Center"/>
+              <NumericUpDown Margin="0,0,4,8" MinWidth="100" Minimum="-1" Maximum="60" Value="{Binding TextScanEvery}"/>
+              <TextBlock Margin="0,0,10,8" Text="ticks" Classes="muted" VerticalAlignment="Center"/>
+              <TextBlock Margin="0,0,4,8" Text="Overlay (-1 auto)" Classes="muted" VerticalAlignment="Center"/>
+              <NumericUpDown Margin="0,0,4,8" MinWidth="100" Minimum="-1" Maximum="1000" Increment="1" Value="{Binding OverlayFrameMs}"/>
+              <TextBlock Margin="0,0,10,8" Text="ms" Classes="muted" VerticalAlignment="Center"/>
+              <TextBlock Margin="0,0,4,8" Text="Boxes" Classes="muted" VerticalAlignment="Center"/>
+              <NumericUpDown Margin="0,0,10,8" MinWidth="90" Minimum="1" Maximum="300" Value="{Binding MaxOverlayDetections}"/>
+              <TextBlock Margin="0,0,4,8" Text="Zones" Classes="muted" VerticalAlignment="Center"/>
+              <NumericUpDown Margin="0,0,4,8" MinWidth="80" Minimum="1" Maximum="6" Value="{Binding ZoneCols}"/>
+              <NumericUpDown Margin="0,0,10,8" MinWidth="80" Minimum="1" Maximum="6" Value="{Binding ZoneRows}"/>
+              <TextBlock Margin="0,0,4,8" Text="Monster conf" Classes="muted" VerticalAlignment="Center"/>
+              <CheckBox Margin="0,0,4,8" Content="Auto" IsChecked="{Binding AutoEntityMinScore}" VerticalAlignment="Center"/>
+              <Slider Margin="0,0,4,8" Width="110" Minimum="0.1" Maximum="0.95" Value="{Binding EntityMinScore}" VerticalAlignment="Center"/>
+              <NumericUpDown Margin="0,0,10,8" MinWidth="82" Minimum="0.1" Maximum="0.95" Increment="0.01" FormatString="0.00" Value="{Binding EntityMinScore}"
+                             ToolTip.Tip="Monster detector confidence. Lower values improve recall; ByteTrack confirms tracks before Smart Bot can click them."/>
+              <TextBlock Margin="0,0,4,8" Text="Text conf" Classes="muted" VerticalAlignment="Center"/>
+              <CheckBox Margin="0,0,4,8" Content="Auto" IsChecked="{Binding AutoTextMinScore}" VerticalAlignment="Center"/>
+              <Slider Margin="0,0,4,8" Width="110" Minimum="0.1" Maximum="0.95" Value="{Binding TextMinScore}" VerticalAlignment="Center"/>
+              <NumericUpDown Margin="0,0,10,8" MinWidth="82" Minimum="0.1" Maximum="0.95" Increment="0.01" FormatString="0.00" Value="{Binding TextMinScore}"
+                             ToolTip.Tip="OCR text confidence. Lower values catch small Ragnarok text; voting and marker stability filter mistakes."/>
+            </WrapPanel>
+            <WrapPanel Orientation="Horizontal">
+              <TextBlock Margin="0,0,4,8" Text="HUD exclude" Classes="muted" VerticalAlignment="Center"/>
+              <NumericUpDown Margin="0,0,4,8" MinWidth="110" Minimum="0" Maximum="4000" Value="{Binding ExclX}"/>
+              <NumericUpDown Margin="0,0,4,8" MinWidth="110" Minimum="0" Maximum="4000" Value="{Binding ExclY}"/>
+              <NumericUpDown Margin="0,0,4,8" MinWidth="110" Minimum="0" Maximum="4000" Value="{Binding ExclW}"/>
+              <NumericUpDown Margin="0,0,10,8" MinWidth="110" Minimum="0" Maximum="4000" Value="{Binding ExclH}"/>
+              <CheckBox Margin="0,0,10,8" Content="GRF names above mobs" IsChecked="{Binding GrfNamesAbove}" VerticalAlignment="Center"/>
+              <TextBlock Margin="0,0,4,8" Text="Value size" Classes="muted" VerticalAlignment="Center"/>
+              <Slider Margin="0,0,10,8" Width="120" Minimum="0.5" Maximum="3.0" Value="{Binding OverlayValuesSize}" VerticalAlignment="Center"/>
+              <Button Margin="0,0,8,8" Content="Export training template" Command="{Binding ExportTemplateCommand}"/>
+              <Button Margin="0,0,8,8" Classes="accent" Content="Train OCR" Command="{Binding TrainOcrCommand}" IsEnabled="{Binding !Training}"/>
+              <Button Margin="0,0,8,8" Content="Cancel training" Command="{Binding CancelTrainCommand}" IsEnabled="{Binding Training}"/>
+            </WrapPanel>
+          </StackPanel>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock Text="Live readout" Classes="section" VerticalAlignment="Center"/>
+          <Button Classes="accent" Command="{Binding VerifyCalibrateCommand}" IsEnabled="{Binding !Calibrating}">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE73E;" VerticalAlignment="Center"/>
+              <TextBlock Text="Verify and calibrate"/>
+            </StackPanel>
+          </Button>
+          <TextBlock Text="calibrating..." Classes="muted" VerticalAlignment="Center" IsVisible="{Binding Calibrating}"/>
+        </StackPanel>
+
+        <Border Classes="card" Padding="0" Height="340" HorizontalAlignment="Stretch">
+          <DockPanel>
+            <Grid DockPanel.Dock="Top" ColumnDefinitions="180,*,80,160,56" Margin="10,8,10,4">
+              <TextBlock Grid.Column="0" Text="Field" Classes="muted"/>
+              <TextBlock Grid.Column="1" Text="Value" Classes="muted"/>
+              <TextBlock Grid.Column="2" Text="Conf" Classes="muted"/>
+              <TextBlock Grid.Column="3" Text="Correct value" Classes="muted"/>
+              <TextBlock Grid.Column="4" Text="Lock" Classes="muted"/>
+            </Grid>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+              <ItemsControl ItemsSource="{Binding Readout}" Margin="10,0,10,8">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ReadoutRow">
+                    <Grid ColumnDefinitions="180,*,80,160,56" Margin="0,2">
+                      <TextBlock Grid.Column="0" Text="{Binding Role}" FontFamily="Consolas,monospace" FontSize="14"/>
+                      <TextBlock Grid.Column="1" Text="{Binding Value}" FontFamily="Consolas,monospace" FontSize="14" TextTrimming="CharacterEllipsis"/>
+                      <TextBlock Grid.Column="2" Text="{Binding Conf}" Classes="muted" FontFamily="Consolas,monospace" FontSize="14"/>
+                      <TextBox Grid.Column="3" Text="{Binding Expected}" Watermark="correct value" Margin="0,0,6,0" FontSize="13"/>
+                      <CheckBox Grid.Column="4" IsChecked="{Binding UserLocked}" HorizontalAlignment="Center"/>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </DockPanel>
+        </Border>
       </StackPanel>
-      <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-        <CheckBox Content="Use monitor (full screen)" IsChecked="{Binding UseMonitor}" VerticalAlignment="Center"/>
-        <ComboBox Width="200" ItemsSource="{Binding Monitors}" SelectedItem="{Binding SelectedMonitor}"/>
-        <Button Content="Capture monitor" Click="OnCaptureMonitorClick"/>
-      </StackPanel>
-      <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-        <TextBlock Text="Window:" Classes="muted" VerticalAlignment="Center"/>
-        <ComboBox Width="120" ItemsSource="{Binding WindowModes}" SelectedItem="{Binding WindowMode}"/>
-        <TextBlock Text="Top offset" Classes="muted" VerticalAlignment="Center"/>
-        <NumericUpDown Width="90" Minimum="0" Maximum="200" Value="{Binding TopOffset}"/>
-        <TextBlock Text="Side" Classes="muted" VerticalAlignment="Center"/>
-        <NumericUpDown Width="80" Minimum="0" Maximum="100" Value="{Binding SideOffset}"/>
-        <TextBlock Text="OCR Zoom" Classes="muted" VerticalAlignment="Center"/>
-        <Slider Width="160" Minimum="2" Maximum="10" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Zoom}" VerticalAlignment="Center"/>
-        <TextBlock Text="{Binding Zoom, StringFormat=&apos;{}{0:0}x&apos;}" Classes="muted" VerticalAlignment="Center"/>
-        <TextBlock Text="OCR filter" Classes="muted" VerticalAlignment="Center"/>
-        <ComboBox Width="130" ItemsSource="{Binding PreprocessModes}" SelectedItem="{Binding PreprocessMode}"/>
-        <TextBlock Text="Sharpness" Classes="muted" VerticalAlignment="Center"/>
-        <Slider Width="120" Minimum="0" Maximum="8" Value="{Binding Sharpness}" VerticalAlignment="Center"/>
-      </StackPanel>
-      <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,4">
-        <TextBlock Text="Det box thresh" Classes="muted" VerticalAlignment="Center"/>
-        <Slider Width="120" Minimum="0.1" Maximum="0.9" Value="{Binding DetBoxThresh}" VerticalAlignment="Center"/>
-        <TextBlock Text="Unclip" Classes="muted" VerticalAlignment="Center"/>
-        <Slider Width="120" Minimum="1.0" Maximum="3.0" Value="{Binding DetUnclip}" VerticalAlignment="Center"/>
-        <TextBlock Text="CPU threads" Classes="muted" VerticalAlignment="Center"/>
-        <NumericUpDown Width="90" Minimum="0" Maximum="16" Value="{Binding OcrCpuThreads}"/>
-      </StackPanel>
-      <Border Classes="card" Padding="0" Height="460">
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-          <Canvas x:Name="DrawCanvas" Background="{DynamicResource Surface2Brush}" Width="900" Height="506" ClipToBounds="True">
-            <Image x:Name="Img" Stretch="Fill"/>
-          </Canvas>
-        </ScrollViewer>
-      </Border>
-      <WrapPanel Orientation="Horizontal">
-        <Button Margin="0,0,8,8" Content="Save" Command="{Binding SaveCommand}"/>
-        <Button Margin="0,0,8,8" Content="Clear" Command="{Binding ClearMarksCommand}"/>
-        <Button Margin="0,0,8,8" Classes="accent" Content="Start" Command="{Binding StartCommand}" IsVisible="{Binding !Running}"/>
-        <Button Margin="0,0,8,8" Classes="accent" Content="Stop" Command="{Binding StopCommand}" IsVisible="{Binding Running}"/>
-        <Button Margin="0,0,8,8" Content="Calibrate" Command="{Binding CalibrateCommand}"/>
-        <CheckBox Margin="0,0,8,8" Content="Until all data" IsChecked="{Binding CalibrateUntilComplete}" VerticalAlignment="Center"/>
-        <Button Margin="0,0,8,8" Content="Toggle overlay" Command="{Binding ToggleOverlayCommand}"/>
-        <Border Width="1" Background="{DynamicResource BorderBrush}" Margin="0,0,8,8"/>
-        <Button Margin="0,0,8,8" Content="Export training template" Command="{Binding ExportTemplateCommand}"/>
-        <Button Margin="0,0,8,8" Classes="accent" Content="Train OCR" Command="{Binding TrainOcrCommand}" IsEnabled="{Binding !Training}"/>
-        <Button Margin="0,0,8,8" Content="Cancel" Command="{Binding CancelTrainCommand}" IsEnabled="{Binding Training}"/>
-      </WrapPanel>
-    </StackPanel>
+    </ScrollViewer>
 
     <StackPanel Grid.Column="1" Spacing="10" Margin="12,0,0,0">
-      <TextBlock Text="Marks" Classes="section"/>
+      <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8FD;" VerticalAlignment="Center"/>
+        <TextBlock Text="Marks" Classes="section"/>
+      </StackPanel>
       <Border Classes="card" Padding="0" Height="240">
         <ListBox ItemsSource="{Binding Marks}" Background="Transparent"
-                 ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ScrollViewer.HorizontalScrollBarVisibility="Auto">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="ocr:OcrMark">
               <Grid ColumnDefinitions="16,*,28">
                 <Rectangle Grid.Column="0" Width="12" Height="12" VerticalAlignment="Center" Fill="{Binding Role, Converter={StaticResource RoleToBrush}}"/>
                 <TextBlock Grid.Column="1" Text="{Binding Role}" VerticalAlignment="Center" Margin="6,0,0,0"/>
-                <Button Grid.Column="2" Content="✕"
+                <Button Grid.Column="2" Content="X"
                         Command="{ReflectionBinding DataContext.RemoveMarkCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         CommandParameter="{Binding}"/>
               </Grid>
@@ -86,26 +302,31 @@
           </ListBox.ItemTemplate>
         </ListBox>
       </Border>
-      <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-        <TextBlock Text="Refresh ms" Classes="muted" VerticalAlignment="Center"/>
-        <NumericUpDown Width="110" Minimum="120" Maximum="2000" Increment="50" Value="{Binding IntervalMs}"/>
-      </StackPanel>
-      <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-        <TextBlock Text="Overlay key:" Classes="muted" VerticalAlignment="Center"/>
-        <ctrl:HotkeyCaptureBox Width="120" KeyText="{Binding OverlayHotkey}"/>
-        <TextBlock Text="OCR on/off key:" Classes="muted" VerticalAlignment="Center"/>
-        <ctrl:HotkeyCaptureBox Width="120" KeyText="{Binding OcrHotkey}"/>
-      </StackPanel>
-      <TextBlock Text="Live readout" Classes="section"/>
-      <Border Classes="card" Padding="0" Height="180">
-        <ListBox ItemsSource="{Binding LiveReadout}" Background="Transparent" FontFamily="Consolas,monospace"
-                 ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+
+      <Border Classes="card" Padding="10">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Hotkeys" Classes="section"/>
+          <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Overlay" Classes="muted" VerticalAlignment="Center"/>
+            <ctrl:HotkeyCaptureBox Grid.Row="0" Grid.Column="1" Width="130" Margin="8,0,0,0" HorizontalAlignment="Left" KeyText="{Binding OverlayHotkey}"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="OCR" Classes="muted" Margin="0,8,0,0" VerticalAlignment="Center"/>
+            <ctrl:HotkeyCaptureBox Grid.Row="1" Grid.Column="1" Width="130" Margin="8,8,0,0" HorizontalAlignment="Left" KeyText="{Binding OcrHotkey}"/>
+          </Grid>
+        </StackPanel>
       </Border>
-      <TextBlock Text="{Binding EngineInfo}" FontWeight="SemiBold"/>
-      <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap"/>
-          <TextBox Text="{Binding TrainLog}" IsReadOnly="True" AcceptsReturn="True" Height="120"
-               FontFamily="Consolas,monospace" Margin="0,6,0,0"
-               ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
-</StackPanel>
+
+      <Border Classes="card" Padding="10">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Status" Classes="section"/>
+          <TextBlock Text="{Binding EngineInfo}" FontWeight="SemiBold"/>
+          <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap"/>
+        </StackPanel>
+      </Border>
+
+      <TextBox Text="{Binding TrainLog}" IsReadOnly="True" AcceptsReturn="True" Height="170"
+               FontFamily="Consolas,monospace"
+               ScrollViewer.VerticalScrollBarVisibility="Auto"
+               ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+    </StackPanel>
   </Grid>
 </UserControl>

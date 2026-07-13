@@ -17,6 +17,6 @@ public sealed class PotRowViewModel : ObservableObject
     public int Percent { get => _c.Percent; set { _c.Percent = value; OnPropertyChanged(); _onChange(); } }
     public int Flat { get => _c.Flat; set { _c.Flat = value; OnPropertyChanged(); _onChange(); } }
     public bool UseSp { get => _c.UseSp; set { _c.UseSp = value; OnPropertyChanged(); _onChange(); } }
-    public int ReactionMs { get => _c.ReactionMs; set { _c.ReactionMs = value; OnPropertyChanged(); _onChange(); } }
-    public int UseDelayMs { get => _c.UseDelayMs; set { _c.UseDelayMs = value; OnPropertyChanged(); _onChange(); } }
+    public int ReactionMs { get => _c.ReactionMs; set { _c.ReactionMs = value < 0 ? -1 : Math.Clamp(value, 0, 5000); OnPropertyChanged(); _onChange(); } }
+    public int UseDelayMs { get => _c.UseDelayMs; set { _c.UseDelayMs = value < 0 ? -1 : Math.Clamp(value, 50, 60000); OnPropertyChanged(); _onChange(); } }
 }

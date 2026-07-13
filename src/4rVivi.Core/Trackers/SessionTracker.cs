@@ -13,15 +13,15 @@ public sealed class SessionTracker
 
     public LootLog? Loot { get; set; }
     public int Deaths { get; private set; }
-    private int _lastHp = -1;
+    private double _lastHpPct = -1;
 
-    public void Reset() { StartedAt = DateTime.Now; _baseExp = _stat.Exp; _baseZeny = _stat.Zeny; Deaths = 0; _lastHp = -1; }
+    public void Reset() { StartedAt = DateTime.Now; _baseExp = _stat.Exp; _baseZeny = _stat.Zeny; Deaths = 0; _lastHpPct = -1; }
 
-    /// <summary>Feed current HP each tick to auto-count deaths (HP dropped to 0 then alive again).</summary>
-    public void Observe(int hp)
+    /// <summary>Feed trusted HP percent each tick to auto-count deaths.</summary>
+    public void ObserveTrustedHpPercent(double hpPct)
     {
-        if (_lastHp > 0 && hp <= 0) Deaths++;
-        if (hp >= 0) _lastHp = hp;
+        if (_lastHpPct > 0 && hpPct <= 0) Deaths++;
+        if (hpPct >= 0) _lastHpPct = hpPct;
     }
 
     public TimeSpan Elapsed => DateTime.Now - StartedAt;

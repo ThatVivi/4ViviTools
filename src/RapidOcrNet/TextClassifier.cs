@@ -17,8 +17,8 @@ public sealed class TextClassifier : IDisposable
     private static readonly float[] MeanValues = [127.5F, 127.5F, 127.5F];
     private static readonly float[] NormValues = [1.0F / 127.5F, 1.0F / 127.5F, 1.0F / 127.5F];
 
-    private InferenceSession _angleNet;
-    private string _inputName;
+    private InferenceSession? _angleNet;
+    private string _inputName = "";
 
     public void InitModel(string path, SessionOptions op)
     {
@@ -130,7 +130,8 @@ public sealed class TextClassifier : IDisposable
 
         try
         {
-            using (IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = _angleNet.Run(inputs))
+            var angleNet = _angleNet ?? throw new InvalidOperationException("Text classifier model is not initialized.");
+            using (IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = angleNet.Run(inputs))
             {
                 var outputTensor = results[0];
 
@@ -182,6 +183,6 @@ public sealed class TextClassifier : IDisposable
 
     public void Dispose()
     {
-        _angleNet.Dispose();
+        _angleNet?.Dispose();
     }
 }

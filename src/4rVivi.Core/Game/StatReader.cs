@@ -17,8 +17,8 @@ public sealed class StatReader
     public int PosX => _s.ReadRole(Roles.PosX) ?? -1;
     public int PosY => _s.ReadRole(Roles.PosY) ?? -1;
 
-    public double HpPercent => LiveStats.Instance.TryGetNumber("HpPercent", out var p) ? p : Pct(Hp, MaxHp);
-    public double SpPercent => LiveStats.Instance.TryGetNumber("SpPercent", out var p) ? p : Pct(Sp, MaxSp);
+    public double HpPercent => LiveStats.Instance.TryGetTrustedNumber(Roles.HpPercent, out var p) ? p : -1;
+    public double SpPercent => LiveStats.Instance.TryGetTrustedNumber(Roles.SpPercent, out var p) ? p : -1;
     public double WeightPercent => Pct(Weight, MaxWeight);
     private static double Pct(int c, int m) => m > 0 ? Math.Clamp(c * 100.0 / m, 0, 100) : -1;
 }

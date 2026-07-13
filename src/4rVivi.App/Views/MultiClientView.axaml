@@ -1,0 +1,107 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             xmlns:game="clr-namespace:FourRVivi.Core.Game;assembly=4rVivi.Core"
+             xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
+             x:Class="FourRVivi.App.Views.MultiClientView"
+             x:DataType="vm:MultiClientViewModel">
+  <StackPanel Spacing="14">
+    <Border Classes="card">
+      <StackPanel Spacing="8">
+        <TextBlock Text="Multi Client OCR" Classes="h1"/>
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="Hard-attached client OCR: each row captures that client window's own client area and uses client coordinates. Clients can sit in four screen corners, stay covered, or be off-focus. Optional bot input uses unfocused PostMessage clicks/keys to the same window handle."/>
+        <WrapPanel>
+          <ComboBox MinWidth="360" ItemsSource="{Binding Processes}" SelectedItem="{Binding SelectedProcess}" Margin="0,0,8,8">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="game:GameProcess">
+                <TextBlock Text="{Binding Display}"/>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <Button Content="Refresh" Command="{Binding RefreshProcessesCommand}" Margin="0,0,8,8"/>
+          <Button Classes="accent" Content="Add client" Command="{Binding AddSelectedClientCommand}" Margin="0,0,8,8"/>
+          <Button Classes="accent" Content="Start OCR for all" Command="{Binding StartAllCommand}" Margin="0,0,8,8"/>
+          <Button Classes="danger" Content="Stop all" Command="{Binding StopAllCommand}" Margin="0,0,8,8"/>
+          <Button Classes="accent" Content="Start bots" Command="{Binding StartBotsCommand}" Margin="0,0,8,8"/>
+          <Button Content="Stop bots" Command="{Binding StopBotsCommand}" Margin="0,0,8,8"/>
+          <TextBlock Text="Refresh ms" Classes="muted" VerticalAlignment="Center" Margin="8,0,6,8"/>
+          <NumericUpDown MinWidth="110" Minimum="250" Maximum="5000" Increment="50" Value="{Binding IntervalMs}" Margin="0,0,8,8"/>
+          <TextBlock Text="Input delay" Classes="muted" VerticalAlignment="Center" Margin="8,0,6,8"/>
+          <NumericUpDown MinWidth="110" Minimum="250" Maximum="5000" Increment="50" Value="{Binding InputDelayMs}" Margin="0,0,8,8"/>
+          <TextBlock Text="Buff sec" Classes="muted" VerticalAlignment="Center" Margin="8,0,6,8"/>
+          <NumericUpDown MinWidth="110" Minimum="5" Maximum="3600" Increment="5" Value="{Binding DefaultBuffIntervalSec}" Margin="0,0,8,8"/>
+        </WrapPanel>
+        <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap"/>
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card" Padding="0">
+      <DockPanel>
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,92,84,84,76,120,64,94,94,70,250" Margin="10,8,10,4">
+          <TextBlock Grid.Column="0" Text="Client" Classes="muted"/>
+          <TextBlock Grid.Column="1" Text="Purpose" Classes="muted"/>
+          <TextBlock Grid.Column="2" Text="HP" Classes="muted"/>
+          <TextBlock Grid.Column="3" Text="SP" Classes="muted"/>
+          <TextBlock Grid.Column="4" Text="Map" Classes="muted"/>
+          <TextBlock Grid.Column="5" Text="Target" Classes="muted"/>
+          <TextBlock Grid.Column="6" Text="Bot" Classes="muted"/>
+          <TextBlock Grid.Column="7" Text="Skill" Classes="muted"/>
+          <TextBlock Grid.Column="8" Text="Buff" Classes="muted"/>
+          <TextBlock Grid.Column="9" Text="Count" Classes="muted"/>
+          <TextBlock Grid.Column="10" Text="Actions" Classes="muted"/>
+        </Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" MinHeight="360">
+          <ItemsControl ItemsSource="{Binding Clients}" Margin="10,0,10,10">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:MultiClientRow">
+                <Grid ColumnDefinitions="*,92,84,84,76,120,64,94,94,70,250" Margin="0,3">
+                  <StackPanel Grid.Column="0" Spacing="2">
+                    <TextBlock Text="{Binding Display}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding LastFrame, StringFormat='{}client {0}'}" Classes="muted"/>
+                  </StackPanel>
+                  <ComboBox Grid.Column="1" Width="86"
+                            ItemsSource="{Binding $parent[UserControl].((vm:MultiClientViewModel)DataContext).ClientPurposes}"
+                            SelectedItem="{Binding Purpose}" VerticalAlignment="Center"/>
+                  <TextBlock Grid.Column="2" Text="{Binding Hp}" VerticalAlignment="Center"/>
+                  <TextBlock Grid.Column="3" Text="{Binding Sp}" VerticalAlignment="Center"/>
+                  <TextBlock Grid.Column="4" Text="{Binding Map}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                  <TextBlock Grid.Column="5" Text="{Binding LastTarget}" Classes="muted" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                  <CheckBox Grid.Column="6" IsChecked="{Binding BotEnabled}" VerticalAlignment="Center"/>
+                  <ctrl:KeyCaptureBox Grid.Column="7" Width="86" KeyText="{Binding SkillKey}" VerticalAlignment="Center"/>
+                  <StackPanel Grid.Column="8" Spacing="2" VerticalAlignment="Center">
+                    <ctrl:KeyCaptureBox Width="86" KeyText="{Binding BuffKey}"/>
+                    <CheckBox Content="Auto" IsChecked="{Binding AutoBuff}"/>
+                  </StackPanel>
+                  <StackPanel Grid.Column="9" Spacing="2" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Clicks, StringFormat='{}C {0}'}"/>
+                    <TextBlock Text="{Binding Buffs, StringFormat='{}B {0}'}"/>
+                  </StackPanel>
+                  <WrapPanel Grid.Column="10">
+                    <Button Content="Start" Margin="0,0,6,4"
+                            Command="{ReflectionBinding DataContext.StartClientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}"/>
+                    <Button Content="Stop" Margin="0,0,6,4"
+                            Command="{ReflectionBinding DataContext.StopClientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}"/>
+                    <Button Content="Use for bot" Margin="0,0,6,4"
+                            Command="{ReflectionBinding DataContext.MakeActiveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}"/>
+                    <Button Content="Buff now" Margin="0,0,6,4"
+                            Command="{ReflectionBinding DataContext.BuffNowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}"/>
+                    <Button Content="Remove" Classes="danger" Margin="0,0,6,4"
+                            Command="{ReflectionBinding DataContext.RemoveClientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}"/>
+                  </WrapPanel>
+                  <TextBlock Grid.Column="0" Grid.ColumnSpan="11" Margin="0,38,0,0"
+                             Text="{Binding Status}" Classes="muted" TextWrapping="Wrap"/>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </DockPanel>
+    </Border>
+  </StackPanel>
+</UserControl>

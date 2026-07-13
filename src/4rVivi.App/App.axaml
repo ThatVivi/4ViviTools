@@ -6,6 +6,9 @@
              RequestedThemeVariant="Dark">
   <Application.Resources>
     <conv:IdToIconConverter x:Key="IdToIcon"/>
+    <conv:EquipToBrushConverter x:Key="EquipBrush"/>
+    <conv:NameToIconConverter x:Key="NameToIcon"/>
+    <conv:SkillNameToIconConverter x:Key="SkillNameToIcon"/>
   </Application.Resources>
   <Application.DataTemplates>
     <local:ViewLocator/>

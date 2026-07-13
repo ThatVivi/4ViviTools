@@ -23,6 +23,7 @@ public sealed class GrfArchive : IDisposable
     private readonly BinaryReader _br;
     public List<GrfEntry> Entries { get; } = new();
     public string Path { get; }
+    public string Magic { get; private set; } = "";
 
     public GrfArchive(string path)
     {
@@ -35,7 +36,9 @@ public sealed class GrfArchive : IDisposable
     private void ReadTable()
     {
         var sig = Encoding.ASCII.GetString(_br.ReadBytes(15));
-        if (!sig.StartsWith("Master of Magic")) throw new InvalidDataException("Not a GRF file.");
+        Magic = sig.TrimEnd('\0', ' ');
+        if (string.IsNullOrWhiteSpace(Magic))
+            throw new InvalidDataException("Not a GRF file.");
         _br.ReadBytes(15);                 // encryption key (unused)
         int tableOffset = _br.ReadInt32();
         int seed = _br.ReadInt32();

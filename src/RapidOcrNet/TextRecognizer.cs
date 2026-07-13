@@ -17,9 +17,9 @@ public sealed class TextRecognizer : IDisposable
     //private const int CrnnDefaultWidth = 320; // matches PP-OCR rec_img_shape [3, 48, 320]
     //private const int RecBatchNum = 6;
 
-    private InferenceSession _crnnNet;
+    private InferenceSession? _crnnNet;
     private string[] _keys;
-    private string _inputName;
+    private string _inputName = "";
 
     public void InitModel(string path, string keysPath, SessionOptions op)
     {
@@ -105,7 +105,8 @@ public sealed class TextRecognizer : IDisposable
 
         try
         {
-            using (IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = _crnnNet.Run(inputs))
+            var crnnNet = _crnnNet ?? throw new InvalidOperationException("Text recognizer model is not initialized.");
+            using (IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = crnnNet.Run(inputs))
             {
                 var result = results[0];
                 var tl = ScoreToTextLine(result.AsTensor<float>());
@@ -253,6 +254,6 @@ public sealed class TextRecognizer : IDisposable
 
     public void Dispose()
     {
-        _crnnNet.Dispose();
+        _crnnNet?.Dispose();
     }
 }

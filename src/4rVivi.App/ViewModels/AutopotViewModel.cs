@@ -21,7 +21,7 @@ public sealed partial class AutopotViewModel : ViewModelBase
 
         var prof = settings.Current.GetActiveProfile();
         if (prof.Pots.Count == 0)
-            prof.Pots.Add(new PotConfig { Enabled = true, Key = "F1", Percent = 50, UseSp = false });
+            prof.Pots.Add(new PotConfig { Enabled = true, Key = "F1", Percent = 50, UseSp = false, ReactionMs = -1, UseDelayMs = -1 });
 
         // engine + UI share the same PotConfig instances
         _hub.Autopot.Rules.Clear();
@@ -30,7 +30,7 @@ public sealed partial class AutopotViewModel : ViewModelBase
 
     [RelayCommand] private void AddPot()
     {
-        var c = new PotConfig { Enabled = true, Key = "F2", Percent = 40 };
+        var c = new PotConfig { Enabled = true, Key = "F2", Percent = 40, ReactionMs = -1, UseDelayMs = -1 };
         _settings.Current.GetActiveProfile().Pots.Add(c);
         _hub.Autopot.Rules.Add(c);
         Pots.Add(new PotRowViewModel(c, Save));

@@ -1,0 +1,21 @@
+{
+  "imgsz": 640,
+  "classes": [
+    "monster",
+    "player",
+    "loot",
+    "portal",
+    "target",
+    "target_hp",
+    "player_hp"
+  ],
+  "format": "yolo11",
+  "profile": "ro-fast-entity",
+  "recommended": {
+    "monster_min_score": 0.35,
+    "monster_runtime_floor": 0.15,
+    "other_min_score": 0.55,
+    "nms_iou": 0.45,
+    "tracker": "ByteTrackLite"
+  }
+}

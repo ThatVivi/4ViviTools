@@ -7,4 +7,6 @@ public enum InputMethod
     MouseKeyEvent = 1,    // AHK "SendEvent"; legacy mouse_event/keybd_event.
     PostMessage = 2,      // AHK "ControlSend"/"ControlClick"; works unfocused when accepted.
     ReWasdClick = 3,      // Move cursor normally, then click through a ViGEm virtual Xbox button.
+    VirtualHid = 4,       // FakerInput/vmouse virtual HID mouse + FakerInput virtual keyboard.
+    Viiper = 5,           // VIIPER virtual USB keyboard/mouse, then Virtual HID / ViGEm fallback.
 }

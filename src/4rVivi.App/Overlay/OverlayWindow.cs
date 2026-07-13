@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
 using FourRVivi.Core.Game;
+using FourRVivi.Core.Input;
 
 namespace FourRVivi.App.Overlay;
 
@@ -84,5 +85,15 @@ public sealed class OverlayCanvas : Control
             ctx.DrawLine(pen, new Point(cx, 0), new Point(cx, Bounds.Height));
             ctx.DrawLine(pen, new Point(0, cy), new Point(Bounds.Width, cy));
         }
+
+        var input = InputRuntimeStatus.Snapshot();
+        var bg = new SolidColorBrush(Color.FromArgb(200, 18, 20, 28));
+        var fg = new SolidColorBrush(Color.FromArgb(255, 230, 230, 235));
+        double w = Math.Min(Math.Max(360, Bounds.Width - 24), 620);
+        ctx.DrawRectangle(bg, null, new Rect(8, 8, w, 46), 6, 6);
+        ctx.DrawText(new FormattedText(input.Mouse, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+            new Typeface("Segoe UI"), 12, fg), new Point(16, 12));
+        ctx.DrawText(new FormattedText(input.Keyboard, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+            new Typeface("Segoe UI"), 12, fg), new Point(16, 32));
     }
 }

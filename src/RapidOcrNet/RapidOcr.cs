@@ -16,6 +16,7 @@ public sealed class RapidOcr : IDisposable
     public const string DefaultClsModelPath = "ch_ppocr_mobile_v2.0_cls_infer.onnx";
     public const string DefaultRecModelPath = "latin_PP-OCRv5_rec_mobile_infer.onnx";
     public const string DefaultKeysFilePath = "ppocrv5_latin_dict.txt";
+    public static string LastExecutionProvider { get; private set; } = "CPU";
 
     private readonly TextDetector _textDetector = new TextDetector();
     private readonly TextClassifier _textClassifier = new TextClassifier();
@@ -60,6 +61,22 @@ public sealed class RapidOcr : IDisposable
         _textDetector.InitModel(detPath, op);
         _textClassifier.InitModel(clsPath, op);
         _textRecognizer.InitModel(recPath, keysPath, op);
+    }
+
+    /// <summary>Recognition-only: run the CRNN recognizer on a single pre-cropped text line, skipping
+    /// detection and angle classification entirely. Best for known fixed ROIs (HP/SP/levels) where the
+    /// detector tends to drop tiny game text before recognition even runs.</summary>
+    public (string text, float score) RecognizeLine(SKBitmap crop)
+    {
+        var line = _textRecognizer.GetTextLine(crop);
+        string text = line?.Chars != null ? string.Concat(line.Chars) : "";
+        float score = 0f;
+        if (line?.CharScores != null && line.CharScores.Length > 0)
+        {
+            float s = 0; foreach (var c in line.CharScores) s += c;
+            score = s / line.CharScores.Length;
+        }
+        return (text, score);
     }
 
     public OcrResult Detect(string path, RapidOcrOptions options)
@@ -421,10 +438,73 @@ public sealed class RapidOcr : IDisposable
     public static SessionOptions GetDefaultSessionOptions(int numThread = 0)
     {
         var op = new SessionOptions();
-        op.GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_EXTENDED;
+        LastExecutionProvider = "CPU";
+        op.GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL;
+        op.LogSeverityLevel = OrtLoggingLevel.ORT_LOGGING_LEVEL_ERROR;
         op.InterOpNumThreads = numThread;
         op.IntraOpNumThreads = numThread;
+        var ep = NormalizeExecutionProvider(Environment.GetEnvironmentVariable("OCR_ONNX_EP"));
+
+        if (ep is "directml" or "auto")
+        {
+            try
+            {
+                op.EnableMemoryPattern = false;
+                op.ExecutionMode = ExecutionMode.ORT_SEQUENTIAL;
+                op.AppendExecutionProvider_DML(0);
+                LastExecutionProvider = "DirectML";
+                return op;
+            }
+            catch (Exception ex)
+            {
+                LastExecutionProvider = "CPU (DirectML failed: " + ex.GetType().Name + ")";
+                op.EnableMemoryPattern = true;
+                op.ExecutionMode = ExecutionMode.ORT_PARALLEL;
+            }
+        }
+
+        if (ep == "cuda" || (ep == "auto" && CudaRuntimeLooksAvailable()))
+        {
+            try
+            {
+                op.AppendExecutionProvider_CUDA(0);
+                LastExecutionProvider = "CUDA";
+                return op;
+            }
+            catch (Exception ex)
+            {
+                LastExecutionProvider = "CPU (CUDA failed: " + ex.GetType().Name + ")";
+                // Try DirectML/CPU below. End-user installs differ wildly; OCR must still run.
+            }
+        }
         return op;
     }
-}
 
+    private static string NormalizeExecutionProvider(string? value)
+    {
+        var v = (value ?? "auto").Trim().ToLowerInvariant();
+        return v is "cuda" or "nvidia" ? "cuda"
+            : v is "directml" or "dml" or "amd" ? "directml"
+            : v == "cpu" ? "cpu"
+            : "auto";
+    }
+
+    private static bool CudaRuntimeLooksAvailable()
+    {
+        if (File.Exists(Path.Combine(AppContext.BaseDirectory, "cublasLt64_12.dll")))
+            return true;
+        var path = Environment.GetEnvironmentVariable("PATH") ?? "";
+        foreach (var dir in path.Split(Path.PathSeparator))
+        {
+            if (string.IsNullOrWhiteSpace(dir))
+                continue;
+            try
+            {
+                if (File.Exists(Path.Combine(dir.Trim(), "cublasLt64_12.dll")))
+                    return true;
+            }
+            catch { }
+        }
+        return false;
+    }
+}

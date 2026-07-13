@@ -10,7 +10,7 @@
     <Setter Property="HorizontalAlignment" Value="Stretch"/>
     <Setter Property="HorizontalContentAlignment" Value="Left"/>
     <Setter Property="FontSize" Value="13"/>
-    <Setter Property="CornerRadius" Value="9"/>
+    <Setter Property="CornerRadius" Value="6"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="root" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
@@ -42,8 +42,8 @@
     <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
     <Setter Property="BorderThickness" Value="1"/>
-    <Setter Property="CornerRadius" Value="12"/>
-    <Setter Property="Padding" Value="18"/>
+    <Setter Property="CornerRadius" Value="8"/>
+    <Setter Property="Padding" Value="14"/>
   </Style>
 
   <!-- page title -->
@@ -66,6 +66,11 @@
   </Style>
   <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource Accent2Brush}"/>
+  </Style>
+
+  <Style Selector="Button.danger">
+    <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
+    <Setter Property="Foreground" Value="White"/>
   </Style>
 
   <!-- inputs on dark: readable size + light text so values are visible -->
@@ -123,5 +128,87 @@
   <Style Selector="ToggleButton.accent:checked">
     <Setter Property="Background" Value="{DynamicResource OkBrush}"/>
     <Setter Property="Foreground" Value="White"/>
+  </Style>
+
+  <!-- ============================================================
+       GLOBAL COLOUR PASS — colour every button, box, table and the
+       text the user types. (Requested: "make every table, box,
+       button colored, even the fonts where the user puts input")
+       ============================================================ -->
+
+  <!-- Plain buttons stay quiet; important actions opt into accent/danger. -->
+  <Style Selector="Button">
+    <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="8"/>
+    <Setter Property="Padding" Value="12,7"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <Style Selector="Button:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource Accent2Brush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+  </Style>
+
+  <!-- Typed input text uses restrained role colours so values pop without making the UI noisy. -->
+  <Style Selector="TextBox">
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+    <Setter Property="CaretBrush" Value="{DynamicResource TextBrush}"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <Style Selector="NumericUpDown /template/ TextBox">
+    <Setter Property="Foreground" Value="#FFD479"/>            <!-- gold -->
+    <Setter Property="CaretBrush" Value="#FFD479"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <Style Selector="ComboBox">
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <Style Selector="AutoCompleteBox /template/ TextBox">
+    <Setter Property="Foreground" Value="#7EE787"/>            <!-- green -->
+    <Setter Property="CaretBrush" Value="#7EE787"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+
+  <!-- Tables / lists: coloured alternating rows + coloured selection -->
+  <Style Selector="ListBoxItem:nth-child(even)">
+    <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
+  </Style>
+  <Style Selector="ListBoxItem:nth-child(odd)">
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+  </Style>
+  <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+  </Style>
+
+  <!-- Coloured tab headers -->
+  <Style Selector="TabItem">
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <Style Selector="TabItem:pointerover">
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+  </Style>
+  <Style Selector="TabItem:selected">
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+  </Style>
+  <Style Selector="TabItem /template/ ContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+  </Style>
+  <Style Selector="TabItem:pointerover /template/ ContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+  </Style>
+  <Style Selector="TabItem:selected /template/ ContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+  </Style>
+  <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+  </Style>
+
+  <!-- CheckBox / labels a touch brighter -->
+  <Style Selector="CheckBox">
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
   </Style>
 </Styles>

@@ -7,6 +7,11 @@
     <AssemblyName>4rVivi.OcrServer</AssemblyName>
     <RootNamespace>FourRVivi.OcrServer</RootNamespace>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DirectMLPackagePath>$(NuGetPackageRoot)microsoft.ai.directml\1.15.4\bin\x64-win\DirectML.dll</DirectMLPackagePath>
+    <OnnxRuntimeDirectMLNativeDir>$(NuGetPackageRoot)microsoft.ml.onnxruntime.directml\1.24.3\runtimes\win-x64\native\</OnnxRuntimeDirectMLNativeDir>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\RapidOcrNet\RapidOcrNet.csproj" />
@@ -16,5 +21,44 @@
       <Link>models\v5\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\RapidOcrNet\models\icons\icon_embedder.onnx" Condition="Exists('..\RapidOcrNet\models\icons\icon_embedder.onnx')">
+      <Link>models\icons\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\RapidOcrNet\models\icons\icon_refs.bin" Condition="Exists('..\RapidOcrNet\models\icons\icon_refs.bin')">
+      <Link>models\icons\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\RapidOcrNet\models\icons\labels.txt" Condition="Exists('..\RapidOcrNet\models\icons\labels.txt')">
+      <Link>models\icons\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\RapidOcrNet\models\icons\map_names.json" Condition="Exists('..\RapidOcrNet\models\icons\map_names.json')">
+      <Link>models\icons\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\RapidOcrNet\models\icons\icon_meta.json" Condition="Exists('..\RapidOcrNet\models\icons\icon_meta.json')">
+      <Link>models\icons\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\RapidOcrNet\models\yolo\entity.onnx" Condition="Exists('..\RapidOcrNet\models\yolo\entity.onnx')">
+      <Link>models\yolo\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\RapidOcrNet\models\yolo\entity_meta.json" Condition="Exists('..\RapidOcrNet\models\yolo\entity_meta.json')">
+      <Link>models\yolo\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(DirectMLPackagePath)" Condition="Exists('$(DirectMLPackagePath)')">
+      <Link>DirectML.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
+  <Target Name="CopyDirectMLOnnxRuntime" AfterTargets="Build;Publish" Condition="'$(RuntimeIdentifier)' == 'win-x64' and '$(UseDirectMLRuntime)' != 'false' and Exists('$(OnnxRuntimeDirectMLNativeDir)')">
+    <ItemGroup>
+      <DirectMLOnnxRuntimeFiles Include="$(OnnxRuntimeDirectMLNativeDir)*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DirectMLOnnxRuntimeFiles)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="false" OverwriteReadOnlyFiles="true" Condition="'$(TargetDir)' != ''" />
+    <Copy SourceFiles="@(DirectMLOnnxRuntimeFiles)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="false" OverwriteReadOnlyFiles="true" Condition="'$(PublishDir)' != ''" />
+  </Target>
 </Project>

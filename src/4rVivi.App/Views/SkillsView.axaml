@@ -8,16 +8,17 @@
         <TextBlock Text="Spammer" FontWeight="SemiBold"/>
         <StackPanel Orientation="Horizontal" Spacing="14">
           <StackPanel><TextBlock Text="Key" Classes="muted"/><ctrl:KeyCaptureBox Width="70" KeyText="{Binding SpamKey}"/></StackPanel>
-          <StackPanel><TextBlock Text="Delay ms" Classes="muted"/><NumericUpDown Width="120" Minimum="20" Maximum="10000" Value="{Binding SpamDelay}"/></StackPanel>
+          <StackPanel><TextBlock Text="Delay ms" Classes="muted"/><NumericUpDown MinWidth="120" Minimum="20" Maximum="10000" Value="{Binding SpamDelay}"/></StackPanel>
         </StackPanel>
       </StackPanel>
     </Border>
     <Border Classes="card">
       <StackPanel Spacing="10">
         <TextBlock Text="Rotation (Switcher / Songs)" FontWeight="SemiBold"/>
-        <TextBlock Classes="muted" Text="Comma-separated keys cycled at the spam delay, e.g. F1, F2, F3."/>
+        <TextBlock Classes="muted" Text="Click Record, press each key in order, then click again to stop."/>
         <StackPanel Orientation="Horizontal" Spacing="10">
-          <TextBox Width="260" Text="{Binding RotationKeys}"/>
+          <TextBlock Width="260" MinHeight="32" VerticalAlignment="Center" Text="{Binding RotationKeys}" TextWrapping="Wrap"/>
+          <ctrl:SequenceRecorder Sequence="{Binding RotationKeys}"/>
           <Button Content="Apply rotation" Command="{Binding ApplyRotationCommand}"/>
         </StackPanel>
         <TextBlock Classes="muted" Text="{Binding Status}"/>

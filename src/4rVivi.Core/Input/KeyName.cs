@@ -24,6 +24,31 @@ public static class KeyName
         };
     }
 
+    public static string FromVk(int vk)
+    {
+        if (vk is >= 'A' and <= 'Z') return ((char)vk).ToString();
+        if (vk is >= '0' and <= '9') return ((char)vk).ToString();
+        if (vk is >= 0x70 and <= 0x7B) return $"F{vk - 0x70 + 1}";
+        return vk switch
+        {
+            0x20 => "Space",
+            0x0D => "Enter",
+            0x09 => "Tab",
+            0x1B => "Escape",
+            0x2D => "Insert",
+            0x2E => "Delete",
+            0x24 => "Home",
+            0x23 => "End",
+            0x21 => "PageUp",
+            0x22 => "PageDown",
+            0x26 => "Up",
+            0x28 => "Down",
+            0x25 => "Left",
+            0x27 => "Right",
+            _ => ""
+        };
+    }
+
     public static IReadOnlyList<string> Common { get; } = new[]
     {
         "F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12",

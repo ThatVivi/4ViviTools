@@ -7,7 +7,7 @@
       <TextBlock Text="Skill spammer" Classes="h1"/>
       <ToggleSwitch Content="Spam ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
       <ComboBox Width="200" ItemsSource="{Binding Classes}" SelectedItem="{Binding SelectedClass}" VerticalAlignment="Center"/>
-      <StackPanel VerticalAlignment="Center"><TextBlock Text="Delay ms" Classes="muted"/><NumericUpDown Width="110" Minimum="50" Maximum="5000" Value="{Binding SpamDelay}"/></StackPanel>
+      <StackPanel VerticalAlignment="Center"><TextBlock Text="Delay ms" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="50" Maximum="5000" Value="{Binding SpamDelay}"/></StackPanel>
     </StackPanel>
     <TextBlock Grid.Row="1" Classes="muted" Text="{Binding Status}" Margin="0,8"/>
     <ScrollViewer Grid.Row="2">
@@ -15,11 +15,14 @@
         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:ClassSkillRow">
-            <Border Classes="card" Width="172" Margin="0,0,8,8" Padding="10">
+            <Border Classes="card" Width="196" Margin="0,0,8,8" Padding="10">
               <StackPanel Spacing="6">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                   <Image Source="{Binding Icon}" Width="24" Height="24"/>
-                  <TextBlock Text="{Binding Aegis}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Width="120"/>
+                  <StackPanel Width="144">
+                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding Aegis}" Classes="muted" FontSize="10" TextTrimming="CharacterEllipsis"/>
+                  </StackPanel>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="8">
                   <CheckBox Content="Spam" IsChecked="{Binding Enabled}"/>

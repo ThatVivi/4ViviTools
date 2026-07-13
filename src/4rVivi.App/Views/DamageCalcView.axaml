@@ -1,0 +1,175 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
+             x:Class="FourRVivi.App.Views.DamageCalcView" x:DataType="vm:DamageCalcViewModel">
+  <ScrollViewer>
+    <StackPanel Spacing="12" Margin="4">
+      <TextBlock Text="Damage Calculator" Classes="h1"/>
+      <TextBlock Classes="muted" TextWrapping="Wrap"
+                 Text="Formulas from rAthena / irowiki. Classic, Renewal and 4th-class modes. Cards and enchants add their stats immediately. The advisor tells you what to focus on next."/>
+
+      <Border Classes="card">
+        <StackPanel Spacing="10">
+          <StackPanel Orientation="Horizontal" Spacing="14">
+            <StackPanel><TextBlock Text="Mode" Classes="muted"/><ComboBox Width="130" ItemsSource="{Binding Modes}" SelectedItem="{Binding Mode}"/></StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Bottom">
+              <CheckBox Content="Normal" IsChecked="{Binding ShowNormal}"/>
+              <CheckBox Content="Baby" IsChecked="{Binding ShowBaby}"/>
+              <CheckBox Content="Extended" IsChecked="{Binding ShowExtended}"/>
+            </StackPanel>
+            <StackPanel><TextBlock Text="Class" Classes="muted"/><ComboBox Width="220" ItemsSource="{Binding Classes}" SelectedItem="{Binding SelectedClass}"/></StackPanel>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Stats" Classes="section"/>
+          <WrapPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Base Lv" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="1" Maximum="280" Value="{Binding BaseLevel}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="STR" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="1" Maximum="200" Value="{Binding Str}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="AGI" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="1" Maximum="200" Value="{Binding Agi}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="VIT" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="1" Maximum="200" Value="{Binding Vit}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="INT" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="1" Maximum="200" Value="{Binding Intt}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="DEX" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="1" Maximum="200" Value="{Binding Dex}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="LUK" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="1" Maximum="200" Value="{Binding Luk}"/></StackPanel>
+          </WrapPanel>
+          <WrapPanel IsVisible="{Binding IsFourth}">
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="POW" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="130" Value="{Binding Pow}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="STA" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="130" Value="{Binding Sta}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="WIS" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="130" Value="{Binding Wis}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="SPL" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="130" Value="{Binding Spl}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="CON" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="130" Value="{Binding Con}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="CRT" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="130" Value="{Binding Crt}"/></StackPanel>
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Weapon" Classes="section"/>
+          <WrapPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Weapon ATK" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="9999" Value="{Binding WeaponDamage}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Weapon Lv" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="1" Maximum="5" Value="{Binding WeaponLevel}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Refine" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="20" Value="{Binding Refine}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Weapon MATK" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="9999" Value="{Binding WeaponMatk}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Weapon element" Classes="muted"/><ComboBox Width="120" ItemsSource="{Binding Elements}" SelectedItem="{Binding WeaponElement}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Weapon class" Classes="muted"/><ComboBox Width="120" ItemsSource="{Binding WeaponClasses}" SelectedItem="{Binding WeaponClass}"/></StackPanel>
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Target" Classes="section"/>
+          <WrapPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Element" Classes="muted"/><ComboBox Width="120" ItemsSource="{Binding Elements}" SelectedItem="{Binding TargetElement}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Elem Lv" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="1" Maximum="4" Value="{Binding TargetElementLevel}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Size" Classes="muted"/><ComboBox Width="110" ItemsSource="{Binding Sizes}" SelectedItem="{Binding TargetSize}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Race" Classes="muted"/><ComboBox Width="120" ItemsSource="{Binding Races}" SelectedItem="{Binding TargetRace}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Hard DEF" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="9999" Value="{Binding HardDef}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Soft DEF" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="9999" Value="{Binding SoftDef}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Hard MDEF" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="9999" Value="{Binding HardMdef}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Soft MDEF" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="9999" Value="{Binding SoftMdef}"/></StackPanel>
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Skill" Classes="section"/>
+          <WrapPanel>
+            <StackPanel Margin="0,0,12,8">
+              <TextBlock Text="Skill name" Classes="muted"/>
+              <Grid ColumnDefinitions="28,*">
+                <Image Width="24" Height="24" Source="{Binding SkillName, Converter={StaticResource SkillNameToIcon}}"/>
+                <ctrl:SearchPicker Grid.Column="1" Width="220" Text="{Binding SkillName}" ItemsSource="{Binding SkillNames}" Watermark="search RO skill"/>
+              </Grid>
+            </StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Multiplier (×)" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0.1" Maximum="100" Increment="0.1" Value="{Binding SkillMultiplier}"/></StackPanel>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Hits" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="1" Maximum="50" Value="{Binding SkillHits}"/></StackPanel>
+            <CheckBox Content="Magic skill" IsChecked="{Binding SkillMagic}" VerticalAlignment="Bottom" Margin="0,0,12,10"/>
+            <CheckBox Content="Critical" IsChecked="{Binding IsCritical}" VerticalAlignment="Bottom" Margin="0,0,12,10"/>
+            <StackPanel Margin="0,0,12,8"><TextBlock Text="Crit dmg +%" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="500" Value="{Binding CritDamageBonus}"/></StackPanel>
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Cards &amp; Enchants" Classes="section" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Content="+ Add" Command="{Binding AddGearCommand}"/></Grid>
+          <Border Height="190" Background="{DynamicResource Surface2Brush}" CornerRadius="6">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+              <ItemsControl ItemsSource="{Binding Gear}" Margin="6">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:GearBonusRow">
+                    <Border Classes="card" Margin="0,0,0,6" Padding="6">
+                      <WrapPanel>
+                        <ctrl:SearchPicker Width="180" Text="{Binding Name}" Watermark="card / enchant / gear" Margin="0,0,8,4"
+                                           ItemsSource="{ReflectionBinding DataContext.GearNameChoices, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        <NumericUpDown MinWidth="110" Value="{Binding Str}" Margin="0,0,6,4"/><TextBlock Text="STR" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <NumericUpDown MinWidth="110" Value="{Binding Intt}" Margin="0,0,6,4"/><TextBlock Text="INT" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <NumericUpDown MinWidth="110" Value="{Binding Dex}" Margin="0,0,6,4"/><TextBlock Text="DEX" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <NumericUpDown MinWidth="110" Value="{Binding FlatAtk}" Margin="0,0,6,4"/><TextBlock Text="ATK" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <NumericUpDown MinWidth="110" Value="{Binding AtkPercent}" Margin="0,0,6,4"/><TextBlock Text="ATK%" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <NumericUpDown MinWidth="110" Value="{Binding RacePercent}" Margin="0,0,6,4"/><TextBlock Text="Race%" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <NumericUpDown MinWidth="110" Value="{Binding SizePercent}" Margin="0,0,6,4"/><TextBlock Text="Size%" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <NumericUpDown MinWidth="110" Value="{Binding ElementPercent}" Margin="0,0,6,4"/><TextBlock Text="Elem%" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <Button Content="✕"
+                                Command="{ReflectionBinding DataContext.RemoveGearCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"/>
+                      </WrapPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </Border>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Buffs" Classes="section" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Content="+ Add buff" Command="{Binding AddBuffCommand}"/></Grid>
+          <TextBlock Classes="muted" Text="Add active buffs and their effect (e.g. Blessing +10 STR/INT/DEX, Magnum Break +20% Fire ATK%, Striking +ATK). They fold into the damage."/>
+          <Border Height="170" Background="{DynamicResource Surface2Brush}" CornerRadius="6">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+              <ItemsControl ItemsSource="{Binding Buffs}" Margin="6">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:GearBonusRow">
+                    <Border Classes="card" Margin="0,0,0,6" Padding="6">
+                      <WrapPanel>
+                        <ctrl:SearchPicker Width="190" Text="{Binding Name}" Watermark="buff skill / item" Margin="0,0,8,4"
+                                           ItemsSource="{ReflectionBinding DataContext.BuffNameChoices, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        <NumericUpDown MinWidth="110" Value="{Binding Str}" Margin="0,0,6,4"/><TextBlock Text="STR" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <NumericUpDown MinWidth="110" Value="{Binding Intt}" Margin="0,0,6,4"/><TextBlock Text="INT" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <NumericUpDown MinWidth="110" Value="{Binding Dex}" Margin="0,0,6,4"/><TextBlock Text="DEX" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <NumericUpDown MinWidth="110" Value="{Binding FlatAtk}" Margin="0,0,6,4"/><TextBlock Text="ATK" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <NumericUpDown MinWidth="110" Value="{Binding AtkPercent}" Margin="0,0,6,4"/><TextBlock Text="ATK%" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <NumericUpDown MinWidth="110" Value="{Binding ElementPercent}" Margin="0,0,6,4"/><TextBlock Text="Elem%" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <Button Content="✕"
+                                Command="{ReflectionBinding DataContext.RemoveBuffCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"/>
+                      </WrapPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </Border>
+        </StackPanel>
+      </Border>
+
+      <Button Classes="accent" Content="Calculate" Command="{Binding CalculateCommand}" HorizontalAlignment="Left"/>
+
+      <Border Classes="card">
+        <StackPanel Spacing="6">
+          <TextBlock Text="{Binding ResultText}" FontFamily="Consolas,monospace" TextWrapping="Wrap"/>
+          <TextBlock Text="{Binding AdviceText}" Foreground="#5EC26A" FontWeight="SemiBold" TextWrapping="Wrap"/>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "codeCells": 3,
+  "codeCell": 5,
+  "codeCellPx": 5,
+  "boxPx": 2,
+  "boxColor": [
+    255,
+    0,
+    0
+  ],
+  "mobs": {
+    "3069": {
+      "name": "Ferre",
+      "sprite": "data\\sprite\\몬스터\\PERE1.spr",
+      "code": [
+        [
+          255,
+          48,
+          240
+        ],
+        [
+          240,
+          255,
+          144
+        ],
+        [
+          192,
+          240,
+          255
+        ]
+      ]
+    }
+  }
+}

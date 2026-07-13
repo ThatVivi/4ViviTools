@@ -9,6 +9,7 @@ public sealed class BotFarmEngine : AutomationEngine
 {
     public string AttackKey { get; set; } = "F1";
     public string LootKey { get; set; } = "Z";
+    public override void ClearKeys() { AttackKey = ""; LootKey = ""; }
     public int FleeAtHpPercent { get; set; } = 25;
     public int RotationMs { get; set; } = 350;
 

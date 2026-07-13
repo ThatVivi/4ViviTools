@@ -9,6 +9,7 @@ namespace FourRVivi.App.ViewModels;
 
 public sealed partial class ClassSkillRow : ObservableObject
 {
+    public string Name { get; }
     public string Aegis { get; }
     public int Id { get; }
     public Bitmap? Icon { get; }
@@ -17,10 +18,11 @@ public sealed partial class ClassSkillRow : ObservableObject
     [ObservableProperty] private bool _enabled;
     [ObservableProperty] private string _key = "F1";
 
-    public ClassSkillRow(string aegis, int id, Action changed)
+    public ClassSkillRow(string name, string aegis, int id, Action changed)
     {
+        Name = name;
         Aegis = aegis; Id = id; _changed = changed;
-        Icon = IconImageService.Instance?.GetSkill(aegis);
+        Icon = IconImageService.Instance?.GetSkill(aegis, id);
     }
     partial void OnEnabledChanged(bool value) => _changed();
     partial void OnKeyChanged(string value) => _changed();
@@ -31,6 +33,7 @@ public sealed partial class ClassSkillsViewModel : ViewModelBase
 {
     private readonly EngineHub _hub;
     private readonly ClassData _cd;
+    private readonly Lazy<GameDatabase> _db;
 
     public IReadOnlyList<string> Classes { get; }
     public ObservableCollection<ClassSkillRow> Skills { get; } = new();
@@ -42,9 +45,9 @@ public sealed partial class ClassSkillsViewModel : ViewModelBase
     [ObservableProperty] private bool _enabled;
     partial void OnEnabledChanged(bool value) => _hub.Spammer.Enabled = value;
 
-    public ClassSkillsViewModel(EngineHub hub, ClassData cd)
+    public ClassSkillsViewModel(EngineHub hub, ClassData cd, Lazy<GameDatabase> db)
     {
-        _hub = hub; _cd = cd;
+        _hub = hub; _cd = cd; _db = db;
         Classes = cd.Jobs;
         _selectedClass = Classes.FirstOrDefault() ?? "";
         Rebuild();
@@ -56,8 +59,26 @@ public sealed partial class ClassSkillsViewModel : ViewModelBase
     private void Rebuild()
     {
         Skills.Clear();
-        foreach (var s in _cd.SkillsFor(SelectedClass)) Skills.Add(new ClassSkillRow(s.Aegis, s.Id, Sync));
+        foreach (var s in _cd.SkillsFor(SelectedClass))
+        {
+            var name = ResolveSkillName(s);
+            Skills.Add(new ClassSkillRow(name, s.Aegis, s.Id, Sync));
+        }
         Sync();
+    }
+
+    private string ResolveSkillName(ClassSkill skill)
+    {
+        try
+        {
+            return _db.Value.SkillByName(skill.Aegis)?.Name
+                ?? _db.Value.SkillByName(skill.Id.ToString())?.Name
+                ?? _db.Value.SkillDisplayName(skill.Aegis);
+        }
+        catch
+        {
+            return skill.Aegis;
+        }
     }
 
     private void Sync()

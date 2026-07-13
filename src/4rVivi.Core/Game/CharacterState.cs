@@ -19,8 +19,8 @@ public sealed class CharacterState
     public long Zeny { get; set; }
     public string Activity { get; set; } = "Idle";
 
-    public int HpPct => LiveStats.Instance.TryGetNumber("HpPercent", out var p) ? p : (MaxHp > 0 ? (int)Math.Round(Hp * 100.0 / MaxHp) : 0);
-    public int SpPct => LiveStats.Instance.TryGetNumber("SpPercent", out var p) ? p : (MaxSp > 0 ? (int)Math.Round(Sp * 100.0 / MaxSp) : 0);
+    public int HpPct => LiveStats.Instance.TryGetTrustedNumber(Roles.HpPercent, out var p) ? p : -1;
+    public int SpPct => LiveStats.Instance.TryGetTrustedNumber(Roles.SpPercent, out var p) ? p : -1;
     public int BaseExpPct => LiveStats.Instance.TryGetNumber("BaseExpBar", out var p) ? p : 0;
     public int JobExpPct => LiveStats.Instance.TryGetNumber("JobExpBar", out var p) ? p : 0;
 }
@@ -73,7 +73,9 @@ public sealed class CharacterStateReader
             return "Idle";
         }
         bool moved = s.X != _last.X || s.Y != _last.Y;
-        bool fighting = s.Hp < _last.Hp || s.Sp < _last.Sp || s.HpPct < _last.HpPct || s.SpPct < _last.SpPct;
+        bool fighting =
+            (s.HpPct >= 0 && _last.HpPct >= 0 && s.HpPct < _last.HpPct) ||
+            (s.SpPct >= 0 && _last.SpPct >= 0 && s.SpPct < _last.SpPct);
         if (moved) { _lastMoveUtc = DateTime.UtcNow; return fighting ? "Grinding" : "Walking"; }
         if (fighting) return "Grinding";
         if ((DateTime.UtcNow - _lastMoveUtc).TotalMinutes >= 15) return "AFK";

@@ -71,6 +71,26 @@ public sealed class GameSession : IDisposable
 
     public bool HasRole(string role) => AddressBook.Has(role);
 
-    public IntPtr WindowHandle => Process?.WindowHandle ?? IntPtr.Zero;
+    public IntPtr WindowHandle => RefreshWindowHandle();
+
+    public IntPtr RefreshWindowHandle()
+    {
+        if (Process is null)
+            return IntPtr.Zero;
+        try
+        {
+            var p = System.Diagnostics.Process.GetProcessById(Process.Pid);
+            var hwnd = p.MainWindowHandle;
+            if (hwnd != IntPtr.Zero && hwnd != Process.WindowHandle)
+            {
+                Process = GameProcess.From(p);
+                Changed?.Invoke();
+            }
+        }
+        catch { }
+
+        return Process?.WindowHandle ?? IntPtr.Zero;
+    }
+
     public void Dispose() => Reader.Dispose();
 }

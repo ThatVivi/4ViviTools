@@ -1,27 +1,45 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels" xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
              x:Class="FourRVivi.App.Views.BuffsView"
              x:DataType="vm:BuffsViewModel"
              x:Name="Root">
   <StackPanel Spacing="14">
     <TextBlock Text="Buffs" Classes="h1"/>
-      <ToggleSwitch Content="Buffs ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
-    <TextBlock Classes="muted" Text="Re-cast skill and item buffs on a timer. Interval is milliseconds."/>
+    <ToggleSwitch Content="Buffs ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
+    <TextBlock Classes="muted" Text="Re-cast Ragnarok skill and item buffs on a timer. Pick the in-game name, record the hotkey, then set the recast interval."/>
 
     <TextBlock Classes="section" Text="SKILL BUFFS"/>
-    <StackPanel Orientation="Horizontal" Spacing="8"><Button Content="+ Add skill buff" Command="{Binding AddSkillBuffCommand}" HorizontalAlignment="Left"/> <Button Classes="accent" Content="▶ Run buff sequence" Command="{Binding RunBuffSequenceCommand}" Margin="8,0,0,0"/></StackPanel>
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <Button Content="+ Add skill buff" Command="{Binding AddSkillBuffCommand}" HorizontalAlignment="Left"/>
+      <Button Classes="accent" Content="Run buff sequence" Command="{Binding RunBuffSequenceCommand}" Margin="8,0,0,0"/>
+    </StackPanel>
     <ItemsControl ItemsSource="{Binding SkillBuffs}">
       <ItemsControl.ItemTemplate>
         <DataTemplate x:DataType="vm:BuffRowViewModel">
           <Border Classes="card" Margin="0,0,0,8">
-            <Grid ColumnDefinitions="Auto,Auto,Auto,*" VerticalAlignment="Center">
+            <Grid ColumnDefinitions="Auto,270,Auto,Auto,*" VerticalAlignment="Center">
               <CheckBox Grid.Column="0" IsChecked="{Binding Enabled}" Content="On" Margin="0,0,12,0"/>
-              <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="Key" Classes="muted"/><ctrl:KeyCaptureBox Width="60" KeyText="{Binding Key}"/></StackPanel>
-              <StackPanel Grid.Column="2"><TextBlock Text="Interval ms" Classes="muted"/><NumericUpDown Width="130" Minimum="500" Maximum="3600000" Value="{Binding IntervalMs}"/></StackPanel>
-              <Button Grid.Column="3" Content="✕" HorizontalAlignment="Right"
+              <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                <TextBlock Text="Buff skill" Classes="muted"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Image Width="24" Height="24" Source="{Binding Name, Converter={StaticResource SkillNameToIcon}}"/>
+                  <ctrl:SearchPicker Width="220" Text="{Binding Name}" Watermark="search RO skill"
+                                     ItemsSource="{ReflectionBinding DataContext.SkillNames, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                </StackPanel>
+              </StackPanel>
+              <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                <TextBlock Text="Key" Classes="muted"/>
+                <ctrl:KeyCaptureBox Width="60" KeyText="{Binding Key}"/>
+              </StackPanel>
+              <StackPanel Grid.Column="3">
+                <TextBlock Text="Interval ms" Classes="muted"/>
+                <NumericUpDown MinWidth="130" Minimum="500" Maximum="3600000" Value="{Binding IntervalMs}"/>
+              </StackPanel>
+              <Button Grid.Column="4" Content="X" HorizontalAlignment="Right"
                       Command="{ReflectionBinding DataContext.RemoveSkillBuffCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-CommandParameter="{Binding}"/>
+                      CommandParameter="{Binding}"/>
             </Grid>
           </Border>
         </DataTemplate>
@@ -34,13 +52,27 @@ CommandParameter="{Binding}"/>
       <ItemsControl.ItemTemplate>
         <DataTemplate x:DataType="vm:BuffRowViewModel">
           <Border Classes="card" Margin="0,0,0,8">
-            <Grid ColumnDefinitions="Auto,Auto,Auto,*" VerticalAlignment="Center">
+            <Grid ColumnDefinitions="Auto,270,Auto,Auto,*" VerticalAlignment="Center">
               <CheckBox Grid.Column="0" IsChecked="{Binding Enabled}" Content="On" Margin="0,0,12,0"/>
-              <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="Key" Classes="muted"/><ctrl:KeyCaptureBox Width="60" KeyText="{Binding Key}"/></StackPanel>
-              <StackPanel Grid.Column="2"><TextBlock Text="Interval ms" Classes="muted"/><NumericUpDown Width="130" Minimum="500" Maximum="3600000" Value="{Binding IntervalMs}"/></StackPanel>
-              <Button Grid.Column="3" Content="✕" HorizontalAlignment="Right"
+              <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                <TextBlock Text="Buff item" Classes="muted"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Image Width="24" Height="24" Source="{Binding Name, Converter={StaticResource NameToIcon}}"/>
+                  <ctrl:SearchPicker Width="220" Text="{Binding Name}" Watermark="search item"
+                                     ItemsSource="{ReflectionBinding DataContext.ItemNames, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                </StackPanel>
+              </StackPanel>
+              <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                <TextBlock Text="Key" Classes="muted"/>
+                <ctrl:KeyCaptureBox Width="60" KeyText="{Binding Key}"/>
+              </StackPanel>
+              <StackPanel Grid.Column="3">
+                <TextBlock Text="Interval ms" Classes="muted"/>
+                <NumericUpDown MinWidth="130" Minimum="500" Maximum="3600000" Value="{Binding IntervalMs}"/>
+              </StackPanel>
+              <Button Grid.Column="4" Content="X" HorizontalAlignment="Right"
                       Command="{ReflectionBinding DataContext.RemoveItemBuffCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-CommandParameter="{Binding}"/>
+                      CommandParameter="{Binding}"/>
             </Grid>
           </Border>
         </DataTemplate>

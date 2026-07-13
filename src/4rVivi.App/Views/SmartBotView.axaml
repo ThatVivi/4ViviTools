@@ -1,40 +1,523 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:FourRVivi.App.ViewModels" xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels" xmlns:ctrl="clr-namespace:FourRVivi.App.Controls"
+             xmlns:auto="clr-namespace:FourRVivi.Core.Automation;assembly=4rVivi.Core"
              x:Class="FourRVivi.App.Views.SmartBotView" x:DataType="vm:SmartBotViewModel">
+  <ScrollViewer BringIntoViewOnFocusChange="False">
   <StackPanel Spacing="14">
-    <TextBlock Text="Smart Bot" Classes="h1"/>
-      <ToggleSwitch Content="Smart Bot ON" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
-    <TextBlock Classes="muted" TextWrapping="Wrap" Text="Attack + skill rotation, auto-loot, teleport when no progress, and return-to-town when overweight. Master ON to run. Set HP/EXP/Weight/Pos addresses in the Scanner for full behaviour."/>
+    <Border Classes="card">
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+        <StackPanel Grid.Row="0" Grid.Column="0" Spacing="4">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8FB;" FontSize="22" VerticalAlignment="Center"/>
+            <TextBlock Text="Smart Bot" Classes="h1"/>
+          </StackPanel>
+          <TextBlock Classes="muted" TextWrapping="Wrap" MaxWidth="980"
+                     Text="Ragnarok farming flow: OCR finds monsters, normal attack is a left-click, skill attack is skill hotkey then left-click, and walking is left-click around the selected roam area."/>
+        </StackPanel>
+        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Border Padding="10,6" CornerRadius="6" BorderThickness="1"
+                  BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource SurfaceBrush}">
+            <TextBlock Text="{Binding BotStateText}" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}"/>
+          </Border>
+          <Button Classes="accent" MinWidth="108" Command="{Binding StartBotCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE768;" VerticalAlignment="Center"/>
+              <TextBlock Text="Start"/>
+            </StackPanel>
+          </Button>
+          <Button Classes="danger" MinWidth="108" Command="{Binding StopBotCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE71A;" VerticalAlignment="Center"/>
+              <TextBlock Text="Stop"/>
+            </StackPanel>
+          </Button>
+        </StackPanel>
+        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0" Classes="muted" TextWrapping="Wrap"
+                   Text="Install ViGEm for the default virtual click path. reWASD is optional when you want imported or active controller profiles."/>
+        <WrapPanel Grid.Row="2" Grid.ColumnSpan="2" Margin="0,10,0,0">
+          <TextBlock Text="Start key" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,8"/>
+          <ctrl:HotkeyCaptureBox Width="112" KeyText="{Binding StartHotkey}" Margin="0,0,8,8"/>
+          <Button Command="{Binding ClearStartHotkeyCommand}" Margin="0,0,12,8">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74D;" VerticalAlignment="Center"/>
+              <TextBlock Text="Clear"/>
+            </StackPanel>
+          </Button>
+          <TextBlock Text="Stop key" Classes="muted" VerticalAlignment="Center" Margin="0,0,8,8"/>
+          <ctrl:HotkeyCaptureBox Width="112" KeyText="{Binding StopHotkey}" Margin="0,0,8,8"/>
+          <Button Command="{Binding ClearStopHotkeyCommand}" Margin="0,0,12,8">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74D;" VerticalAlignment="Center"/>
+              <TextBlock Text="Clear"/>
+            </StackPanel>
+          </Button>
+          <TextBlock Text="F12 stops everything. Existing toggle keys still work if saved in an older profile." Classes="muted" VerticalAlignment="Center" Margin="0,0,0,8"/>
+        </WrapPanel>
+        <WrapPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,8,0,0">
+          <Button Classes="accent" Command="{Binding StartSmartBotTrainingCommand}" Margin="0,0,10,8">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE9D9;" VerticalAlignment="Center"/>
+              <TextBlock Text="Start Smart Bot Training"/>
+            </StackPanel>
+          </Button>
+          <Button Command="{Binding StopSmartBotTrainingCommand}" Margin="0,0,10,8">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE71A;" VerticalAlignment="Center"/>
+              <TextBlock Text="Stop training"/>
+            </StackPanel>
+          </Button>
+          <Button Command="{Binding OpenSmartBotTrainingLogCommand}" Margin="0,0,10,8">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE838;" VerticalAlignment="Center"/>
+              <TextBlock Text="Open log"/>
+            </StackPanel>
+          </Button>
+          <Border Padding="8,4" CornerRadius="6" BorderThickness="1"
+                  BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource Surface2Brush}" Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <Ellipse Width="10" Height="10" Fill="{DynamicResource AccentBrush}" IsVisible="{Binding SmartBotTrainingActive}" VerticalAlignment="Center"/>
+              <TextBlock Text="{Binding SmartBotTrainingStatus}" Classes="muted" TextWrapping="Wrap" MaxWidth="900"/>
+            </StackPanel>
+          </Border>
+        </WrapPanel>
+      </Grid>
+    </Border>
+
+    <!-- Combat -->
     <Border Classes="card">
       <StackPanel Spacing="12">
-        <StackPanel Orientation="Horizontal" Spacing="14">
-          <StackPanel><TextBlock Text="Attack key" Classes="muted"/><ctrl:KeyCaptureBox Width="100" KeyText="{Binding AttackKey}"/></StackPanel>
-          <StackPanel><TextBlock Text="Loot key" Classes="muted"/><ctrl:KeyCaptureBox Width="100" KeyText="{Binding LootKey}"/></StackPanel>
-          <StackPanel><TextBlock Text="Teleport key" Classes="muted"/><ctrl:KeyCaptureBox Width="100" KeyText="{Binding TeleportKey}"/></StackPanel>
-          <StackPanel><TextBlock Text="Return key" Classes="muted"/><ctrl:KeyCaptureBox Width="100" KeyText="{Binding ReturnKey}"/></StackPanel>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="10">
-          <TextBlock Text="Skill rotation" Classes="muted" VerticalAlignment="Center"/>
-          <TextBox Width="240" Text="{Binding Rotation}" Watermark="F2, F3 (woven into attacks)"/>
-          <Button Content="Apply rotation" Command="{Binding ApplyRotationCommand}"/>
-          <TextBlock Text="Input:" VerticalAlignment="Center" Classes="muted" Margin="8,0,4,0"/>
-          <ComboBox MinWidth="280" SelectedIndex="{Binding InputMethodIndex}" ItemsSource="{Binding InputMethods}"
-                    ToolTip.Tip="Choose how Smart Bot sends clicks. reWASD mode moves to the target, then sends Xbox A through ViGEm for reWASD to map as left click."/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="14">
-          <StackPanel><TextBlock Text="Flee at HP %" Classes="muted"/><NumericUpDown Width="110" Minimum="0" Maximum="100" Value="{Binding FleeAtHpPercent}"/></StackPanel>
-          <StackPanel><TextBlock Text="Stuck seconds" Classes="muted"/><NumericUpDown Width="110" Minimum="2" Maximum="120" Value="{Binding StuckSeconds}"/></StackPanel>
-          <StackPanel><TextBlock Text="Return at weight %" Classes="muted"/><NumericUpDown Width="130" Minimum="0" Maximum="100" Value="{Binding ReturnAtWeightPercent}"/></StackPanel>
-          <StackPanel><TextBlock Text="Rotation ms" Classes="muted"/><NumericUpDown Width="110" Minimum="80" Maximum="5000" Value="{Binding RotationMs}"/></StackPanel>
-          <CheckBox Content="Click to move" IsChecked="{Binding ClickToMove}" VerticalAlignment="Bottom"/>
-          <CheckBox Content="Click to attack" IsChecked="{Binding ClickAttack}" VerticalAlignment="Bottom"/>
-          <CheckBox Content="Hardware click" IsChecked="{Binding HardwareClick}" VerticalAlignment="Bottom"/>
-          <StackPanel><TextBlock Text="Move radius px" Classes="muted"/><NumericUpDown Width="120" Minimum="20" Maximum="600" Value="{Binding MoveRadius}"/></StackPanel>
-        </StackPanel>
+        <TextBlock Text="Hunt behavior" Classes="h2"/>
+        <WrapPanel>
+          <Border Padding="10,6" CornerRadius="6" BorderThickness="1"
+                  BorderBrush="{DynamicResource AccentBrush}" Background="{DynamicResource Surface2Brush}"
+                  Margin="0,0,16,8">
+            <TextBlock Text="-1 = Auto timing. Leave timing boxes at -1 for the recommended formulas; enter a number only when you want a manual override." TextWrapping="Wrap" MaxWidth="920"/>
+          </Border>
+          <CheckBox Content="Advanced timing" IsChecked="{Binding ShowAdvancedTiming}" Margin="0,0,16,8"/>
+        </WrapPanel>
+        <WrapPanel IsVisible="{Binding ShowAdvancedTiming}">
+          <CheckBox Content="Target detected monsters" IsChecked="{Binding UseVision}" Margin="0,0,16,8"/>
+          <CheckBox Content="Left-click to attack" IsChecked="{Binding ClickAttack}" Margin="0,0,16,8"/>
+          <CheckBox Content="Left-click to move" IsChecked="{Binding ClickToMove}" Margin="0,0,16,8"/>
+          <CheckBox Content="Trusted cursor click" IsChecked="{Binding HardwareClick}" Margin="0,0,16,8"/>
+        </WrapPanel>
+        <WrapPanel>
+          <TextBlock Text="Input" VerticalAlignment="Center" Classes="muted" Margin="0,0,8,8"/>
+          <ComboBox MinWidth="320" SelectedIndex="{Binding InputMethodIndex}" ItemsSource="{Binding InputMethods}"
+                    Margin="0,0,10,8"
+                    ToolTip.Tip="Choose how Smart Bot sends clicks. ViGEm virtual click works with the ViGEm driver; reWASD is optional and can import/use profiles for the same virtual controller."/>
+          <Border Padding="8,4" CornerRadius="6" BorderThickness="1"
+                  Margin="0,0,10,8"
+                  BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource Surface2Brush}">
+            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+              <Ellipse Width="10" Height="10" Fill="{Binding VirtualDriverStatusBrush}" VerticalAlignment="Center"/>
+              <TextBlock Text="{Binding VirtualDriverStatus}" Classes="muted" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+          <Button Command="{Binding RefreshVirtualDriverStatusCommand}" Margin="0,0,10,8">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72C;" VerticalAlignment="Center"/>
+              <TextBlock Text="Check driver"/>
+            </StackPanel>
+          </Button>
+          <Button Command="{Binding InstallVirtualDriverCommand}" Margin="0,0,10,8"
+                  ToolTip.Tip="Downloads the official ViGEm setup, then opens it with the Windows administrator prompt.">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE896;" VerticalAlignment="Center"/>
+              <TextBlock Text="{Binding VirtualDriverInstallText}"/>
+            </StackPanel>
+          </Button>
+          <Button Command="{Binding OpenVirtualDriverFolderCommand}" Margin="0,0,10,8"
+                  ToolTip.Tip="Opens the folder where 4ViviTools keeps the downloaded ViGEm installer.">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8B7;" VerticalAlignment="Center"/>
+              <TextBlock Text="Driver folder"/>
+            </StackPanel>
+          </Button>
+          <Button Classes="danger" Command="{Binding ClearAllKeysCommand}" Margin="0,0,10,8"
+                  ToolTip.Tip="Blank every hotkey across all features (bot, autopot, skill spammer, buffs, macros).">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74D;" VerticalAlignment="Center"/>
+              <TextBlock Text="Clear all keys"/>
+            </StackPanel>
+          </Button>
+        </WrapPanel>
+        <Border Padding="10" CornerRadius="6" BorderThickness="1"
+                BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource Surface2Brush}">
+          <StackPanel Spacing="8">
+            <TextBlock Text="{Binding InputStackStatus}" Classes="muted" TextWrapping="Wrap"/>
+            <WrapPanel>
+              <Border Padding="8,4" CornerRadius="6" BorderThickness="1"
+                      Margin="0,0,10,8"
+                      BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource SurfaceBrush}">
+                <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                  <Ellipse Width="10" Height="10" Fill="{Binding ReWasdStatusBrush}" VerticalAlignment="Center"/>
+                  <TextBlock Text="{Binding ReWasdStatus}" Classes="muted" VerticalAlignment="Center"/>
+                </StackPanel>
+              </Border>
+              <Button Command="{Binding InstallOrOpenReWasdCommand}" Margin="0,0,10,8"
+                      ToolTip.Tip="Opens reWASD if installed, otherwise opens the official reWASD download page.">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7FC;" VerticalAlignment="Center"/>
+                  <TextBlock Text="{Binding ReWasdActionText}"/>
+                </StackPanel>
+              </Button>
+              <Border Padding="8,4" CornerRadius="6" BorderThickness="1"
+                      Margin="0,0,10,8"
+                      BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource SurfaceBrush}">
+                <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                  <Ellipse Width="10" Height="10" Fill="{Binding MouseDriverStatusBrush}" VerticalAlignment="Center"/>
+                  <TextBlock Text="{Binding MouseDriverStatus}" Classes="muted" VerticalAlignment="Center"/>
+                </StackPanel>
+              </Border>
+              <Button Command="{Binding InstallMouseDriverCommand}" Margin="0,0,10,8"
+                      ToolTip.Tip="Installs the packaged signed vmouse driver when it exists; otherwise downloads and opens the official FakerInput virtual HID mouse installer.">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE896;" VerticalAlignment="Center"/>
+                  <TextBlock Text="{Binding MouseDriverInstallText}"/>
+                </StackPanel>
+              </Button>
+              <Button Command="{Binding OpenMouseDriverSourceCommand}" Margin="0,0,10,8">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8B7;" VerticalAlignment="Center"/>
+                  <TextBlock Text="Mouse driver folder"/>
+                </StackPanel>
+              </Button>
+              <Button Command="{Binding EnableVirtualHidCommand}" Margin="0,0,10,8"
+                      ToolTip.Tip="Connects FakerInput/vmouse for this 4ViviTools session. Nothing is installed automatically.">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7F4;" VerticalAlignment="Center"/>
+                  <TextBlock Text="Enable virtual HID"/>
+                </StackPanel>
+              </Button>
+              <Button Command="{Binding TestVirtualHidCommand}" Margin="0,0,10,8"
+                      ToolTip.Tip="Sends a virtual HID mouse click and F2 key test. reWASD is not required.">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE768;" VerticalAlignment="Center"/>
+                  <TextBlock Text="Test virtual HID"/>
+                </StackPanel>
+              </Button>
+              <Border Padding="8,4" CornerRadius="6" BorderThickness="1"
+                      Margin="0,0,10,8"
+                      BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource SurfaceBrush}">
+                <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                  <Ellipse Width="10" Height="10" Fill="{Binding ViiperStatusBrush}" VerticalAlignment="Center"/>
+                  <TextBlock Text="{Binding ViiperStatus}" Classes="muted" VerticalAlignment="Center"/>
+                </StackPanel>
+              </Border>
+              <Button Command="{Binding InstallOrOpenViiperCommand}" Margin="0,0,10,8"
+                      ToolTip.Tip="Opens VIIPER if installed, otherwise opens the official VIIPER release page. VIIPER is optional and never auto-installs on startup.">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7FC;" VerticalAlignment="Center"/>
+                  <TextBlock Text="{Binding ViiperActionText}"/>
+                </StackPanel>
+              </Button>
+              <Button Command="{Binding EnableViiperCommand}" Margin="0,0,10,8"
+                      ToolTip.Tip="Creates the VIIPER virtual USB keyboard and mouse for this 4ViviTools session only.">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7F4;" VerticalAlignment="Center"/>
+                  <TextBlock Text="Enable VIIPER"/>
+                </StackPanel>
+              </Button>
+              <Button Command="{Binding TestViiperCommand}" Margin="0,0,10,8"
+                      ToolTip.Tip="Sends a VIIPER virtual USB mouse click and F2 key test.">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE768;" VerticalAlignment="Center"/>
+                  <TextBlock Text="Test VIIPER"/>
+                </StackPanel>
+              </Button>
+            </WrapPanel>
+          </StackPanel>
+        </Border>
+        <WrapPanel IsVisible="{Binding ShowAdvancedTiming}">
+          <TextBlock Text="Virtual button" VerticalAlignment="Center" Classes="muted" Margin="0,0,8,8"/>
+          <ComboBox MinWidth="150" SelectedItem="{Binding VirtualClickButton}" ItemsSource="{Binding VirtualClickButtons}"
+                    Margin="0,0,12,8"
+                    ToolTip.Tip="Pick the Xbox button your active reWASD profile maps to left mouse."/>
+          <TextBlock Text="Hold" VerticalAlignment="Center" Classes="muted" Margin="0,0,8,8"/>
+          <NumericUpDown MinWidth="96" Minimum="30" Maximum="500" Increment="10" Value="{Binding VirtualClickHoldMs}" Margin="0,0,6,8"/>
+          <TextBlock Text="ms" VerticalAlignment="Center" Classes="muted" Margin="0,0,12,8"/>
+          <CheckBox Content="Last-resort normal click" IsChecked="{Binding VirtualClickFallback}" Margin="0,0,12,8"
+                    ToolTip.Tip="Only for testing standard Windows input fallback. Virtual HID and ViGEm paths do not require reWASD."/>
+          <Button Content="Enable controller" Command="{Binding EnableVirtualControllerCommand}" Margin="0,0,10,8"
+                  ToolTip.Tip="Connects the virtual Xbox for this 4ViviTools session only. Nothing is installed automatically."/>
+          <Button Content="Test virtual click" Command="{Binding TestVirtualClickCommand}" Margin="0,0,10,8"/>
+        </WrapPanel>
+        <WrapPanel>
+          <StackPanel Margin="0,0,14,8"><TextBlock Text="Flee at HP %" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="100" Value="{Binding FleeAtHpPercent}"/></StackPanel>
+          <StackPanel Margin="0,0,14,8"><TextBlock Text="Return at weight %" Classes="muted"/><NumericUpDown MinWidth="120" Minimum="0" Maximum="100" Value="{Binding ReturnAtWeightPercent}"/></StackPanel>
+          <StackPanel Margin="0,0,14,8"><TextBlock Text="Walk delay ms (-1 auto default)" Classes="muted"/><NumericUpDown MinWidth="150" Minimum="-1" Maximum="5000" Increment="100" Value="{Binding MoveWaitMs}"/></StackPanel>
+          <StackPanel Margin="0,0,14,8"><TextBlock Text="Stuck (ms)" Classes="muted"/><NumericUpDown MinWidth="130" Minimum="2000" Maximum="120000" Increment="100" Value="{Binding StuckMs}"/></StackPanel>
+          <StackPanel Margin="0,0,14,8"><TextBlock Text="Focus kill (ms, -1 auto)" Classes="muted"/><NumericUpDown MinWidth="170" Minimum="-1" Maximum="600000" Increment="100" Value="{Binding FocusKillMs}"/></StackPanel>
+          <StackPanel Margin="0,0,14,8"><TextBlock Text="Next monster ms (-1 auto)" Classes="muted"/><NumericUpDown MinWidth="150" Minimum="-1" Maximum="5000" Increment="50" Value="{Binding NextMonsterDelayMs}"/></StackPanel>
+          <StackPanel Margin="0,0,14,8" IsVisible="{Binding ShowAdvancedTiming}"><TextBlock Text="Move radius px" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="20" Maximum="600" Value="{Binding MoveRadius}"/></StackPanel>
+          <StackPanel Margin="0,0,14,8" IsVisible="{Binding ShowAdvancedTiming}"><TextBlock Text="Stable stop ms (-1 auto)" Classes="muted"/><NumericUpDown MinWidth="132" Minimum="-1" Maximum="3000" Increment="50" Value="{Binding MoveStableMs}"/></StackPanel>
+        </WrapPanel>
       </StackPanel>
     </Border>
+
+    <!-- Bot action hotbar -->
+    <Border Classes="card">
+      <StackPanel Spacing="12">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <TextBlock Text="Bot action hotbar" Classes="h2" VerticalAlignment="Center"/>
+          <CheckBox Content="Send through virtual controller" IsChecked="{Binding UseControllerButtons}" VerticalAlignment="Center"/>
+          <CheckBox Content="Use two-button controller combos" IsChecked="{Binding UseControllerCombos}" VerticalAlignment="Center"
+                    IsVisible="{Binding ShowAdvancedTiming}"
+                    ToolTip.Tip="When single Xbox buttons run out, assign unique combinations such as A+B. Map those combos in reWASD if you use it."/>
+          <CheckBox Content="Edit controller assignments" IsChecked="{Binding ShowControllerAssignments}" VerticalAlignment="Center"
+                    IsVisible="{Binding ShowAdvancedTiming}"
+                    ToolTip.Tip="Leave this off for automatic non-clashing controller buttons. Turn it on only when you want to override a specific mapping."/>
+          <ToggleSwitch Content="Autopot ON" IsChecked="{Binding AutopotEnabled}" VerticalAlignment="Center"/>
+        </StackPanel>
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="Pick the Ragnarok hotbar keys you actually use. For each checked key, choose one job: attack skill, buff, teleport, Ygg, HP pot, SP pot, ammo, or ammo bag. 4ViviTools assigns a safe controller button automatically; the assignment is shown on the key card."/>
+
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" MaxHeight="520">
+          <ItemsControl ItemsSource="{Binding SkillColumns}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="12"/>
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <ItemsControl ItemsSource="{Binding}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SmartSkillButton">
+                      <Border Width="300" MinHeight="64" Margin="0,0,0,10" Padding="10" CornerRadius="6" BorderThickness="1"
+                              BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource Surface2Brush}">
+                        <StackPanel Spacing="6">
+                          <CheckBox Content="{Binding Key}" IsChecked="{Binding Enabled}" FontWeight="SemiBold"/>
+                          <StackPanel Spacing="6" IsVisible="{Binding ShowActionOptions}">
+                            <WrapPanel>
+                              <CheckBox Content="Skill" IsChecked="{Binding IsSkill}" Margin="0,0,8,4"/>
+                              <CheckBox Content="Buff" IsChecked="{Binding IsBuff}" Margin="0,0,8,4"/>
+                              <CheckBox Content="TP" IsChecked="{Binding IsTeleport}" Margin="0,0,8,4"/>
+                              <CheckBox Content="Ygg" IsChecked="{Binding IsYgg}" Margin="0,0,8,4"/>
+                              <CheckBox Content="HP" IsChecked="{Binding IsHpPot}" Margin="0,0,8,4"/>
+                              <CheckBox Content="SP" IsChecked="{Binding IsSpPot}" Margin="0,0,8,4"/>
+                              <CheckBox Content="Ammo" IsChecked="{Binding IsAmmo}" Margin="0,0,8,4"/>
+                              <CheckBox Content="Bag" IsChecked="{Binding IsAmmoBag}" Margin="0,0,8,4"/>
+                              <CheckBox Content="Loot" IsChecked="{Binding IsLoot}" Margin="0,0,8,4"/>
+                              <CheckBox Content="Return" IsChecked="{Binding IsReturn}" Margin="0,0,8,4"/>
+                              <CheckBox Content="Weapon" IsChecked="{Binding IsWeapon}" Margin="0,0,8,4"/>
+                              <CheckBox Content="Reconnect" IsChecked="{Binding IsReconnect}" Margin="0,0,8,4"/>
+                            </WrapPanel>
+                            <TextBlock Text="{Binding ControllerSummary}" Classes="muted"/>
+                            <TextBlock Text="{Binding ActionSummary}" TextWrapping="Wrap" FontSize="12"/>
+                            <TextBlock Text="{Binding TimingSummary}" Classes="muted" TextWrapping="Wrap" FontSize="11"/>
+
+                            <StackPanel Spacing="4" IsVisible="{Binding ShowSkillPicker}">
+                              <Grid ColumnDefinitions="24,*">
+                                <Image Width="22" Height="22" Source="{Binding SkillName, Converter={StaticResource SkillNameToIcon}}"/>
+                                <ctrl:SearchPicker Grid.Column="1" Width="246" Watermark="skill"
+                                                   Text="{Binding SkillName}"
+                                                   ItemsSource="{Binding $parent[UserControl].((vm:SmartBotViewModel)DataContext).SkillNames}"/>
+                              </Grid>
+                              <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
+                                <StackPanel>
+                                  <TextBlock Text="SP needed" Classes="muted"/>
+                                  <NumericUpDown MinWidth="104" Minimum="0" Maximum="9999" Value="{Binding SpRequired}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                  <TextBlock Text="Skill level" Classes="muted"/>
+                                  <NumericUpDown MinWidth="104" Minimum="1" Maximum="{Binding SkillMaxLevel}" Value="{Binding SkillLevel}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,6,0,0">
+                                  <TextBlock Text="Skill delay ms (-1 auto default)" Classes="muted"/>
+                                  <NumericUpDown MinWidth="150" Minimum="-1" Maximum="5000" Increment="10" Value="{Binding SkillDelayMs}"/>
+                                </StackPanel>
+                              </Grid>
+                              <TextBlock Text="{Binding SkillHint}" Classes="muted" TextWrapping="Wrap" FontSize="11"/>
+                              <Grid ColumnDefinitions="*,*">
+                                <Button Content="Auto (-1)" HorizontalAlignment="Stretch" Margin="0,0,4,0"
+                                        Command="{ReflectionBinding DataContext.ResetSkillDelayAutoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"/>
+                                <Button Grid.Column="1" Content="Manual from DB" HorizontalAlignment="Stretch" Margin="4,0,0,0"
+                                        IsEnabled="{Binding HasSuggestedDelay}"
+                                        Command="{ReflectionBinding DataContext.ApplySuggestedSkillDelayCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"/>
+                              </Grid>
+                            </StackPanel>
+
+                            <StackPanel Spacing="4" IsVisible="{Binding ShowBuffPicker}">
+                              <Grid ColumnDefinitions="24,*">
+                                <Image Width="22" Height="22" Source="{Binding SkillName, Converter={StaticResource SkillNameToIcon}}"/>
+                                <ctrl:SearchPicker Grid.Column="1" Width="246" Watermark="buff"
+                                                   Text="{Binding SkillName}"
+                                                   ItemsSource="{Binding $parent[UserControl].((vm:SmartBotViewModel)DataContext).SkillNames}"/>
+                              </Grid>
+                              <StackPanel IsVisible="{Binding ShowBuffTimer}">
+                                <TextBlock Text="Refresh sec" Classes="muted"/>
+                                <NumericUpDown MinWidth="90" Minimum="5" Maximum="3600" Value="{Binding BuffIntervalSec}"/>
+                              </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Spacing="4" IsVisible="{Binding ShowPotSettings}">
+                              <ctrl:SearchPicker Width="270" Watermark="potion / ygg item"
+                                                 Text="{Binding ItemName}"
+                                                 ItemsSource="{Binding $parent[UserControl].((vm:SmartBotViewModel)DataContext).ConsumableNames}"/>
+                              <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto">
+                                <StackPanel>
+                                  <TextBlock Text="Use at %" Classes="muted"/>
+                                  <NumericUpDown MinWidth="84" Minimum="1" Maximum="100" Value="{Binding PotPercent}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="6,0,0,0"
+                                            IsVisible="{Binding $parent[UserControl].((vm:SmartBotViewModel)DataContext).ShowAdvancedTiming}">
+                                  <TextBlock Text="React ms (-1 auto)" Classes="muted"/>
+                                  <NumericUpDown MinWidth="84" Minimum="-1" Maximum="5000" Increment="10" Value="{Binding ReactionMs}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Margin="6,0,0,0"
+                                            IsVisible="{Binding $parent[UserControl].((vm:SmartBotViewModel)DataContext).ShowAdvancedTiming}">
+                                  <TextBlock Text="Delay ms (-1 auto)" Classes="muted"/>
+                                  <NumericUpDown MinWidth="100" Minimum="-1" Maximum="60000" Increment="50" Value="{Binding UseDelayMs}"/>
+                                </StackPanel>
+                              </Grid>
+                              <TextBlock Text="{Binding ItemHint}" Classes="muted" TextWrapping="Wrap" FontSize="11"/>
+                            </StackPanel>
+
+                            <StackPanel Spacing="4" IsVisible="{Binding ShowTeleportSettings}">
+                              <ctrl:SearchPicker Width="270" Watermark="Fly Wing / Teleport item"
+                                                 Text="{Binding ItemName}"
+                                                 ItemsSource="{Binding $parent[UserControl].((vm:SmartBotViewModel)DataContext).ConsumableNames}"/>
+                              <StackPanel>
+                                <TextBlock Text="Teleport delay ms (-1 auto)" Classes="muted"/>
+                                <NumericUpDown MinWidth="158" Minimum="-1" Maximum="60000" Increment="50" Value="{Binding UseDelayMs}"/>
+                              </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Spacing="4" IsVisible="{Binding ShowAmmoSettings}">
+                              <ctrl:SearchPicker Width="270" Watermark="arrow / bullet"
+                                                 Text="{Binding ItemName}"
+                                                 ItemsSource="{Binding $parent[UserControl].((vm:SmartBotViewModel)DataContext).AmmoNames}"/>
+                              <Grid ColumnDefinitions="*,*" RowDefinitions="Auto">
+                                <StackPanel>
+                                  <TextBlock Text="Ammo now" Classes="muted"/>
+                                  <NumericUpDown MinWidth="118" Minimum="0" Maximum="999999" Value="{Binding AmmoCount}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                  <TextBlock Text="Stop at &lt;=" Classes="muted"/>
+                                  <NumericUpDown MinWidth="118" Minimum="0" Maximum="9999" Value="{Binding StopAtAmmo}"/>
+                                </StackPanel>
+                              </Grid>
+                              <TextBlock Text="{Binding ItemHint}" Classes="muted" TextWrapping="Wrap" FontSize="11"/>
+                            </StackPanel>
+
+                            <StackPanel Spacing="4" IsVisible="{Binding ShowAmmoBagSettings}">
+                              <ctrl:SearchPicker Width="270" Watermark="quiver / ammo box"
+                                                 Text="{Binding ItemName}"
+                                                 ItemsSource="{Binding $parent[UserControl].((vm:SmartBotViewModel)DataContext).ConsumableNames}"/>
+                              <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
+                                <StackPanel>
+                                  <TextBlock Text="Bags" Classes="muted"/>
+                                  <NumericUpDown MinWidth="118" Minimum="0" Maximum="9999" Value="{Binding AmmoBags}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                  <TextBlock Text="Ammo/bag" Classes="muted"/>
+                                  <NumericUpDown MinWidth="118" Minimum="1" Maximum="99999" Value="{Binding AmmoPerBag}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,6,0,0"
+                                            IsVisible="{Binding $parent[UserControl].((vm:SmartBotViewModel)DataContext).ShowAdvancedTiming}">
+                                  <TextBlock Text="After-use delay ms (-1 auto)" Classes="muted"/>
+                                  <NumericUpDown MinWidth="158" Minimum="-1" Maximum="60000" Increment="50" Value="{Binding UseDelayMs}"/>
+                                </StackPanel>
+                              </Grid>
+                              <TextBlock Text="{Binding ItemHint}" Classes="muted" TextWrapping="Wrap" FontSize="11"/>
+                            </StackPanel>
+
+                            <StackPanel Spacing="4" IsVisible="{Binding ShowSimpleDelay}">
+                              <TextBlock Text="Action delay ms (-1 auto)" Classes="muted"/>
+                              <NumericUpDown MinWidth="158" Minimum="-1" Maximum="60000" Increment="50" Value="{Binding UseDelayMs}"/>
+                            </StackPanel>
+                          </StackPanel>
+                        </StackPanel>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+
+        <Border Padding="10" CornerRadius="6" BorderThickness="1"
+                BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource Surface2Brush}"
+                IsVisible="{Binding ShowControllerAssignments}">
+          <StackPanel Spacing="8">
+            <TextBlock Text="Controller assignments" Classes="h2" FontSize="13"/>
+            <TextBlock Text="Advanced override: change these only if you need a specific virtual-controller mapping. Empty or duplicate values are repaired automatically." Classes="muted" TextWrapping="Wrap"/>
+            <ItemsControl ItemsSource="{Binding ControllerKeyMapRows}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel/>
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ControllerKeyMapRow">
+                  <StackPanel Width="142" Margin="0,0,10,8">
+                    <TextBlock Text="{Binding Key}" Classes="muted"/>
+                    <ComboBox SelectedItem="{Binding Button}"
+                              ItemsSource="{Binding $parent[UserControl].((vm:SmartBotViewModel)DataContext).ControllerButtonChoices}"/>
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+        <TextBlock Text="{Binding SkillSuggestionStatus}" Classes="muted" TextWrapping="Wrap"/>
+      </StackPanel>
+    </Border>
+
+    <!-- Roam box + reconnect -->
+    <Border Classes="card">
+      <StackPanel Spacing="12">
+        <TextBlock Text="Roam box, map &amp; reconnect" Classes="h2"/>
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock Text="Farm map" Classes="muted" VerticalAlignment="Center"/>
+          <ctrl:SearchPicker Width="220" Watermark="search map" Text="{Binding TargetMap}" ItemsSource="{Binding MapNames}"/>
+          <TextBlock Text="Bot only farms while the OCR map matches. Smart Bot attacks monster detections directly." Classes="muted" VerticalAlignment="Center" TextWrapping="Wrap"/>
+        </StackPanel>
+        <TextBlock Text="{Binding MapMonsterFocusText}" Classes="muted" TextWrapping="Wrap"/>
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <CheckBox Content="Walk only inside box" IsChecked="{Binding UseWalkBox}" VerticalAlignment="Bottom"/>
+          <CheckBox Content="Show walk box overlay" IsChecked="{Binding ShowWalkBoxOverlay}" VerticalAlignment="Bottom"/>
+          <StackPanel><TextBlock Text="Box X" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="4000" Value="{Binding BoxX}"/></StackPanel>
+          <StackPanel><TextBlock Text="Box Y" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="4000" Value="{Binding BoxY}"/></StackPanel>
+          <StackPanel><TextBlock Text="Box W" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="4000" Value="{Binding BoxW}"/></StackPanel>
+          <StackPanel><TextBlock Text="Box H" Classes="muted"/><NumericUpDown MinWidth="110" Minimum="0" Maximum="4000" Value="{Binding BoxH}"/></StackPanel>
+        </StackPanel>
+        <CheckBox Content="Auto-reconnect (OCR-detected; mark reconnect steps in the hotbar cards above)" IsChecked="{Binding AutoReconnect}"/>
+      </StackPanel>
+    </Border>
+
+    <!-- Activity log -->
+    <Border Classes="card">
+      <StackPanel Spacing="8">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock Text="Activity log" Classes="h2" VerticalAlignment="Center"/>
+          <Button Content="Clear" Command="{Binding ClearLogCommand}"/>
+          <Button Content="Open debug log" Command="{Binding OpenDebugLogCommand}"/>
+          <Button Content="Clear debug log" Command="{Binding ClearDebugLogCommand}"/>
+        </StackPanel>
+        <TextBlock Text="{Binding DebugLogPath}" Classes="muted" FontFamily="Consolas" TextWrapping="Wrap"/>
+        <Border Height="220" Background="{DynamicResource Surface2Brush}" CornerRadius="6">
+          <ScrollViewer>
+            <ItemsControl ItemsSource="{Binding Logs}" Margin="8">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate><TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="12"/></DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Border>
+      </StackPanel>
+    </Border>
+
     <StackPanel Orientation="Horizontal" Spacing="10">
       <TextBlock Text="{Binding AddressStatus}" Classes="muted" TextWrapping="Wrap" Width="640"/>
       <Button Content="Refresh" Command="{Binding RefreshAddressesCommand}"/>
     </StackPanel>
   </StackPanel>
+  </ScrollViewer>
 </UserControl>

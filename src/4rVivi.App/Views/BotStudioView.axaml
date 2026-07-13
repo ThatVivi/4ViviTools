@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FourRVivi.App.ViewModels"
+             x:Class="FourRVivi.App.Views.BotStudioView" x:DataType="vm:BotStudioViewModel">
+  <StackPanel Spacing="16">
+    <TextBlock Text="Bot" Classes="h1"/>
+    <TextBlock Classes="muted" TextWrapping="Wrap"
+               Text="One surface: OCR reader, smart combat, basic farm and the RCX overlay. They share the same capture and detections, so values read here drive the bot directly."/>
+
+    <Border Classes="card"><StackPanel Spacing="8">
+      <TextBlock Text="OCR &amp; capture" Classes="h2"/>
+      <ContentControl Content="{Binding Reader}"/>
+    </StackPanel></Border>
+
+    <Border Classes="card"><StackPanel Spacing="8">
+      <TextBlock Text="Smart combat" Classes="h2"/>
+      <ContentControl Content="{Binding Smart}"/>
+    </StackPanel></Border>
+
+    <Border Classes="card"><StackPanel Spacing="8">
+      <TextBlock Text="Basic farm" Classes="h2"/>
+      <ContentControl Content="{Binding Basic}"/>
+    </StackPanel></Border>
+
+    <Border Classes="card"><StackPanel Spacing="8">
+      <TextBlock Text="RCX overlay" Classes="h2"/>
+      <ContentControl Content="{Binding Overlay}"/>
+    </StackPanel></Border>
+  </StackPanel>
+</UserControl>

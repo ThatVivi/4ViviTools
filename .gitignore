@@ -1,5 +1,37 @@
 bin/
 obj/
 publish/
+artifacts/
+rewasd/
 *.user
 .vs/
+
+# Local/generated tooling environments and caches
+__pycache__/
+*.pyc
+tools/**/__pycache__/
+tools/ocr-train/ocr_export/
+tools/ocr-train/.env_ready
+tools/ocr-train/*.lock
+tools/ocr-train/.full_training_state.json
+tools/ocr-train/.realistic_retrain.flag
+tools/ocr-train/.retrain_v2_smallset.flag
+
+# Local training outputs that can be regenerated
+tools/ocr-train/runs/
+tools/ocr-train/video_frames/
+
+# Raw/extracted local datasets and GRF trees are kept outside git history.
+GRF/
+tools/ocr-train/TrainingData/
+tools/ocr-train/Video/
+tools/ocr-train/datasets/
+tools/ocr-train/yolo_real/
+tools/ocr-train/user_images/
+tools/ocr-train/hard_examples/
+tools/ocr-train/corpus/
+tools/ocr-train/icons/
+tools/ocr-train/OCR Names/data/sprite/
+tools/ocr-train/yolo/images/
+tools/ocr-train/yolo/labels/
+tools/drivers/vmouse/

@@ -1,5 +1,7 @@
+using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Avalonia.Media;
 using FourRVivi.Core.Settings;
 using FourRVivi.App.Services;
 using FourRVivi.Core.Game;
@@ -17,8 +19,41 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     public string[] Languages { get; } = { "en", "ar" };
 
+    public string[] Themes { get; } = { "Red", "Black" };
     [ObservableProperty] private string _language = "en";
+    [ObservableProperty] private string _theme = "Red";
     [ObservableProperty] private string _accentHex = "#7C6CF7";
+
+    partial void OnThemeChanged(string value) => ApplyTheme(value);
+
+    public static void ApplyTheme(string theme)
+    {
+        var app = Avalonia.Application.Current;
+        if (app == null) return;
+
+        app.RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Dark;
+
+        var black = string.Equals(theme, "Black", StringComparison.OrdinalIgnoreCase);
+        var red = !black;
+        var light = false;
+
+        SetBrush(app, "BgBrush", light ? "#F4F5F7" : red ? "#0B0B0D" : "#070708");
+        SetBrush(app, "SurfaceBrush", light ? "#FFFFFF" : red ? "#131316" : "#101013");
+        SetBrush(app, "Surface2Brush", light ? "#EEF0F4" : red ? "#1C1C21" : "#17181D");
+        SetBrush(app, "BorderBrush", light ? "#D5D9E2" : red ? "#3C2228" : "#2A2D34");
+        SetBrush(app, "TextBrush", light ? "#101218" : "#ECEEF5");
+        SetBrush(app, "TextMutedBrush", light ? "#667085" : red ? "#B8AEB5" : "#A4A8B3");
+        SetBrush(app, "AccentBrush", red ? "#C41E3A" : light ? "#B91C1C" : "#D8DEE9");
+        SetBrush(app, "Accent2Brush", red ? "#7A1020" : light ? "#E5E7EB" : "#2A2D34");
+        SetBrush(app, "OkBrush", "#34C78E");
+        SetBrush(app, "DangerBrush", "#D11A2A");
+    }
+
+    private static void SetBrush(Avalonia.Application app, string key, string hex) =>
+        app.Resources[key] = new SolidColorBrush(Color.Parse(hex));
+
+    private static string NormalizeTheme(string? theme) =>
+        string.Equals(theme, "Black", StringComparison.OrdinalIgnoreCase) ? "Black" : "Red";
     [ObservableProperty] private int _windowOpacity = 100;
     [ObservableProperty] private bool _humanizeTiming = true;
     [ObservableProperty] private bool _acrylicBackdrop = true;
@@ -36,6 +71,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         _settings = settings; _icons = icons; _discord = discord; _game = game;
         var c = settings.Current;
         Language = c.Language;
+        Theme = NormalizeTheme(c.Theme);
         AccentHex = c.AccentHex;
         WindowOpacity = c.WindowOpacity;
         HumanizeTiming = c.HumanizeTiming;
@@ -54,8 +90,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
     {
         var c = _settings.Current;
         c.Language = string.IsNullOrWhiteSpace(Language) ? "en" : Language;
+        c.Theme = NormalizeTheme(Theme);
         c.AccentHex = AccentHex;
-        c.WindowOpacity = Math.Clamp(WindowOpacity, 70, 100);
+        c.WindowOpacity = Math.Clamp(WindowOpacity, 15, 100);
         c.HumanizeTiming = HumanizeTiming;
         c.AcrylicBackdrop = AcrylicBackdrop;
         c.GameFolder = GameFolder.Trim();

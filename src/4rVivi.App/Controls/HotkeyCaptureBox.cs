@@ -5,8 +5,7 @@ using Avalonia.Input;
 
 namespace FourRVivi.App.Controls;
 
-/// <summary>Click, then press any key (incl. NumPad) or a combo like Ctrl+F8 — records it as a string
-/// that matches the global hotkey matcher (e.g. "Ctrl+F8", "NumPad8", "F9").</summary>
+/// <summary>Click, then press any key or a combo like Ctrl+F8; records it for the global hotkey matcher.</summary>
 public class HotkeyCaptureBox : Button
 {
     public static readonly StyledProperty<string> KeyTextProperty =
@@ -18,12 +17,12 @@ public class HotkeyCaptureBox : Button
 
     public HotkeyCaptureBox() { Focusable = true; UpdateContent(); }
 
-    protected override void OnClick() { _cap = true; Content = "press keys…"; Focus(); }
+    protected override void OnClick() { _cap = true; Content = "press keys..."; Focus(); }
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
         if (!_cap) { base.OnKeyDown(e); return; }
-        if (IsMod(e.Key)) { e.Handled = true; return; }   // wait for a non-modifier
+        if (IsMod(e.Key)) { e.Handled = true; return; }
         string name = KeyName(e.Key);
         if (name.Length == 0) { e.Handled = true; return; }
         var m = e.KeyModifiers;
@@ -47,8 +46,8 @@ public class HotkeyCaptureBox : Button
     private static string KeyName(Key k)
     {
         string n = k.ToString();
-        if (n.Length == 2 && n[0] == 'D' && char.IsDigit(n[1])) return n.Substring(1);  // D0-D9 -> 0-9
+        if (n.Length == 2 && n[0] == 'D' && char.IsDigit(n[1])) return n.Substring(1);
         if (n == "Return") return "Enter";
-        return n;  // A, F8, NumPad8, Space, Multiply, ...
+        return n;
     }
 }

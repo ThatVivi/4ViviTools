@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <IsPackable>false</IsPackable>
     <RootNamespace>FourRVivi.Core.Tests</RootNamespace>
   </PropertyGroup>
@@ -11,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\4rVivi.Core\4rVivi.Core.csproj" />
+    <ProjectReference Include="..\..\src\4rVivi.App\4rVivi.App.csproj" />
   </ItemGroup>
 </Project>
